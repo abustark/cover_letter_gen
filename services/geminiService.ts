@@ -36,7 +36,7 @@ JOB DESCRIPTION:
 {jobDescription}
 ---
 
-Now, generate the cover letter.
+Now, generate ONLY the cover letter content. Do not include any preamble, analysis, headers, or a list of sources in your response. The output should be the raw text of the cover letter, ready to be copied and pasted directly into a document.
 `;
 
 const PROMPT_TEMPLATE_URL = `
@@ -61,7 +61,27 @@ RESUME:
 {resume}
 ---
 
-Now, find the job description from the URL and generate the cover letter.
+Now, find the job description from the URL and generate ONLY the cover letter content. Do not include any preamble, analysis, headers, or a list of sources in your response. The output should be the raw text of the cover letter, ready to be copied and pasted directly into a document.
+`;
+
+const RESUME_FORMATTING_PROMPT = `
+You are an expert text formatter specializing in resumes. Your task is to take a block of raw, unstructured text extracted from a resume document and reformat it for clarity and readability within a simple text editor.
+
+Follow these rules precisely:
+1.  Identify logical sections such as Professional Summary, Work Experience, Education, Skills, Projects, etc.
+2.  Create clear headings for each section. Mark each heading by surrounding it with three dashes, like so: "--- Work Experience ---".
+3.  Use consistent spacing. Add a single blank line between the heading and its content, and between distinct entries (like different jobs or projects).
+4.  For lists of skills or responsibilities, use a simple hyphen (-) or asterisk (*) to denote bullet points.
+5.  Preserve all the original content. Do not add, remove, or change the original text, only structure and format it.
+6.  The output must be a single string of plain text, perfectly formatted for a textarea input.
+
+Here is the raw text to format:
+---
+RAW TEXT:
+{rawText}
+---
+
+Now, produce the formatted resume text.
 `;
 
 
@@ -114,5 +134,25 @@ export const generateCoverLetter = async (
   } catch (error) {
     console.error("Error calling Gemini API:", error);
     throw new Error("Failed to communicate with the Gemini API. Please check your connection or API key.");
+  }
+};
+
+export const formatResumeText = async (rawText: string): Promise<string> => {
+  if (!rawText.trim()) {
+    return "";
+  }
+  
+  const prompt = RESUME_FORMATTING_PROMPT.replace('{rawText}', rawText);
+
+  try {
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash', // Use a fast model for this utility task
+      contents: prompt,
+    });
+    return response.text;
+  } catch (error) {
+    console.error("Error calling Gemini API for resume formatting:", error);
+    // Fallback to raw text if formatting fails
+    return rawText;
   }
 };
