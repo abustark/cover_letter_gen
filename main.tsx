@@ -16,7 +16,7 @@ if (!googleClientId) {
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    {/* This provider gives your entire App access to Google Authentication */}
+    {/* This provider is the fix. It gives your entire App access to Google Authentication. */}
     <GoogleOAuthProvider clientId={googleClientId}>
       <App />
     </GoogleOAuthProvider>
