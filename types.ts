@@ -1,26 +1,33 @@
-export enum GenerationMode {
-  Standard = 'Standard',
-  Thinking = 'Thinking Mode',
-  LowLatency = 'Low Latency',
-  SearchGrounding = 'Search Grounding',
-}
+// src/types.ts
 
-export enum JobDescriptionInputType {
-  Text = 'Text',
-  Url = 'Url',
-}
-
+// Defines the possible themes for your application
 export type Theme = 'light' | 'dark';
 
+// Defines the structure of a user object. This is the more complete version.
 export interface User {
   id: string;
   name: string;
-  imageUrl?: string;
+  imageUrl?: string; // The '?' makes the image optional, which is good practice.
 }
 
+// Defines the structure for a saved cover letter draft.
 export interface Draft {
   id: string;
   companyName: string;
   coverLetter: string;
   createdAt: string;
+}
+
+// Defines the generation modes for the AI model.
+export enum GenerationMode {
+  Standard = 'standard',
+  Thinking = 'thinking',
+  LowLatency = 'low-latency',
+  SearchGrounding = 'search-grounding',
+}
+
+// Defines how the job description is being provided.
+export enum JobDescriptionInputType {
+  Text = 'text',
+  Url = 'url',
 }
