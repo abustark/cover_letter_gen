@@ -2,9 +2,15 @@ import React, { useRef, useState, ChangeEvent } from 'react';
 import { SparklesIcon, UploadIcon, FileIcon, SpinnerIcon, LightbulbIcon } from './icons';
 import { JobDescriptionInputType } from '../types';
 import { formatResumeText } from '../services/geminiService';
-import * as pdfjsLib from 'pdfjs-dist';
+// Correctly import from the specific 'build/pdf' entrypoint
+import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+// This code dynamically finds the worker file from the version you have installed,
+// guaranteeing the API and Worker versions will always match.
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 declare const mammoth: any;
 
