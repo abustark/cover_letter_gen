@@ -94,8 +94,9 @@ const App: React.FC = () => {
         />
       </main>
        <footer className="text-center py-4 text-gray-500 text-sm">
-        <p>Built with React, Tailwind CSS, and the Google Gemini API.</p>
-      </footer>
+    © 2025 Basith AbuSyed. All rights reserved.<br />
+    This site is under active development. Check back occasionally for new features.
+</footer>
     </div>
   );
 };
