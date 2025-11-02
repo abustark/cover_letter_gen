@@ -2,12 +2,13 @@
 import React, { useRef, useState, ChangeEvent } from 'react';
 import { SparklesIcon, UploadIcon, FileIcon, SpinnerIcon } from './icons';
 import { JobDescriptionInputType } from '../types';
-import * as pdfjsLib from 'pdfjs-dist';
+import * as pdfjsLib from 'pdfjs-dist/build/pdf';
 
-// This is required for pdf.js to work. We provide the full CDN URL directly 
-// to avoid path resolution issues that were causing a runtime error.
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
-
+// Let Vite find the worker file from your installed package
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 declare const mammoth: any; // For mammoth.js from global scope, added via script tag in index.html
 
