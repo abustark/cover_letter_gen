@@ -1,5 +1,5 @@
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-import { GenerationMode, JobDescriptionInputType } from '../types';
+import { GenerationMode, JobDescriptionInputType, Tone } from '../types';
 
 if (!process.env.API_KEY) {
     throw new Error("API_KEY environment variable not set");
@@ -12,6 +12,13 @@ You are a world-class professional career coach. Your task is to write a highly 
 
 The cover letter must be tailored specifically to the provided job description, using the candidate's resume to highlight the most relevant skills and experiences.
 
+**TONE REQUIREMENT:**
+You must write this cover letter with a **{tone}** tone.
+- If Professional: Formal, respectful, polished.
+- If Enthusiastic: High energy, passionate, eager.
+- If Confident: Assertive, leadership-focused, authoritative.
+- If Creative: Unique phrasing, storytelling, engaging.
+
 Follow these instructions:
 1.  **Analyze Both Documents:** Carefully read and understand the resume and the job description.
 2.  **Identify Keywords:** Extract key skills, qualifications, and requirements from the job description.
@@ -20,9 +27,7 @@ Follow these instructions:
     *   **Introduction:** Briefly introduce the candidate and the position they are applying for. Express enthusiasm for the role and the company.
     *   **Body Paragraph(s):** Create 1-2 paragraphs that connect the candidate's top 2-3 qualifications directly to the job's requirements. Use quantifiable achievements from the resume where possible (e.g., "Increased sales by 15%").
     *   **Conclusion:** Reiterate interest, express confidence in their ability to contribute, and include a strong call to action (e.g., "I am eager to discuss how my background in...").
-5.  **Tone:** Maintain a professional, confident, and enthusiastic tone throughout.
-
-**DO NOT** include placeholders like "[Your Name]" or "[Company Name]". Assume the letter is ready to be signed.
+5.  **No Placeholders:** **DO NOT** include placeholders like "[Your Name]" or "[Company Name]". Assume the letter is ready to be signed.
 
 Here is the candidate's resume:
 ---
@@ -36,7 +41,7 @@ JOB DESCRIPTION:
 {jobDescription}
 ---
 
-Now, generate ONLY the cover letter content. Do not include any preamble, analysis, headers, or a list of sources in your response. The output should be the raw text of the cover letter, ready to be copied and pasted directly into a document.
+Now, generate ONLY the cover letter content. Do not include any preamble, analysis, headers, or a list of sources in your response.
 `;
 
 const PROMPT_TEMPLATE_URL = `
@@ -47,13 +52,15 @@ URL: {jobUrl}
 
 Once you have the complete job description from the URL, use it and the candidate's resume below to write a cover letter that highlights the most relevant skills and experiences.
 
+**TONE REQUIREMENT:**
+You must write this cover letter with a **{tone}** tone.
+
 Follow these instructions for the cover letter:
 1.  **Structure the Letter:**
     *   **Introduction:** Briefly introduce the candidate and the position they are applying for. Express enthusiasm for the role and the company.
     *   **Body Paragraph(s):** Create 1-2 paragraphs that connect the candidate's top 2-3 qualifications directly to the job's requirements. Use quantifiable achievements from the resume where possible (e.g., "Increased sales by 15%").
     *   **Conclusion:** Reiterate interest, express confidence in their ability to contribute, and include a strong call to action (e.g., "I am eager to discuss how my background in...").
-2.  **Tone:** Maintain a professional, confident, and enthusiastic tone throughout.
-**DO NOT** include placeholders like "[Your Name]" or "[Company Name]". Assume the letter is ready to be signed.
+2.  **No Placeholders:** **DO NOT** include placeholders like "[Your Name]" or "[Company Name]". Assume the letter is ready to be signed.
 
 Here is the candidate's resume:
 ---
@@ -61,7 +68,7 @@ RESUME:
 {resume}
 ---
 
-Now, find the job description from the URL and generate ONLY the cover letter content. Do not include any preamble, analysis, headers, or a list of sources in your response. The output should be the raw text of the cover letter, ready to be copied and pasted directly into a document.
+Now, find the job description from the URL and generate ONLY the cover letter content. Do not include any preamble, analysis, headers, or a list of sources in your response.
 `;
 
 const RESUME_FORMATTING_PROMPT = `
@@ -88,7 +95,8 @@ Now, produce the formatted resume text.
 export const generateCoverLetter = async (
   resume: string,
   jobInput: { type: JobDescriptionInputType; value: string },
-  mode: GenerationMode
+  mode: GenerationMode,
+  tone: Tone
 ): Promise<GenerateContentResponse> => {
   let prompt: string;
   let modelName: string;
@@ -97,9 +105,15 @@ export const generateCoverLetter = async (
   const effectiveMode = jobInput.type === JobDescriptionInputType.Url ? GenerationMode.SearchGrounding : mode;
 
   if (jobInput.type === JobDescriptionInputType.Text) {
-    prompt = PROMPT_TEMPLATE_TEXT.replace('{resume}', resume).replace('{jobDescription}', jobInput.value);
+    prompt = PROMPT_TEMPLATE_TEXT
+      .replace('{resume}', resume)
+      .replace('{jobDescription}', jobInput.value)
+      .replace('{tone}', tone);
   } else {
-    prompt = PROMPT_TEMPLATE_URL.replace('{resume}', resume).replace('{jobUrl}', jobInput.value);
+    prompt = PROMPT_TEMPLATE_URL
+      .replace('{resume}', resume)
+      .replace('{jobUrl}', jobInput.value)
+      .replace('{tone}', tone);
   }
 
   switch (effectiveMode) {

@@ -5,7 +5,7 @@ import { OutputSection } from './components/OutputSection';
 import { ModeSelector } from './components/ModeSelector';
 import { DraftsSection } from './components/DraftsSection';
 import { generateCoverLetter } from './services/geminiService';
-import { GenerationMode, JobDescriptionInputType, Theme, User, Draft } from './types';
+import { GenerationMode, JobDescriptionInputType, Theme, User, Draft, Tone } from './types';
 import type { GroundingChunk } from "@google/genai";
 
 
@@ -22,6 +22,7 @@ const App: React.FC = () => {
   const [jobUrl, setJobUrl] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [jobInputType, setJobInputType] = useState<JobDescriptionInputType>(JobDescriptionInputType.Text);
+  const [tone, setTone] = useState<Tone>('Professional');
   
   // Outputs & State
   const [coverLetter, setCoverLetter] = useState('');
@@ -114,7 +115,7 @@ const App: React.FC = () => {
         value: jobInputType === JobDescriptionInputType.Text ? jobDescription : jobUrl,
       };
 
-      const response = await generateCoverLetter(resume, jobInput, mode);
+      const response = await generateCoverLetter(resume, jobInput, mode, tone);
       const text = response.text;
       const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
 
@@ -130,10 +131,18 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [resume, jobDescription, jobUrl, jobInputType, mode]);
+  }, [resume, jobDescription, jobUrl, jobInputType, mode, tone]);
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-200 font-sans transition-colors duration-300">
+    <div className="min-h-[100dvh] font-sans text-gray-900 dark:text-gray-100 transition-colors duration-500 bg-fixed relative">
+      
+      {/* Dynamic Background */}
+      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-indigo-50/80 via-purple-50/80 to-pink-50/80 dark:from-gray-950 dark:via-[#1a0b2e] dark:to-gray-900">
+        <div className="absolute top-0 left-[-10%] w-[50vw] h-[50vw] bg-purple-400/30 dark:bg-purple-600/20 rounded-full blur-[120px] animate-blob mix-blend-multiply dark:mix-blend-screen filter"></div>
+        <div className="absolute top-[20%] right-[-10%] w-[50vw] h-[50vw] bg-indigo-400/30 dark:bg-indigo-600/20 rounded-full blur-[120px] animate-blob animation-delay-2000 mix-blend-multiply dark:mix-blend-screen filter"></div>
+        <div className="absolute bottom-[-10%] left-[20%] w-[50vw] h-[50vw] bg-pink-400/30 dark:bg-pink-600/20 rounded-full blur-[120px] animate-blob animation-delay-4000 mix-blend-multiply dark:mix-blend-screen filter"></div>
+      </div>
+
       <Header 
         theme={theme}
         setTheme={setTheme}
@@ -141,7 +150,8 @@ const App: React.FC = () => {
         onLogin={handleLogin}
         onLogout={handleLogout}
       />
-      <main className="container mx-auto px-4 py-8">
+      
+      <main className="container mx-auto px-4 md:px-6 py-8 max-w-6xl pb-24">
         <ModeSelector 
           currentMode={mode} 
           setMode={setMode} 
@@ -160,6 +170,8 @@ const App: React.FC = () => {
           setCompanyName={setCompanyName}
           onGenerate={handleGenerate}
           isLoading={isLoading}
+          tone={tone}
+          setTone={setTone}
         />
         <OutputSection
           coverLetter={coverLetter}
@@ -179,10 +191,11 @@ const App: React.FC = () => {
           />
         )}
       </main>
-        <footer className="text-center py-4 text-gray-500 text-sm">
-    © 2025 Basith AbuSyed. All rights reserved.<br />
-    This site is under active development. Check back occasionally for new features.
-</footer>
+
+      <footer className="w-full text-center py-8 text-gray-500/80 dark:text-gray-400/80 text-xs sm:text-sm backdrop-blur-sm">
+        © 2025 Basith AbuSyed. All rights reserved.<br />
+        <span className="opacity-70">Powered by Gemini 2.5</span>
+      </footer>
     </div>
   );
 };
