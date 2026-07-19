@@ -1,11 +1,33 @@
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { GenerationMode, JobDescriptionInputType, Tone } from '../types';
 
-if (!process.env.API_KEY) {
-    throw new Error("API_KEY environment variable not set");
+const apiKey = process.env.OPENROUTER_API_KEY || process.env.API_KEY;
+
+if (!apiKey) {
+    throw new Error("OPENROUTER_API_KEY is not set. Add it to .env.local (see .env.example).");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+
+// Free-tier OpenRouter models. Gemma 4 (Neutron/Gemma open family) is the
+// primary engine for resume/cover-letter generation; a larger 70B model is
+// used for the higher-quality "Thinking" mode.
+// Free-tier OpenRouter models. Assignments chosen per use case (all verified
+// reachable + free):
+//  - nemotron-3-ultra-550b: frontier reasoning, 1M ctx -> best-quality writing.
+//  - nemotron-3-super-120b: reasoning MoE, 1M ctx -> Thinking mode.
+//  - gemma-4-26b-a4b: fast MoE (3.8B active) -> latency + formatting utility.
+const MODELS = {
+    // Primary writing engine — highest quality, 1M context.
+    standard: "nvidia/nemotron-3-ultra-550b-a55b:free",
+    // Fast engine for quick generations.
+    lowLatency: "google/gemma-4-26b-a4b-it:free",
+    // Reasoning-focused model for deeper tailoring.
+    thinking: "nvidia/nemotron-3-super-120b-a12b:free",
+    // URL mode reuses the top engine (1M ctx fits long extracted pages).
+    url: "nvidia/nemotron-3-ultra-550b-a55b:free",
+    // Utility formatting task — speed over max quality.
+    formatting: "google/gemma-4-26b-a4b-it:free",
+};
 
 const PROMPT_TEMPLATE_TEXT = `
 You are a world-class professional career coach. Your task is to write a highly professional, concise, and compelling cover letter.
@@ -47,10 +69,9 @@ Now, generate ONLY the cover letter content. Do not include any preamble, analys
 const PROMPT_TEMPLATE_URL = `
 You are a world-class professional career coach. Your task is to write a highly professional, concise, and compelling cover letter.
 
-Your first step is to act as a web researcher. You MUST analyze the content at the following URL to find the full job description, including all requirements, responsibilities, and qualifications.
-URL: {jobUrl}
+A web researcher has already extracted the full job description from the provided URL and supplied it below. Use that extracted job description and the candidate's resume to write a cover letter highlighting the most relevant skills and experiences.
 
-Once you have the complete job description from the URL, use it and the candidate's resume below to write a cover letter that highlights the most relevant skills and experiences.
+Extracted job description source URL: {jobUrl}
 
 **TONE REQUIREMENT:**
 You must write this cover letter with a **{tone}** tone.
@@ -68,7 +89,7 @@ RESUME:
 {resume}
 ---
 
-Now, find the job description from the URL and generate ONLY the cover letter content. Do not include any preamble, analysis, headers, or a list of sources in your response.
+Now, generate ONLY the cover letter content. Do not include any preamble, analysis, headers, or a list of sources in your response.
 `;
 
 const RESUME_FORMATTING_PROMPT = `
@@ -91,82 +112,136 @@ RAW TEXT:
 Now, produce the formatted resume text.
 `;
 
+interface OpenRouterMessage {
+    role: "system" | "user" | "assistant";
+    content: string;
+}
+
+const callOpenRouter = async (model: string, messages: OpenRouterMessage[]): Promise<string> => {
+    const response = await fetch(OPENROUTER_URL, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://covercraft.app",
+            "X-Title": "CoverCraft",
+        },
+        body: JSON.stringify({
+            model,
+            messages,
+            temperature: 0.7,
+        }),
+    });
+
+    if (!response.ok) {
+        const errorBody = await response.text();
+        throw new Error(`OpenRouter request failed (${response.status}): ${errorBody}`);
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+
+    if (!content) {
+        throw new Error("OpenRouter returned an empty response.");
+    }
+
+    return content;
+};
+
+// Local web fetch + text extraction used by URL mode, since OpenRouter has no
+// web-search tool. We pull the page's readable text and feed it as context.
+const fetchJobDescriptionFromUrl = async (url: string): Promise<string> => {
+    try {
+        const res = await fetch(url, { headers: { "User-Agent": "CoverCraft/1.0 (+https://covercraft.app)" } });
+        if (!res.ok) {
+            throw new Error(`URL fetch failed (${res.status})`);
+        }
+        const html = await res.text();
+        // Strip scripts, styles, and tags, then collapse whitespace.
+        const text = html
+            .replace(/<script[\s\S]*?<\/script>/gi, " ")
+            .replace(/<style[\s\S]*?<\/style>/gi, " ")
+            .replace(/<[^>]+>/g, " ")
+            .replace(/&nbsp;/gi, " ")
+            .replace(/&amp;/gi, "&")
+            .replace(/&lt;/gi, "<")
+            .replace(/&gt;/gi, ">")
+            .replace(/\s+/g, " ")
+            .trim();
+        return text.slice(0, 12000);
+    } catch (err) {
+        console.error("Failed to fetch job description from URL:", err);
+        throw new Error("Could not read the job description from that URL. Please paste the text directly instead.");
+    }
+};
+
+export interface GenerationResult {
+    text: string;
+}
 
 export const generateCoverLetter = async (
-  resume: string,
-  jobInput: { type: JobDescriptionInputType; value: string },
-  mode: GenerationMode,
-  tone: Tone
-): Promise<GenerateContentResponse> => {
-  let prompt: string;
-  let modelName: string;
-  let config: any = {};
-  
-  const effectiveMode = jobInput.type === JobDescriptionInputType.Url ? GenerationMode.SearchGrounding : mode;
+    resume: string,
+    jobInput: { type: JobDescriptionInputType; value: string },
+    mode: GenerationMode,
+    tone: Tone
+): Promise<GenerationResult> => {
+    let prompt: string;
+    let modelName: string;
 
-  if (jobInput.type === JobDescriptionInputType.Text) {
-    prompt = PROMPT_TEMPLATE_TEXT
-      .replace('{resume}', resume)
-      .replace('{jobDescription}', jobInput.value)
-      .replace('{tone}', tone);
-  } else {
-    prompt = PROMPT_TEMPLATE_URL
-      .replace('{resume}', resume)
-      .replace('{jobUrl}', jobInput.value)
-      .replace('{tone}', tone);
-  }
+    if (jobInput.type === JobDescriptionInputType.Text) {
+        prompt = PROMPT_TEMPLATE_TEXT
+            .replace('{resume}', resume)
+            .replace('{jobDescription}', jobInput.value)
+            .replace('{tone}', tone);
+        switch (mode) {
+            case GenerationMode.Thinking:
+                modelName = MODELS.thinking;
+                break;
+            case GenerationMode.LowLatency:
+                modelName = MODELS.lowLatency;
+                break;
+            case GenerationMode.Standard:
+            default:
+                modelName = MODELS.standard;
+                break;
+        }
+    } else {
+        const extracted = await fetchJobDescriptionFromUrl(jobInput.value);
+        prompt = PROMPT_TEMPLATE_URL
+            .replace('{resume}', resume)
+            .replace('{jobUrl}', jobInput.value)
+            .replace('{jobDescription}', extracted)
+            .replace('{tone}', tone);
+        modelName = MODELS.url;
+    }
 
-  switch (effectiveMode) {
-    case GenerationMode.Thinking:
-      modelName = 'gemini-2.5-pro';
-      config = {
-        thinkingConfig: { thinkingBudget: 32768 }
-      };
-      break;
-    case GenerationMode.LowLatency:
-      modelName = 'gemini-2.5-flash-lite';
-      break;
-    case GenerationMode.SearchGrounding:
-      modelName = 'gemini-2.5-flash';
-      config = {
-        tools: [{ googleSearch: {} }]
-      };
-      break;
-    case GenerationMode.Standard:
-    default:
-      modelName = 'gemini-2.5-pro';
-      break;
-  }
-
-  try {
-    const response = await ai.models.generateContent({
-      model: modelName,
-      contents: prompt,
-      config: config,
-    });
-    return response;
-  } catch (error) {
-    console.error("Error calling Gemini API:", error);
-    throw new Error("Failed to communicate with the Gemini API. Please check your connection or API key.");
-  }
+    try {
+        const text = await callOpenRouter(modelName, [
+            { role: "system", content: "You are a professional cover-letter writing assistant. Reply with the cover letter content only." },
+            { role: "user", content: prompt },
+        ]);
+        return { text };
+    } catch (error) {
+        console.error("Error calling OpenRouter API:", error);
+        throw new Error("Failed to communicate with the AI API. Please check your connection or API key.");
+    }
 };
 
 export const formatResumeText = async (rawText: string): Promise<string> => {
-  if (!rawText.trim()) {
-    return "";
-  }
-  
-  const prompt = RESUME_FORMATTING_PROMPT.replace('{rawText}', rawText);
+    if (!rawText.trim()) {
+        return "";
+    }
 
-  try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash', // Use a fast model for this utility task
-      contents: prompt,
-    });
-    return response.text;
-  } catch (error) {
-    console.error("Error calling Gemini API for resume formatting:", error);
-    // Fallback to raw text if formatting fails
-    return rawText;
-  }
+    const prompt = RESUME_FORMATTING_PROMPT.replace('{rawText}', rawText);
+
+    try {
+        const text = await callOpenRouter(MODELS.formatting, [
+            { role: "system", content: "You are a resume formatting assistant. Return only the formatted plain text." },
+            { role: "user", content: prompt },
+        ]);
+        return text ?? rawText;
+    } catch (error) {
+        console.error("Error calling OpenRouter API for resume formatting:", error);
+        return rawText;
+    }
 };

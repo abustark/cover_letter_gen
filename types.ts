@@ -10,6 +10,8 @@ export enum JobDescriptionInputType {
   Url = 'Url',
 }
 
+export type Tone = 'Professional' | 'Enthusiastic' | 'Confident' | 'Creative';
+
 export type Theme = 'light' | 'dark';
 
 export interface User {

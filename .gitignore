@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Review snapshot (regenerated manually, not committed)
+covercraft-review/

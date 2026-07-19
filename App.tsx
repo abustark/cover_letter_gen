@@ -6,7 +6,6 @@ import { ModeSelector } from './components/ModeSelector';
 import { DraftsSection } from './components/DraftsSection';
 import { generateCoverLetter } from './services/geminiService';
 import { GenerationMode, JobDescriptionInputType, Theme, User, Draft, Tone } from './types';
-import type { GroundingChunk } from "@google/genai";
 
 
 const MOCK_USER: User = {
@@ -29,7 +28,6 @@ const App: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<GenerationMode>(GenerationMode.Standard);
-  const [groundingSources, setGroundingSources] = useState<GroundingChunk[]>([]);
 
   // New Features State
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'dark');
@@ -107,7 +105,6 @@ const App: React.FC = () => {
     setIsLoading(true);
     setError(null);
     setCoverLetter('');
-    setGroundingSources([]);
 
     try {
       const jobInput = {
@@ -117,11 +114,9 @@ const App: React.FC = () => {
 
       const response = await generateCoverLetter(resume, jobInput, mode, tone);
       const text = response.text;
-      const sources = response.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
 
       if (text) {
         setCoverLetter(text);
-        setGroundingSources(sources);
       } else {
         setError('Failed to generate a cover letter. The response was empty.');
       }
@@ -134,15 +129,8 @@ const App: React.FC = () => {
   }, [resume, jobDescription, jobUrl, jobInputType, mode, tone]);
 
   return (
-    <div className="min-h-[100dvh] font-sans text-gray-900 dark:text-gray-100 transition-colors duration-500 bg-fixed relative">
-      
-      {/* Dynamic Background */}
-      <div className="fixed inset-0 -z-10 bg-gradient-to-br from-indigo-50/80 via-purple-50/80 to-pink-50/80 dark:from-gray-950 dark:via-[#1a0b2e] dark:to-gray-900">
-        <div className="absolute top-0 left-[-10%] w-[50vw] h-[50vw] bg-purple-400/30 dark:bg-purple-600/20 rounded-full blur-[120px] animate-blob mix-blend-multiply dark:mix-blend-screen filter"></div>
-        <div className="absolute top-[20%] right-[-10%] w-[50vw] h-[50vw] bg-indigo-400/30 dark:bg-indigo-600/20 rounded-full blur-[120px] animate-blob animation-delay-2000 mix-blend-multiply dark:mix-blend-screen filter"></div>
-        <div className="absolute bottom-[-10%] left-[20%] w-[50vw] h-[50vw] bg-pink-400/30 dark:bg-pink-600/20 rounded-full blur-[120px] animate-blob animation-delay-4000 mix-blend-multiply dark:mix-blend-screen filter"></div>
-      </div>
-
+    <div className="min-h-[100dvh] font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300 bg-gray-50 dark:bg-gray-950 relative">
+       
       <Header 
         theme={theme}
         setTheme={setTheme}
@@ -151,38 +139,56 @@ const App: React.FC = () => {
         onLogout={handleLogout}
       />
       
-      <main className="container mx-auto px-4 md:px-6 py-8 max-w-6xl pb-24">
-        <ModeSelector 
-          currentMode={mode} 
-          setMode={setMode} 
-          disabled={jobInputType === JobDescriptionInputType.Url} 
-        />
-        <InputSection
-          resume={resume}
-          setResume={setResume}
-          jobDescription={jobDescription}
-          setJobDescription={setJobDescription}
-          jobUrl={jobUrl}
-          setJobUrl={setJobUrl}
-          jobInputType={jobInputType}
-          setJobInputType={setJobInputType}
-          companyName={companyName}
-          setCompanyName={setCompanyName}
-          onGenerate={handleGenerate}
-          isLoading={isLoading}
-          tone={tone}
-          setTone={setTone}
-        />
+      <main className="container mx-auto px-4 md:px-6 py-8 max-w-5xl pb-24">
+        <div className="mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
+            Build your cover letter
+          </h1>
+          <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-2xl">
+            Add your resume and the job details, and CoverCraft will draft a tailored, ready-to-send letter.
+          </p>
+        </div>
+
+        {/* Unified workspace control strip */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 dark:border-gray-800 pb-4 mb-8">
+          <ModeSelector
+            currentMode={mode}
+            setMode={setMode}
+            disabled={jobInputType === JobDescriptionInputType.Url}
+          />
+        </div>
+
+        {/* Inputs workspace — one cohesive form, not floating cards */}
+        <div className="mb-10">
+          <InputSection
+            resume={resume}
+            setResume={setResume}
+            jobDescription={jobDescription}
+            setJobDescription={setJobDescription}
+            jobUrl={jobUrl}
+            setJobUrl={setJobUrl}
+            jobInputType={jobInputType}
+            setJobInputType={setJobInputType}
+            companyName={companyName}
+            setCompanyName={setCompanyName}
+            onGenerate={handleGenerate}
+            isLoading={isLoading}
+            tone={tone}
+            setTone={setTone}
+          />
+        </div>
+
+        {/* Output — the hero of the product */}
         <OutputSection
           coverLetter={coverLetter}
           isLoading={isLoading}
           error={error}
           onRegenerate={handleGenerate}
           onSave={handleSaveDraft}
-          groundingSources={groundingSources}
           isLoggedIn={!!user}
           companyName={companyName}
         />
+
         {user && (
           <DraftsSection 
             drafts={drafts}
@@ -192,9 +198,10 @@ const App: React.FC = () => {
         )}
       </main>
 
-      <footer className="w-full text-center py-8 text-gray-500/80 dark:text-gray-400/80 text-xs sm:text-sm backdrop-blur-sm">
-        © 2025 Basith AbuSyed. All rights reserved.<br />
-        <span className="opacity-70">Powered by Gemini 2.5</span>
+      <footer className="border-t border-gray-200 dark:border-gray-800 mt-16">
+        <div className="container mx-auto max-w-5xl px-4 py-8 text-xs text-gray-400 dark:text-gray-500">
+          © 2025 CoverCraft · Crafted for job seekers, everywhere.
+        </div>
       </footer>
     </div>
   );
