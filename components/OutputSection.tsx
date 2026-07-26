@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { jsPDF } from 'jspdf';
+import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { SpinnerIcon, CopyIcon, RegenerateIcon, CheckIcon, SaveIcon, DownloadIcon, FileIcon } from './icons';
 import { IconButton } from './UI';
 
@@ -54,6 +55,29 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
     doc.save(sanitized ? `Cover_Letter_${sanitized}.pdf` : 'Cover_Letter.pdf');
   };
 
+  const handleDownloadDocx = async () => {
+    if (!coverLetter) return;
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: coverLetter.split('\n').map(line => 
+          new Paragraph({
+            children: [new TextRun({ text: line, size: 24 })],
+            spacing: { after: 120 },
+          })
+        ),
+      }],
+    });
+    const blob = await Packer.toBlob(doc);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    const sanitized = companyName.replace(/[^a-zA-Z0-9]/g, '_');
+    a.download = sanitized ? `Cover_Letter_${sanitized}.docx` : 'Cover_Letter.docx';
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   useEffect(() => {
     if (copied) {
       const t = setTimeout(() => setCopied(false), 2000);
@@ -85,6 +109,9 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
             </IconButton>
             <IconButton label="Download PDF" onClick={handleDownloadPdf}>
               <DownloadIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+            </IconButton>
+            <IconButton label="Download DOCX" onClick={handleDownloadDocx}>
+              <FileIcon className="w-4 h-4 sm:w-5 sm:h-5" />
             </IconButton>
             <IconButton label="Regenerate" onClick={onRegenerate}>
               <RegenerateIcon className="w-4 h-4 sm:w-5 sm:h-5" />
