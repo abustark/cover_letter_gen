@@ -2,52 +2,28 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Teardrop ripple theme transition: a droplet lands on the theme button,
-   splashes, and concentric rings ripple outward across the whole page. */
+/* Teardrop ripple theme transition: a single clean wave expands outward from
+   the theme button and washes over the whole page. */
 ::view-transition-old(root) {
-  animation: theme-ripple-old 1s ease-in forwards;
+  animation: theme-wave-out 0.6s ease-out forwards;
 }
 
 ::view-transition-new(root) {
-  animation: theme-ripple-new 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: theme-wave-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes theme-ripple-new {
-  0% {
+@keyframes theme-wave-in {
+  from {
     clip-path: circle(0px at var(--theme-x, 50%) var(--theme-y, 50%));
+    opacity: 0.9;
   }
-  10% {
-    /* the droplet lands and splashes */
-    clip-path: circle(90px at var(--theme-x, 50%) var(--theme-y, 50%));
-  }
-  16% {
-    /* first crest recoils */
-    clip-path: circle(40px at var(--theme-x, 50%) var(--theme-y, 50%));
-  }
-  30% {
-    /* first ripple ring rolls outward */
-    clip-path: circle(280px at var(--theme-x, 50%) var(--theme-y, 50%));
-  }
-  42% {
-    clip-path: circle(170px at var(--theme-x, 50%) var(--theme-y, 50%));
-  }
-  58% {
-    /* second, wider ripple */
-    clip-path: circle(540px at var(--theme-x, 50%) var(--theme-y, 50%));
-  }
-  72% {
-    clip-path: circle(400px at var(--theme-x, 50%) var(--theme-y, 50%));
-  }
-  88% {
-    clip-path: circle(820px at var(--theme-x, 50%) var(--theme-y, 50%));
-  }
-  100% {
-    /* the last wave washes over the whole page */
+  to {
     clip-path: circle(150% at var(--theme-x, 50%) var(--theme-y, 50%));
+    opacity: 1;
   }
 }
 
-@keyframes theme-ripple-old {
+@keyframes theme-wave-out {
   0% {
     opacity: 1;
   }
