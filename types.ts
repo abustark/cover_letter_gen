@@ -14,12 +14,6 @@ export type Tone = 'Professional' | 'Enthusiastic' | 'Confident' | 'Creative';
 
 export type Theme = 'light' | 'dark';
 
-export interface User {
-  id: string;
-  name: string;
-  imageUrl?: string;
-}
-
 export interface Draft {
   id: string;
   companyName: string;

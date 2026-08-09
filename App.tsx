@@ -5,14 +5,9 @@ import { OutputSection } from './components/OutputSection';
 import { ModeSelector } from './components/ModeSelector';
 import { DraftsSection } from './components/DraftsSection';
 import { generateCoverLetter } from './services/geminiService';
-import { GenerationMode, JobDescriptionInputType, Theme, User, Draft, Tone } from './types';
+import { GenerationMode, JobDescriptionInputType, Theme, Draft, Tone } from './types';
 
-
-const MOCK_USER: User = {
-  id: 'mock-user-123',
-  name: 'Alex Doe',
-  imageUrl: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
-};
+const DRAFTS_KEY = 'drafts_local';
 
 const App: React.FC = () => {
   // Inputs
@@ -31,7 +26,6 @@ const App: React.FC = () => {
 
   // New Features State
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'dark');
-  const [user, setUser] = useState<User | null>(null);
   const [drafts, setDrafts] = useState<Draft[]>([]);
 
   // Theme effect
@@ -51,23 +45,16 @@ const App: React.FC = () => {
     }
   }, [jobInputType]);
 
-  // Load drafts from localStorage when user logs in
+  // Load drafts from localStorage on mount.
   useEffect(() => {
-    if (user) {
-      const savedDrafts = localStorage.getItem(`drafts_${user.id}`);
-      if (savedDrafts) {
-        setDrafts(JSON.parse(savedDrafts));
-      }
-    } else {
-      setDrafts([]); // Clear drafts on logout
+    const savedDrafts = localStorage.getItem(DRAFTS_KEY);
+    if (savedDrafts) {
+      setDrafts(JSON.parse(savedDrafts));
     }
-  }, [user]);
-
-  const handleLogin = () => setUser(MOCK_USER);
-  const handleLogout = () => setUser(null);
+  }, []);
 
   const handleSaveDraft = () => {
-    if (!user || !coverLetter) return;
+    if (!coverLetter) return;
     const newDraft: Draft = {
       id: crypto.randomUUID(),
       companyName: companyName || "Untitled Draft",
@@ -76,14 +63,13 @@ const App: React.FC = () => {
     };
     const updatedDrafts = [newDraft, ...drafts];
     setDrafts(updatedDrafts);
-    localStorage.setItem(`drafts_${user.id}`, JSON.stringify(updatedDrafts));
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(updatedDrafts));
   };
 
   const handleDeleteDraft = (draftId: string) => {
-    if (!user) return;
     const updatedDrafts = drafts.filter(draft => draft.id !== draftId);
     setDrafts(updatedDrafts);
-    localStorage.setItem(`drafts_${user.id}`, JSON.stringify(updatedDrafts));
+    localStorage.setItem(DRAFTS_KEY, JSON.stringify(updatedDrafts));
   };
 
   const handleLoadDraft = (draft: Draft) => {
@@ -134,9 +120,6 @@ const App: React.FC = () => {
       <Header 
         theme={theme}
         setTheme={setTheme}
-        user={user}
-        onLogin={handleLogin}
-        onLogout={handleLogout}
       />
       
       <main className="container mx-auto px-4 md:px-6 py-8 max-w-5xl pb-24">
@@ -185,17 +168,14 @@ const App: React.FC = () => {
           error={error}
           onRegenerate={handleGenerate}
           onSave={handleSaveDraft}
-          isLoggedIn={!!user}
           companyName={companyName}
         />
 
-        {user && (
-          <DraftsSection 
-            drafts={drafts}
-            onLoad={handleLoadDraft}
-            onDelete={handleDeleteDraft}
-          />
-        )}
+        <DraftsSection 
+          drafts={drafts}
+          onLoad={handleLoadDraft}
+          onDelete={handleDeleteDraft}
+        />
       </main>
 
       <footer className="border-t border-gray-200 dark:border-gray-800 mt-16">

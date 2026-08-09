@@ -8,7 +8,6 @@ interface OutputSectionProps {
   error: string | null;
   onRegenerate: () => void;
   onSave: () => void;
-  isLoggedIn: boolean;
   companyName: string;
 }
 
@@ -29,7 +28,7 @@ const renderWithLinks = (text: string) => {
 };
 
 export const OutputSection: React.FC<OutputSectionProps> = ({
-  coverLetter, onRegenerate, onSave, isLoggedIn, companyName, isLoading, error
+  coverLetter, onRegenerate, onSave, companyName, isLoading, error
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -99,11 +98,9 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
         </h2>
         {coverLetter && !isLoading && (
           <div className="flex items-center gap-1">
-            {isLoggedIn && (
-              <IconButton label="Save draft" onClick={onSave}>
-                <SaveIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-              </IconButton>
-            )}
+            <IconButton label="Save draft" onClick={onSave}>
+              <SaveIcon className="w-4 h-4 sm:w-5 sm:h-5" />
+            </IconButton>
             <IconButton label={copied ? 'Copied' : 'Copy'} onClick={handleCopy}>
               {copied ? <CheckIcon className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400" /> : <CopyIcon className="w-4 h-4 sm:w-5 sm:h-5" />}
             </IconButton>
