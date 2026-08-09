@@ -29,20 +29,34 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     const local = readEnvLocal();
     const apiKey = local.OPENROUTER_API_KEY || env.OPENROUTER_API_KEY || env.GEMINI_API_KEY;
+    // Only inject the key in development. Production calls the Vercel
+    // serverless proxy (api/*) so the key must never appear in the bundle.
+    const define = mode === 'development'
+        ? {
+            'process.env.API_KEY': JSON.stringify(apiKey || ''),
+            'process.env.OPENROUTER_API_KEY': JSON.stringify(apiKey || ''),
+        }
+        : {};
     return {
       server: {
         port: 3000,
         host: '0.0.0.0',
       },
       plugins: [react(), tailwindcss()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(apiKey),
-        'process.env.OPENROUTER_API_KEY': JSON.stringify(local.OPENROUTER_API_KEY || env.OPENROUTER_API_KEY)
-      },
+      define,
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),
         }
-      }
+      },
+      build: {
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              react: ['react', 'react-dom'],
+            },
+          },
+        },
+      },
     };
 });

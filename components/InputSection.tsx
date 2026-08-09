@@ -3,12 +3,8 @@ import { SparklesIcon, UploadIcon, FileIcon, SpinnerIcon, LightbulbIcon } from '
 import { JobDescriptionInputType, Tone } from '../types';
 import { formatResumeText } from '../services/geminiService';
 import { Button, Segmented, Field } from './UI';
-import * as pdfjsLib from "pdfjs-dist";
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-  "pdfjs-dist/build/pdf.worker.mjs",
-  import.meta.url
-).toString();
+const loadPdfjs = () => import("pdfjs-dist");
 
 const RESUME_EXAMPLE = `
 --- Professional Summary ---
@@ -118,7 +114,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
     try {
       const arrayBuffer = await file.arrayBuffer();
       if (file.type === 'application/pdf') {
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const pdfjs = await loadPdfjs();
+        pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+          "pdfjs-dist/build/pdf.worker.mjs",
+          import.meta.url
+        ).toString();
+        const pdf = await pdfjs.getDocument({ data: arrayBuffer }).promise;
         const pageTexts = [];
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);

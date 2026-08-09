@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { jsPDF } from 'jspdf';
-import { Document, Packer, Paragraph, TextRun } from 'docx';
 import { SpinnerIcon, CopyIcon, RegenerateIcon, CheckIcon, SaveIcon, DownloadIcon, FileIcon } from './icons';
 import { IconButton } from './UI';
 
@@ -42,8 +40,9 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
     }
   };
 
-  const handleDownloadPdf = () => {
+  const handleDownloadPdf = async () => {
     if (!coverLetter) return;
+    const { jsPDF } = await import('jspdf');
     const doc = new jsPDF();
     const margin = 20;
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -57,6 +56,7 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
 
   const handleDownloadDocx = async () => {
     if (!coverLetter) return;
+    const { Document, Packer, Paragraph, TextRun } = await import('docx');
     const doc = new Document({
       sections: [{
         properties: {},

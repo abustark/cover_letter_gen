@@ -1,11 +1,5 @@
 import { GenerationMode, JobDescriptionInputType, Tone } from '../types';
 
-const apiKey = process.env.OPENROUTER_API_KEY || process.env.API_KEY;
-
-if (!apiKey) {
-    throw new Error("OPENROUTER_API_KEY is not set. Add it to .env.local (see .env.example).");
-}
-
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 // Free-tier OpenRouter models. Gemma 4 (Neutron/Gemma open family) is the
@@ -118,21 +112,47 @@ interface OpenRouterMessage {
 }
 
 const callOpenRouter = async (model: string, messages: OpenRouterMessage[]): Promise<string> => {
-    const response = await fetch(OPENROUTER_URL, {
+    // Local dev: call OpenRouter directly using the key injected by vite.
+    // Production: route through the Vercel serverless proxy so the key never
+    // ships in the client bundle.
+    if (import.meta.env.DEV) {
+        const apiKey = process.env.OPENROUTER_API_KEY || process.env.API_KEY;
+        if (!apiKey) {
+            throw new Error("OPENROUTER_API_KEY is not set. Add it to .env.local (see .env.example).");
+        }
+        const response = await fetch(OPENROUTER_URL, {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "Content-Type": "application/json",
+                "HTTP-Referer": "https://covercraft.app",
+                "X-Title": "CoverCraft",
+            },
+            body: JSON.stringify({ model, messages, temperature: 0.7 }),
+        });
+        return parseOpenRouterResponse(response);
+    }
+
+    const response = await fetch("/api/openrouter", {
         method: "POST",
-        headers: {
-            "Authorization": `Bearer ${apiKey}`,
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://covercraft.app",
-            "X-Title": "CoverCraft",
-        },
-        body: JSON.stringify({
-            model,
-            messages,
-            temperature: 0.7,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ model, messages }),
     });
 
+    if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || `OpenRouter request failed (${response.status}).`);
+    }
+
+    const data = await response.json();
+    const content = data?.text;
+    if (!content) {
+        throw new Error("OpenRouter returned an empty response.");
+    }
+    return content;
+};
+
+const parseOpenRouterResponse = async (response: Response): Promise<string> => {
     if (!response.ok) {
         const errorBody = await response.text();
         throw new Error(`OpenRouter request failed (${response.status}): ${errorBody}`);
@@ -148,31 +168,49 @@ const callOpenRouter = async (model: string, messages: OpenRouterMessage[]): Pro
     return content;
 };
 
-// Local web fetch + text extraction used by URL mode, since OpenRouter has no
-// web-search tool. We pull the page's readable text and feed it as context.
+// Fetch + extract a job page. In production this runs server-side through the
+// Vercel proxy so CORS-protected sites (LinkedIn, etc.) can be read; in dev we
+// fetch directly since the browser is not running the serverless functions.
 const fetchJobDescriptionFromUrl = async (url: string): Promise<string> => {
     try {
-        const res = await fetch(url, { headers: { "User-Agent": "CoverCraft/1.0 (+https://covercraft.app)" } });
-        if (!res.ok) {
-            throw new Error(`URL fetch failed (${res.status})`);
+        if (import.meta.env.DEV) {
+            const res = await fetch(url, { headers: { "User-Agent": "CoverCraft/1.0 (+https://covercraft.app)" } });
+            if (!res.ok) {
+                throw new Error(`URL fetch failed (${res.status})`);
+            }
+            const html = await res.text();
+            return extractPageText(html);
         }
-        const html = await res.text();
-        // Strip scripts, styles, and tags, then collapse whitespace.
-        const text = html
-            .replace(/<script[\s\S]*?<\/script>/gi, " ")
-            .replace(/<style[\s\S]*?<\/style>/gi, " ")
-            .replace(/<[^>]+>/g, " ")
-            .replace(/&nbsp;/gi, " ")
-            .replace(/&amp;/gi, "&")
-            .replace(/&lt;/gi, "<")
-            .replace(/&gt;/gi, ">")
-            .replace(/\s+/g, " ")
-            .trim();
-        return text.slice(0, 12000);
+
+        const res = await fetch("/api/fetch-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url }),
+        });
+        if (!res.ok) {
+            const data = await res.json().catch(() => null);
+            throw new Error(data?.error || `URL fetch failed (${res.status})`);
+        }
+        const data = await res.json();
+        return data?.text || "";
     } catch (err) {
         console.error("Failed to fetch job description from URL:", err);
         throw new Error("Could not read the job description from that URL. Please paste the text directly instead.");
     }
+};
+
+const extractPageText = (html: string): string => {
+    const text = html
+        .replace(/<script[\s\S]*?<\/script>/gi, " ")
+        .replace(/<style[\s\S]*?<\/style>/gi, " ")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/gi, " ")
+        .replace(/&amp;/gi, "&")
+        .replace(/&lt;/gi, "<")
+        .replace(/&gt;/gi, ">")
+        .replace(/\s+/g, " ")
+        .trim();
+    return text.slice(0, 12000);
 };
 
 export interface GenerationResult {
