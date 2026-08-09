@@ -200,7 +200,7 @@ const App: React.FC = () => {
 
       <footer className="border-t border-gray-200 dark:border-gray-800 mt-16">
         <div className="container mx-auto max-w-5xl px-4 py-8 text-xs text-gray-400 dark:text-gray-500 text-center flex flex-col gap-1.5">
-          <span>© {new Date().getFullYear()} ABu</span>
+          <span>© {new Date().getFullYear()} ABu. All rights reserved.</span>
           <span>
             Draft a cover letter that reads like you wrote it — tailored to every role you apply for.
           </span>
