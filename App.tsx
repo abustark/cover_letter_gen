@@ -141,11 +141,11 @@ const App: React.FC = () => {
       
       <main className="container mx-auto px-4 md:px-6 py-8 max-w-5xl pb-24">
         <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-gray-50">
-            Build your cover letter
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
+            Write a cover letter that gets noticed
           </h1>
-          <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-2xl">
-            Add your resume and the job details, and CoverCraft will draft a tailored, ready-to-send letter.
+          <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-2xl leading-relaxed">
+            Pair your resume with the role you're targeting, and CoverCraft drafts a tailored, professional letter — ready to review and send.
           </p>
         </div>
 

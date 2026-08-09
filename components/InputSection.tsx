@@ -190,7 +190,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               type="button"
               onClick={() => handleFileClick(true)}
               disabled={isUploading}
-              className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-accent-600 dark:hover:text-accent-400 transition-colors disabled:opacity-50 px-2 py-1.5"
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-accent2-700 dark:text-accent2-300 border border-accent2-300 dark:border-accent2-700/60 bg-accent2-50 dark:bg-accent2-900/20 hover:bg-accent2-100 dark:hover:bg-accent2-800/30 rounded-lg px-2.5 py-1.5 transition-colors disabled:opacity-50"
             >
               <SparklesIcon className="w-3.5 h-3.5" /> AI format
             </button>
