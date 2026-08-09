@@ -21,7 +21,7 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme, user, onLogin, 
 
         {/* Brand */}
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-accent-600 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-sm ring-1 ring-accent-400/40">
             <span className="text-white font-bold text-base leading-none">C</span>
           </div>
           <div className="flex flex-col leading-none">

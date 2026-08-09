@@ -170,7 +170,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
   const isUploading = fileParsing || isFormatting;
 
-  const inputClass = "w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-3.5 text-[15px] text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 focus-ring transition-colors resize-none";
+  const inputClass = "w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-lg p-3.5 text-[15px] text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 focus-ring transition-colors resize-none focus:border-accent-300 dark:focus:border-accent-700/60 focus:bg-accent-50/40 dark:focus:bg-accent-900/10";
 
   return (
     <div className="space-y-10">
@@ -178,7 +178,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
       {/* 1. Resume */}
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+          <h2 className="text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent2-500 dark:bg-accent2-400" />
             Your Resume
           </h2>
           <div className="flex items-center gap-1">
@@ -206,7 +207,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
         <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
           {fileParsing && <span className="inline-flex items-center"><SpinnerIcon className="w-4 h-4 mr-2 animate-spin" /> Parsing “{fileName}”…</span>}
-          {isFormatting && <span className="inline-flex items-center text-accent-600 dark:text-accent-400"><SpinnerIcon className="w-4 h-4 mr-2 animate-spin" /> Enhancing structure…</span>}
+          {isFormatting && <span className="inline-flex items-center text-accent2-600 dark:text-accent2-300"><SpinnerIcon className="w-4 h-4 mr-2 animate-spin" /> Enhancing structure…</span>}
           {resume && !isUploading && <span className="inline-flex items-center text-green-600 dark:text-green-400"><span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2" /> Resume ready</span>}
           {fileError && <span className="text-red-600 dark:text-red-400">{fileError}</span>}
         </div>
@@ -219,7 +220,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
       {/* 2. Target Job */}
       <section className="space-y-4">
-        <h2 className="text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+        <h2 className="text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent2-500 dark:bg-accent2-400" />
           Target Job
         </h2>
 
@@ -269,7 +271,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
       {/* 3. Tone */}
       <section className="space-y-3">
-        <h2 className="text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-100">
+        <h2 className="text-sm font-semibold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent2-500 dark:bg-accent2-400" />
           Tone
         </h2>
         <Segmented options={TONES} value={tone} onChange={setTone} />

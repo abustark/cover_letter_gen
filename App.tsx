@@ -129,7 +129,7 @@ const App: React.FC = () => {
   }, [resume, jobDescription, jobUrl, jobInputType, mode, tone]);
 
   return (
-    <div className="min-h-[100dvh] font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300 bg-gray-50 dark:bg-gray-950 relative">
+    <div className="min-h-[100dvh] font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300 bg-ambient relative">
        
       <Header 
         theme={theme}
@@ -199,8 +199,11 @@ const App: React.FC = () => {
       </main>
 
       <footer className="border-t border-gray-200 dark:border-gray-800 mt-16">
-        <div className="container mx-auto max-w-5xl px-4 py-8 text-xs text-gray-400 dark:text-gray-500">
-          © 2025 CoverCraft · Crafted for job seekers, everywhere.
+        <div className="container mx-auto max-w-5xl px-4 py-8 text-xs text-gray-400 dark:text-gray-500 text-center flex flex-col gap-1.5">
+          <span>© {new Date().getFullYear()} ABu</span>
+          <span>
+            Draft a cover letter that reads like you wrote it — tailored to every role you apply for.
+          </span>
         </div>
       </footer>
     </div>

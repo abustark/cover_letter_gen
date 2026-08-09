@@ -36,7 +36,7 @@ export const DraftsSection: React.FC<DraftsSectionProps> = ({ drafts, onLoad, on
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="p-2 bg-gray-100 dark:bg-gray-800 rounded-lg text-gray-500 dark:text-gray-400 flex-shrink-0">
+                  <div className="p-2 bg-accent-50 dark:bg-accent-900/20 rounded-lg text-accent-600 dark:text-accent-300 flex-shrink-0">
                     <FileIcon className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">

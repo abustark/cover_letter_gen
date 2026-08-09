@@ -25,7 +25,7 @@ const MODE_DESCRIPTIONS: Record<GenerationMode, string> = {
 export const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, setMode, disabled = false }) => {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-      <span className="text-xs font-medium uppercase tracking-wide text-gray-400 dark:text-gray-500 hidden sm:inline">
+      <span className="text-xs font-medium uppercase tracking-wide text-accent2-600 dark:text-accent2-300 hidden sm:inline">
         Mode
       </span>
       <Segmented

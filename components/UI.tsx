@@ -9,9 +9,9 @@ const baseBtn =
 const variantCls: Record<Variant, string> = {
   primary: 'bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700',
   secondary:
-    'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800',
+    'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-800 hover:bg-accent-50 hover:text-accent-700 dark:hover:bg-gray-800 dark:hover:text-accent-200',
   ghost:
-    'bg-transparent text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800',
+    'bg-transparent text-gray-600 dark:text-gray-300 hover:bg-accent-50 hover:text-accent-700 dark:hover:bg-gray-800 dark:hover:text-accent-200',
 };
 
 const sizeCls: Record<Size, string> = {
@@ -118,8 +118,8 @@ export function Segmented<T extends string>({ options, value, onChange, disabled
             onClick={() => onChange(opt)}
             className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 focus-ring disabled:cursor-not-allowed
               ${active
-                ? 'bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm'
-                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
+                ? 'bg-white dark:bg-gray-900 text-accent-700 dark:text-accent-200 shadow-sm ring-1 ring-accent-200 dark:ring-accent-700/50'
+                : 'text-gray-500 dark:text-gray-400 hover:text-accent-600 dark:hover:text-accent-300'}`}
           >
             {opt}
           </button>

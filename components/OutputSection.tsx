@@ -121,10 +121,13 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
       </div>
 
       {/* Document surface */}
-      <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden min-h-[50vh]">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden min-h-[50vh] relative">
+
+        {/* Accent rule across the top of the document */}
+        <div className="h-0.5 bg-gradient-to-r from-accent-500 via-accent2-500 to-accent-500" />
 
         {isLoading && (
-          <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-8">
+          <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-8 bg-accent-50/30 dark:bg-accent-900/5">
             <SpinnerIcon className="w-8 h-8 mb-4 animate-spin text-accent-600" />
             <p className="text-sm text-gray-500 dark:text-gray-400">Crafting a tailored cover letter from your inputs.</p>
           </div>
@@ -146,8 +149,8 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
 
         {!isLoading && !coverLetter && !error && (
           <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-8">
-            <div className="w-12 h-12 rounded-xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-5">
-              <FileIcon className="w-6 h-6 text-gray-400 dark:text-gray-500" />
+            <div className="w-12 h-12 rounded-xl bg-accent-50 dark:bg-accent-900/20 flex items-center justify-center mb-5">
+              <FileIcon className="w-6 h-6 text-accent-500 dark:text-accent-300" />
             </div>
             <p className="text-base font-medium text-gray-700 dark:text-gray-200">Your cover letter will appear here</p>
             <p className="text-sm mt-1.5 text-gray-500 dark:text-gray-400 max-w-sm">Add your resume and job details above, then generate.</p>
