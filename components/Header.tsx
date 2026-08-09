@@ -1,7 +1,6 @@
 import React from 'react';
 import { Theme } from '../types';
 import { MoonIcon, SunIcon } from './icons';
-import { IconButton } from './UI';
 
 interface HeaderProps {
   theme: Theme;
@@ -9,7 +8,24 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
-  const toggleTheme = () => setTheme(theme === 'light' ? 'dark' : 'light');
+  const toggleTheme = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const next = theme === 'light' ? 'dark' : 'light';
+    const root = document.documentElement;
+    const rect = event.currentTarget.getBoundingClientRect();
+    root.style.setProperty('--theme-x', `${rect.left + rect.width / 2}px`);
+    root.style.setProperty('--theme-y', `${rect.top + rect.height / 2}px`);
+
+    const apply = () => {
+      root.classList.toggle('dark', next === 'dark');
+      setTheme(next);
+    };
+
+    if ('startViewTransition' in document) {
+      (document as Document & { startViewTransition: (cb: () => void) => void }).startViewTransition(apply);
+    } else {
+      apply();
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-white/90 dark:bg-gray-950/90 border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm">
@@ -32,9 +48,25 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
 
         {/* Controls */}
         <div className="flex items-center gap-2 sm:gap-3">
-          <IconButton label="Toggle theme" onClick={toggleTheme}>
-            {theme === 'light' ? <MoonIcon className="w-5 h-5" /> : <SunIcon className="w-5 h-5" />}
-          </IconButton>
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+            className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-150 focus-ring
+              bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100
+              border border-gray-300 dark:border-gray-600
+              shadow-sm hover:shadow
+              hover:bg-accent-50 hover:text-accent-700 hover:border-accent-300
+              dark:hover:bg-accent-900/30 dark:hover:text-accent-200 dark:hover:border-accent-700"
+          >
+            {theme === 'light' ? (
+              <MoonIcon className="w-4 h-4 text-accent2-600" />
+            ) : (
+              <SunIcon className="w-4 h-4 text-amber-400" />
+            )}
+            <span>{theme === 'light' ? 'Light' : 'Dark'}</span>
+          </button>
         </div>
       </div>
     </header>
