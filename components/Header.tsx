@@ -8,12 +8,23 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
+  const spawnRipple = (x: number, y: number) => {
+    const el = document.createElement('div');
+    el.className = 'theme-ripple-fallback';
+    el.style.left = `${x}px`;
+    el.style.top = `${y}px`;
+    document.body.appendChild(el);
+    window.setTimeout(() => el.remove(), 1300);
+  };
+
   const toggleTheme = (event: React.MouseEvent<HTMLButtonElement>) => {
     const next = theme === 'light' ? 'dark' : 'light';
     const root = document.documentElement;
     const rect = event.currentTarget.getBoundingClientRect();
-    root.style.setProperty('--theme-x', `${rect.left + rect.width / 2}px`);
-    root.style.setProperty('--theme-y', `${rect.top + rect.height / 2}px`);
+    const x = rect.left + rect.width / 2;
+    const y = rect.top + rect.height / 2;
+    root.style.setProperty('--theme-x', `${x}px`);
+    root.style.setProperty('--theme-y', `${y}px`);
 
     const apply = () => {
       root.classList.toggle('dark', next === 'dark');
@@ -24,6 +35,7 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
       (document as Document & { startViewTransition: (cb: () => void) => void }).startViewTransition(apply);
     } else {
       apply();
+      spawnRipple(x, y);
     }
   };
 

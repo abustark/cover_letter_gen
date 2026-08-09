@@ -2,42 +2,126 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Water-flowing theme transition: a smooth circular reveal that flows out
-   from the theme toggle button and fills the whole page. */
+/* Teardrop ripple theme transition: a droplet lands on the theme button,
+   splashes, and concentric rings ripple outward across the whole page. */
 ::view-transition-old(root) {
-  animation: theme-water-out 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: theme-ripple-old 1s ease-in forwards;
 }
 
 ::view-transition-new(root) {
-  animation: theme-water-in 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: theme-ripple-new 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes theme-water-in {
-  from {
+@keyframes theme-ripple-new {
+  0% {
     clip-path: circle(0px at var(--theme-x, 50%) var(--theme-y, 50%));
-    opacity: 0.6;
+  }
+  10% {
+    /* the droplet lands and splashes */
+    clip-path: circle(90px at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+  16% {
+    /* first crest recoils */
+    clip-path: circle(40px at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+  30% {
+    /* first ripple ring rolls outward */
+    clip-path: circle(280px at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+  42% {
+    clip-path: circle(170px at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+  58% {
+    /* second, wider ripple */
+    clip-path: circle(540px at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+  72% {
+    clip-path: circle(400px at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+  88% {
+    clip-path: circle(820px at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+  100% {
+    /* the last wave washes over the whole page */
+    clip-path: circle(150% at var(--theme-x, 50%) var(--theme-y, 50%));
+  }
+}
+
+@keyframes theme-ripple-old {
+  0% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* CSS-only ripple fallback for browsers without the View Transitions API. */
+.theme-ripple-fallback {
+  position: fixed;
+  width: 14px;
+  height: 14px;
+  transform: translate(-50%, -50%);
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 0 0 0 rgba(255, 255, 255, 0.45),
+    0 0 0 0 rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+  z-index: 9999;
+  animation: theme-ripple-fallback 1.1s ease-out forwards;
+}
+
+@keyframes theme-ripple-fallback {
+  0% {
+    width: 14px;
+    height: 14px;
+    opacity: 1;
+    box-shadow:
+      0 0 0 0 rgba(255, 255, 255, 0.45),
+      0 0 0 0 rgba(255, 255, 255, 0.25);
+  }
+  100% {
+    width: 220vmax;
+    height: 220vmax;
+    opacity: 0;
+    box-shadow:
+      0 0 0 90px rgba(255, 255, 255, 0.3),
+      0 0 0 180px rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* Reduced motion: swap the ripple for a quick, gentle crossfade. */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root) {
+    animation: theme-reduced-out 0.35s ease-in-out forwards;
+  }
+  ::view-transition-new(root) {
+    animation: theme-reduced-in 0.35s ease-in-out forwards;
+  }
+  .theme-ripple-fallback {
+    animation: none;
+  }
+}
+
+@keyframes theme-reduced-in {
+  from {
+    opacity: 0;
   }
   to {
-    clip-path: circle(150% at var(--theme-x, 50%) var(--theme-y, 50%));
     opacity: 1;
   }
 }
 
-@keyframes theme-water-out {
+@keyframes theme-reduced-out {
   from {
     opacity: 1;
-    transform: scale(1);
   }
   to {
     opacity: 0;
-    transform: scale(0.96);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root),
-  ::view-transition-new(root) {
-    animation: none;
   }
 }
 
