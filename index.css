@@ -5,11 +5,11 @@
 /* Teardrop ripple theme transition: a single clean wave expands outward from
    the theme button and washes over the whole page. */
 ::view-transition-old(root) {
-  animation: theme-wave-out 0.6s ease-out forwards;
+  animation: theme-wave-out 0.9s ease-out forwards;
 }
 
 ::view-transition-new(root) {
-  animation: theme-wave-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: theme-wave-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 @keyframes theme-wave-in {
@@ -27,7 +27,7 @@
   0% {
     opacity: 1;
   }
-  80% {
+  75% {
     opacity: 1;
   }
   100% {
@@ -67,37 +67,6 @@
     box-shadow:
       0 0 0 90px rgba(255, 255, 255, 0.3),
       0 0 0 180px rgba(255, 255, 255, 0.15);
-  }
-}
-
-/* Reduced motion: swap the ripple for a quick, gentle crossfade. */
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(root) {
-    animation: theme-reduced-out 0.35s ease-in-out forwards;
-  }
-  ::view-transition-new(root) {
-    animation: theme-reduced-in 0.35s ease-in-out forwards;
-  }
-  .theme-ripple-fallback {
-    animation: none;
-  }
-}
-
-@keyframes theme-reduced-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes theme-reduced-out {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
   }
 }
 
