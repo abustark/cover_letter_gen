@@ -39,6 +39,8 @@ export default defineConfig(({ mode }) => {
         : {};
     return {
       server: {
+        // Preferred port, not strict: if 3000 is taken Vite automatically
+        // picks the next available port (3001, 3002, …).
         port: 3000,
         host: '0.0.0.0',
       },

@@ -1,8 +1,10 @@
 import React, { useRef, useState, ChangeEvent } from 'react';
-import { SparklesIcon, UploadIcon, FileIcon, SpinnerIcon, LightbulbIcon } from './icons';
+import { SparklesIcon, UploadIcon, FileIcon, SpinnerIcon, LightbulbIcon, LockIcon } from './icons';
 import { JobDescriptionInputType, Tone } from '../types';
 import { formatResumeText } from '../services/geminiService';
 import { Button, Segmented, Field } from './UI';
+import { GoogleButton } from './GoogleButton';
+import { useAuth } from '../services/auth';
 
 const loadPdfjs = () => import("pdfjs-dist");
 
@@ -94,6 +96,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [fileName, setFileName] = useState('');
   const [fileError, setFileError] = useState('');
   const [uploadWithFormatting, setUploadWithFormatting] = useState(false);
+  const { isAuthenticated, signInError } = useAuth();
 
   const handleFileClick = (withFormatting: boolean) => {
     setUploadWithFormatting(withFormatting);
@@ -279,20 +282,38 @@ export const InputSection: React.FC<InputSectionProps> = ({
         <Segmented options={TONES} value={tone} onChange={setTone} />
       </section>
 
-      {/* 4. Generate */}
-      <Button
-        variant="primary"
-        size="lg"
-        onClick={onGenerate}
-        disabled={isGenerateDisabled}
-        className="w-full"
-      >
-        {isLoading ? (
-          <><SpinnerIcon className="w-5 h-5 mr-2 animate-spin" /> {isFormatting ? 'Formatting…' : 'Crafting your letter…'}</>
-        ) : (
-          <><SparklesIcon className="w-5 h-5 mr-2" /> Generate Cover Letter</>
-        )}
-      </Button>
+      {/* 4. Generate — gated behind Google sign-in */}
+      {isAuthenticated ? (
+        <Button
+          variant="primary"
+          size="lg"
+          onClick={onGenerate}
+          disabled={isGenerateDisabled}
+          className="w-full"
+        >
+          {isLoading ? (
+            <><SpinnerIcon className="w-5 h-5 mr-2 animate-spin" /> {isFormatting ? 'Formatting…' : 'Crafting your letter…'}</>
+          ) : (
+            <><SparklesIcon className="w-5 h-5 mr-2" /> Generate Cover Letter</>
+          )}
+        </Button>
+      ) : (
+        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 sm:p-6 text-center">
+          <div className="w-11 h-11 mx-auto mb-3.5 rounded-full bg-accent-50 dark:bg-accent-900/20 flex items-center justify-center">
+            <LockIcon className="w-5 h-5 text-accent-600 dark:text-accent-300" />
+          </div>
+          <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-gray-50">
+            Sign in to generate your cover letter
+          </h3>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1.5 mb-5 max-w-sm mx-auto leading-relaxed">
+            One-click with Google. Your resume and saved drafts stay on your device.
+          </p>
+          <GoogleButton size="large" fullWidth />
+          {signInError && (
+            <p className="mt-3 text-xs text-red-600 dark:text-red-400">{signInError}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

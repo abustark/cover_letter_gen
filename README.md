@@ -14,8 +14,26 @@ A professional AI-powered cover letter builder. Generate tailored, job-specific 
    `npm install`
 2. Add your API key to `.env.local` (see `.env.example`):
    `OPENROUTER_API_KEY=your_key_here`
-3. Run the app:
+3. Add your Google OAuth Client ID to `.env.local`:
+   `VITE_GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com`
+
+   **How to get it:** Google Cloud Console → APIs & Services → Credentials →
+   "Create credentials" → OAuth client ID → **Web application**. In
+   "Authorized JavaScript origins" add both `http://localhost:3000` and your
+   production domain (e.g. `https://coverltr.vercel.app`).
+
+4. Run the app:
    `npm run dev`
+
+## Sign in with Google
+
+Generating a cover letter requires signing in with Google. The button works
+natively on desktop (popup) and mobile (full-height sheet). Your session is
+persisted in `localStorage` and restored on return visits until the ID token
+expires (1 hour); after that you simply sign in again.
+
+The Client ID is **public by design** and safe to bundle — no secrets live in
+the browser.
 
 ## Deploy to Vercel
 
@@ -23,7 +41,9 @@ The API key is **never shipped to the browser** — `api/*` serverless functions
 
 1. Push the repo to GitHub and import it in Vercel (framework: Vite).
 2. Add the environment variable `OPENROUTER_API_KEY` in Vercel → Project → Settings → Environment Variables.
-3. Deploy. `api/openrouter.ts` and `api/fetch-url.ts` are automatically picked up as serverless functions.
+3. Add `VITE_GOOGLE_CLIENT_ID` the same way (a public client ID).
+4. Add your Vercel domain to the Google OAuth client's **Authorized JavaScript origins**.
+5. Deploy. `api/openrouter.ts` and `api/fetch-url.ts` are automatically picked up as serverless functions.
 
 ## Build
 

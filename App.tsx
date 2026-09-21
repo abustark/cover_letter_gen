@@ -5,6 +5,7 @@ import { OutputSection } from './components/OutputSection';
 import { ModeSelector } from './components/ModeSelector';
 import { DraftsSection } from './components/DraftsSection';
 import { generateCoverLetter } from './services/geminiService';
+import { useAuth } from './services/auth';
 import { GenerationMode, JobDescriptionInputType, Theme, Draft, Tone } from './types';
 
 const DRAFTS_KEY = 'drafts_local';
@@ -27,6 +28,8 @@ const App: React.FC = () => {
   // New Features State
   const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'dark');
   const [drafts, setDrafts] = useState<Draft[]>([]);
+
+  const { isAuthenticated } = useAuth();
 
   // Theme effect
   useEffect(() => {
@@ -81,6 +84,12 @@ const App: React.FC = () => {
 
 
   const handleGenerate = useCallback(async () => {
+    if (!isAuthenticated) {
+      setError('Please sign in with Google to generate your cover letter.');
+      document.getElementById('input-section')?.scrollIntoView({ behavior: 'smooth' });
+      return;
+    }
+
     const isJobInputValid = (jobInputType === JobDescriptionInputType.Text && jobDescription.trim()) || 
                             (jobInputType === JobDescriptionInputType.Url && jobUrl.trim());
 
@@ -112,7 +121,7 @@ const App: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [resume, jobDescription, jobUrl, jobInputType, mode, tone]);
+  }, [resume, jobDescription, jobUrl, jobInputType, mode, tone, isAuthenticated]);
 
   return (
     <div className="min-h-[100dvh] font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300 bg-ambient relative">
@@ -142,7 +151,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Inputs workspace — one cohesive form, not floating cards */}
-        <div className="mb-10">
+        <div className="mb-10" id="input-section">
           <InputSection
             resume={resume}
             setResume={setResume}
