@@ -6,6 +6,11 @@
 
 A professional AI-powered cover letter builder. Generate tailored, job-specific cover letters from your resume and a job description or posting URL.
 
+> 📄 **[`PROJECT-INFO.md`](PROJECT-INFO.md)** — machine-readable project facts (stack + exact versions, architecture, metrics, keyword tags) designed so an AI can generate resume entries and portfolio project summaries from it alone.
+
+> **Live demo:** https://coverltr.vercel.app/
+> **Repo:** https://github.com/abustark/cover_letter_gen
+
 ## Run Locally
 
 **Prerequisites:** Node.js
