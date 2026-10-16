@@ -18,7 +18,7 @@
 | Live site | https://coverltr.vercel.app/ |
 | Source | https://github.com/abustark/cover_letter_gen |
 | License | None declared (private, all rights reserved — footer `© ABu`) |
-| Status | Production-deployed on Vercel, actively maintained (2026, latest commit 2026-09-24) |
+| Status | Production-deployed on Vercel, actively maintained (2026, latest commit 2026-10-16) |
 
 **One-liners (pick by context):**
 - *10 words:* AI cover-letter builder with Google sign-in and PDF/DOCX export.
@@ -55,7 +55,7 @@
 | Hosting (dev) | Vite dev server | port 3000, host `0.0.0.0` | `npm run dev` |
 | Fonts | Google Fonts | Instrument Sans + Source Serif 4 | Body / document serif |
 | SEO | title, description, Open Graph, Twitter card, `og-image.png` | — | Discoverability |
-| VCS | Git / GitHub | main branch | Trunk-based, 30 commits (2025-11-02 to 2026-09-24) |
+| VCS | Git / GitHub | main branch | Trunk-based, 34 commits (2025-11-02 to 2026-10-16) |
 
 ---
 
@@ -98,13 +98,13 @@
 
 ## 6. Scale metrics (quantifiables)
 
-- **37** git-tracked files; **~1,889 lines** across **18** TS/TSX/CSS files (11 `.tsx` = 1,264 lines, 6 `.ts` = 413 lines, 1 `.css` = 212 lines).
+- **38** git-tracked files; **~2,121 lines** across **18** TS/TSX/CSS files (11 `.tsx` = 1,416 lines, 6 `.ts` = 471 lines, 1 `.css` = 234 lines).
 - **2 API endpoints** (`POST /api/openrouter`, `POST /api/fetch-url`) + **2 services** (`geminiService.ts` 285 lines, `auth.tsx` 152 lines) + **8 UI components**.
 - **4 generation modes** × **4 tones** × **2 JD input types** = 16 generation paths from one prompt template family.
 - **5 export/save actions** (Copy, PDF, DOCX, Save draft, Regenerate) with lazy-loaded heavy libs.
 - **0** databases, **0** server auth checks — localStorage-only persistence.
 - **4.4 MB** production `dist/` (largest chunk `pdf.worker` ~2.09 MB, lazy-loaded).
-- **30 commits** on `main` (2025-11-02 to 2026-09-24).
+- **34 commits** on `main` (2025-11-02 to 2026-10-16).
 
 ---
 
