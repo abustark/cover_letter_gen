@@ -140,4 +140,4 @@ cover letter generator, AI writing assistant, resume parsing, job description pa
 
 **Portfolio card (title + ~30 words + stack):** CoverCraft — paste your resume and any job post (or just its URL) to get a tailored cover letter in your chosen tone, then copy, download, or save drafts. Google sign-in, dark mode, instant export. `React · Vite · TypeScript · Tailwind · OpenRouter · Vercel`
 
-**Tone/length guide for the AI:** resume = 3–5 dense bullets or one 3-line paragraph, lead with verbs and numbers, keywords from §8; portfolio = friendly paragraph + feature list + stack chips, mention the URL-fetch trick, the 4×4 mode/tone matrix, and local-first drafts; never claim a test suite, a database, or server-side auth — none exist.
+**Tone/length guide for the AI:** Frame impact as user capability + the hardest engineering problem solved (no business KPIs). Resume = 3–5 dense bullets or one 3-line paragraph, lead with verbs and numbers, keywords from §8; portfolio = friendly paragraph + feature list + stack chips, mention the URL-fetch trick, the 4×4 mode/tone matrix, and local-first drafts; never claim a test suite, a database, or server-side auth — none exist.
