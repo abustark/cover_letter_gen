@@ -7,11 +7,21 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.0.3`** (current head is `2.0.2` — see below)
+> - **`main` → `2.0.4`** (current head is `2.0.3` — see below)
 
 ---
 
 ## Commit History
+
+### 2.0.3 - real app screenshots as README hero; remove key-writing launcher
+
+- **Date**: 2026-10-26
+- **Why**: owner flagged two issues from 2.0.2 — the README hero was the OG banner rather than the product, and `start-ai.bat` wrote a plaintext API key into the repo root.
+- **Changes**:
+  - `README.md`: hero replaced with real captures of the running app (light + dark, 1440×1750) at `docs/assets/`; dark-mode screenshot linked below the hero.
+  - `start-ai.bat`: **deleted** — it wrote `.opencode.json` (containing `OPENROUTER_API_KEY`) to the working directory; OpenCode's own auth/config replaces it.
+  - `.gitignore`: `artifacts/` added (local working images, still required by `AGENTS.md` rule 4).
+  - Captures also copied to `artifacts/` as `covercraft-home-light.png` / `covercraft-home-dark.png`.
 
 ### 2.0.2 - repo polish: README, LICENSE, docs/ layout
 

@@ -1,5 +1,7 @@
 <div align="center">
-  <img src="public/og-image.png" alt="CoverCraft — tailored cover letters from a resume and a job posting" width="880" />
+  <img src="docs/assets/covercraft-home-light.png" alt="CoverCraft app: resume and job description filled in, with mode and tone selectors above the sign-in prompt" width="880" />
+
+  <sub><a href="docs/assets/covercraft-home-dark.png">Dark mode screenshot</a></sub>
 </div>
 
 # CoverCraft

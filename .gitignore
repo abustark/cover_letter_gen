@@ -31,3 +31,6 @@ dist-ssr
 
 # Review snapshot (regenerated manually, not committed)
 covercraft-review/
+
+# Working images (screenshots, crops) — local only
+artifacts/
