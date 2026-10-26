@@ -1,56 +1,186 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img src="public/og-image.png" alt="CoverCraft — tailored cover letters from a resume and a job posting" width="880" />
 </div>
 
 # CoverCraft
 
-A professional AI-powered cover letter builder. Generate tailored, job-specific cover letters from your resume and a job description or posting URL.
+**Resume + job posting → a tailored cover letter, in the tone you pick.**
 
-> 📄 **[`PROJECT-INFO.md`](PROJECT-INFO.md)** — machine-readable project facts (stack + exact versions, architecture, metrics, keyword tags) designed so an AI can generate resume entries and portfolio project summaries from it alone.
+[Live demo](https://coverltr.vercel.app/) · [Issues](https://github.com/abustark/cover_letter_gen/issues) · [Project facts](PROJECT-INFO.md)
 
-> **Live demo:** https://coverltr.vercel.app/
-> **Repo:** https://github.com/abustark/cover_letter_gen
+CoverCraft turns two unstructured documents — a resume (PDF or DOCX) and a job description (pasted text or a posting URL) — into a job-specific cover letter you can copy, export as PDF/DOCX, or keep as a draft. The browser never holds the model API key.
 
-## Run Locally
+---
 
-**Prerequisites:** Node.js
+## Features
 
-1. Install dependencies:
-   `npm install`
-2. Add your API key to `.env.local` (see `.env.example`):
-   `OPENROUTER_API_KEY=your_key_here`
-3. Add your Google OAuth Client ID to `.env.local`:
-   `VITE_GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com`
+| | |
+|---|---|
+| **Four generation modes** | Balanced, Thinking (deeper reasoning for senior roles), Low Latency, From URL (reads the posting from a link) |
+| **Four tones** | Professional, Enthusiastic, Confident, Creative — injected into the system prompt |
+| **Resume intake** | PDF via `pdfjs-dist`, DOCX via `mammoth`, both lazy-loaded; optional AI reformatting into clean sections |
+| **Dual job input** | Paste text, or paste a URL — the posting is fetched and cleaned server-side, which sidesteps browser CORS |
+| **Google sign-in** | `@react-oauth/google`; the ID token is decoded client-side and expires after one hour |
+| **Export suite** | One-click copy, PDF (`jsPDF`), DOCX (`docx`), save draft, regenerate |
+| **Local drafts** | UUID keys and ISO timestamps in `localStorage`; click to reload, hover to delete |
+| **Dark / light theme** | Persisted preference, View-Transition wave from the toggle, CSS ripple fallback |
+| **Accessible controls** | `role="tablist"` segmented controls, visible focus rings, ≥44 px targets, `prefers-reduced-motion` respected |
 
-   **How to get it:** Google Cloud Console → APIs & Services → Credentials →
-   "Create credentials" → OAuth client ID → **Web application**. In
-   "Authorized JavaScript origins" add both `http://localhost:3000` and your
-   production domain (e.g. `https://coverltr.vercel.app`).
+---
 
-4. Run the app:
-   `npm run dev`
+## Architecture
 
-## Sign in with Google
+A thin server boundary around a rich client: the SPA does parsing, prompting and export; two Vercel functions hold the credentials and the network edge cases.
 
-Generating a cover letter requires signing in with Google. The button works
-natively on desktop (popup) and mobile (full-height sheet). Your session is
-persisted in `localStorage` and restored on return visits until the ID token
-expires (1 hour); after that you simply sign in again.
+```
+Browser (React SPA)
+  ├── resume PDF/DOCX ──► pdfjs-dist / mammoth  (lazy import) ──► text
+  ├── job description ──► pasted text
+  └── job posting URL ──► POST /api/fetch-url ──► stripped text (≤ 12k chars)
+                                   │
+                                   ▼
+                     POST /api/openrouter ──► OpenRouter
+                                   │            (3 free models, temp 0.7)
+                                   ▼
+              letter ──► copy · PDF · DOCX · draft (localStorage)
+```
 
-The Client ID is **public by design** and safe to bundle — no secrets live in
-the browser.
+### Endpoints
+
+| Method | Route | Purpose | Guardrails |
+|---|---|---|---|
+| `POST` | `/api/openrouter` | Proxies chat completions to OpenRouter | Key from server env only · temperature pinned at `0.7` · `400` on missing `model`/`messages` · `502` on empty completion |
+| `POST` | `/api/fetch-url` | Fetches a job posting and strips it to text | `<script>`/`<style>` removed · tags collapsed · capped at **12,000 chars** · `502` on fetch failure |
+
+### Model routing
+
+| Mode | Model |
+|---|---|
+| Balanced | `nvidia/nemotron-3-ultra-550b-a55b:free` |
+| Thinking Mode | `nvidia/nemotron-3-super-120b-a12b:free` |
+| Low Latency | `google/gemma-4-26b-a4b-it:free` |
+| From URL | `nvidia/nemotron-3-ultra-550b-a55b:free` |
+| Resume formatting | `google/gemma-4-26b-a4b-it:free` |
+
+---
+
+## Stack
+
+| Layer | Choice |
+|---|---|
+| UI | React 19, React DOM 19 |
+| Build | Vite 6, `@vitejs/plugin-react` |
+| Styling | Tailwind CSS v4 (`@tailwindcss/vite`) |
+| Language | TypeScript 5.8 (`tsc --noEmit` gate) |
+| AI | OpenRouter chat completions — three free models |
+| Auth | Google OAuth 2.0 (`@react-oauth/google`) |
+| Parsing | `pdfjs-dist`, `mammoth` (dynamic imports) |
+| Export | `jsPDF`, `docx` (dynamic imports) |
+| Hosting | Vercel — `api/*.ts` become serverless functions |
+
+---
+
+## Project layout
+
+```
+.
+├── api/                    Vercel functions: LLM proxy + posting fetch
+├── components/             Header, InputSection, ModeSelector, OutputSection,
+│                           DraftsSection, GoogleButton, UI primitives, icons
+├── services/               OpenRouter prompts/routing · Google auth state
+├── public/                 favicon, Open Graph image
+├── docs/
+│   ├── PORTFOLIO-FRAMING.md    how to present this project on a portfolio
+│   ├── bugs-and-fixes/         bug-registry protocol kit
+│   └── sandbox-browser/        headless visual-check kit
+├── App.tsx                 app shell, state, generation flow
+├── index.tsx               React entry point
+├── index.css               Tailwind theme tokens and document surface
+├── types.ts                shared enums and interfaces
+├── vite.config.ts          dev-only key injection, chunk splitting
+├── PROJECT-INFO.md         fact sheet (stack, architecture, metrics)
+├── AGENTS.md               working rules for AI agents
+└── COMMIT-HISTORY.md       versioned commit log
+```
+
+---
+
+## Getting started
+
+**Prerequisites:** Node.js 18+ (Vite 6), a Google OAuth client, and an OpenRouter API key.
+
+```bash
+npm install
+cp .env.example .env.local   # then fill in both values
+npm run dev                  # http://localhost:3000
+```
+
+When port 3000 is taken, Vite picks the next free port.
+
+### Google OAuth setup
+
+1. Google Cloud Console → **APIs & Services** → **Credentials** → **Create credentials** → **OAuth client ID** → **Web application**.
+2. Under **Authorized JavaScript origins**, add `http://localhost:3000` and your production domain.
+3. Copy the client ID into `VITE_GOOGLE_CLIENT_ID`.
+
+### Environment variables
+
+| Variable | Where | Notes |
+|---|---|---|
+| `OPENROUTER_API_KEY` | `.env.local` (dev) · Vercel env (prod) | Read from `.env.local` first, so a stale machine-level key cannot silently win |
+| `VITE_GOOGLE_CLIENT_ID` | `.env.local` · Vercel env | Public by design — client IDs are meant to be shipped |
+
+---
 
 ## Deploy to Vercel
 
-The API key is **never shipped to the browser** — `api/*` serverless functions hold it and proxy requests to OpenRouter, and URL job-description fetching also runs server-side (fixes CORS on LinkedIn etc.).
+1. Import the repo in Vercel — framework preset **Vite**, no `vercel.json` needed.
+2. Add `OPENROUTER_API_KEY` and `VITE_GOOGLE_CLIENT_ID` under **Settings → Environment Variables**.
+3. Add the production domain to the OAuth client's **Authorized JavaScript origins**.
+4. Deploy. `api/openrouter.ts` and `api/fetch-url.ts` are detected automatically.
 
-1. Push the repo to GitHub and import it in Vercel (framework: Vite).
-2. Add the environment variable `OPENROUTER_API_KEY` in Vercel → Project → Settings → Environment Variables.
-3. Add `VITE_GOOGLE_CLIENT_ID` the same way (a public client ID).
-4. Add your Vercel domain to the Google OAuth client's **Authorized JavaScript origins**.
-5. Deploy. `api/openrouter.ts` and `api/fetch-url.ts` are automatically picked up as serverless functions.
+`npm run build` runs `tsc --noEmit` before bundling into `dist/`; `npm run typecheck` runs the type gate alone.
 
-## Build
+---
 
-`npm run build` (runs `tsc --noEmit` typecheck first) → output in `dist/`.
-`npm run typecheck` → TypeScript check only.
+## Security model
+
+**Protected by design**
+
+- In production the bundle contains **no API key** — `vite.config.ts` injects it only when `mode === 'development'`; every deployed request goes through `/api/openrouter`.
+- The key is read from `.env.local` before environment variables, so a stale machine-level key can't override the project one.
+- Job postings are fetched server-side with a `User-Agent` header, which avoids both browser CORS and leaking the key to third-party pages.
+- `localStorage` holds only a Google ID token (1-hour expiry), drafts, and the theme.
+
+**Not protected (known and deliberate)**
+
+- `/api/openrouter` is an open proxy: no authentication and **no rate limiting**.
+- `/api/fetch-url` accepts any URL — there is no scheme or host allowlist, so it is an SSRF surface.
+- Sign-in is a **client-side gate**: the ID token is decoded, not verified server-side. Generation is blocked in the UI, not at the API.
+
+---
+
+## Status & limitations
+
+- **No database.** Drafts live in `localStorage` and stay on one browser.
+- **No automated tests.** The gates are `npm run typecheck` and `npm run build`.
+- **Free-tier models** rate-limit and can respond slowly under load.
+- This is a single-user utility, not a multi-tenant service — see the security notes above.
+
+---
+
+## Docs
+
+- [`PROJECT-INFO.md`](PROJECT-INFO.md) — stack, architecture and metrics in one sheet
+- [`docs/PORTFOLIO-FRAMING.md`](docs/PORTFOLIO-FRAMING.md) — positioning copy for portfolio/resume use
+- [`docs/bugs-and-fixes/`](docs/bugs-and-fixes/) — bug registry protocol and template
+- [`docs/sandbox-browser/`](docs/sandbox-browser/) — headless visual-check kit (reference implementation)
+- [`AGENTS.md`](AGENTS.md) · [`COMMIT-HISTORY.md`](COMMIT-HISTORY.md)
+
+---
+
+## License
+
+All rights reserved — see [LICENSE](LICENSE).
+
+<sub>Built by [ABu](https://github.com/abustark).</sub>

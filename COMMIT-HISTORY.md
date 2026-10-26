@@ -7,11 +7,24 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.0.2`** (current head is `2.0.1` — see below)
+> - **`main` → `2.0.3`** (current head is `2.0.2` — see below)
 
 ---
 
 ## Commit History
+
+### 2.0.2 - repo polish: README, LICENSE, docs/ layout
+
+- **Date**: 2026-10-26
+- **Why**: owner request — item 2 of the portfolio plan (repo polish), plus a request to organize the repo files cleanly.
+- **Changes**:
+  - `README.md`: rewritten — hero + live demo, feature table, architecture diagram, endpoint and model-routing tables, stack, project layout, setup/deploy, an explicit security model (what *is* and *isn't* protected), status/limitations, docs index, license.
+  - `LICENSE`: added — all rights reserved, source available for viewing/evaluation only.
+  - `docs/`: `bug and fixes summary/` → `docs/bugs-and-fixes/`, `PASTE- sandbox browser/` → `docs/sandbox-browser/`, `PORTFOLIO-FRAMING.md` → `docs/PORTFOLIO-FRAMING.md` (all `git mv`, history preserved).
+  - References updated in `PROJECT-INFO.md` and `docs/bugs-and-fixes/BUGS-AND-FIXES.template.md`.
+  - `.gitignore`: ignore `.env` and `.opencode.json` (the latter is written with a live key by `start-ai.bat`).
+  - `PROJECT-INFO.md`: tracked-file/commit counts and last-commit date refreshed.
+  - GitHub repo metadata: description set, 12 topics added (done via `gh repo edit`; not a file change).
 
 ### 2.0.1 - portfolio framing for an AI engineering audience
 

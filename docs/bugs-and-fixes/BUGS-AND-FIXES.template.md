@@ -50,4 +50,4 @@ git diff --exit-code -- <built-assets>   # fail if a build product is stale
 
 ---
 
-*Started <YYYY-MM-DD>. Convention: `bug and fixes summary/BUG-FIX-PROTOCOL.md`.*
+*Started <YYYY-MM-DD>. Convention: `docs/bugs-and-fixes/BUG-FIX-PROTOCOL.md`.*
