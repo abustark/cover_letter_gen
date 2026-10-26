@@ -104,7 +104,7 @@
 - **5 export/save actions** (Copy, PDF, DOCX, Save draft, Regenerate) with lazy-loaded heavy libs.
 - **0** databases, **0** server auth checks — localStorage-only persistence.
 - **4.4 MB** production `dist/` (largest chunk `pdf.worker` ~2.09 MB, lazy-loaded).
-- **38 commits** on `main` (2025-11-02 to 2026-10-26).
+- **40 commits** on `main` (2025-11-02 to 2026-10-26).
 
 ---
 

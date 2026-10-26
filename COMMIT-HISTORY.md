@@ -7,11 +7,21 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.0.4`** (current head is `2.0.3` — see below)
+> - **`main` → `2.0.5`** (current head is `2.0.4` — see below)
 
 ---
 
 ## Commit History
+
+### 2.0.4 - remove stale snapshot and unused AI Studio metadata
+
+- **Date**: 2026-10-26
+- **Why**: owner asked to delete the local review snapshot and `metadata.json` if they were not needed.
+- **Changes**:
+  - `covercraft-review/` — deleted from disk (346 KB, untracked, gitignored duplicate of the app; no `.git`, no unique files).
+  - `metadata.json` — deleted (tracked; AI Studio artifact, referenced by nothing — not Vite, the app, Vercel, or the docs).
+  - `.gitignore`: dropped the now-obsolete `covercraft-review/` rule; `artifacts/` stays ignored.
+  - `PROJECT-INFO.md`: tracked-file count `42` → `41`; commit count refreshed.
 
 ### 2.0.3 - real app screenshots as README hero; remove key-writing launcher
 
