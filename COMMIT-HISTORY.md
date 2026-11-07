@@ -7,11 +7,20 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.0.8`** (current head is `2.0.7` — see below)
+> - **`main` → `2.0.9`** (current head is `2.0.8` — see below)
 
 ---
 
 ## Commit History
+
+### 2.0.8 - add abufolio portfolio cta and Playfair Display font in footer
+
+- **Date**: 2026-11-07
+- **Why**: user requested adding the abufolio portfolio line and its Playfair Display font from the Linkly footer to CoverCraft's footer.
+- **Changes**:
+  - `index.html`: added `Playfair+Display:wght@400;600;700` to the Google Fonts stylesheet link.
+  - `index.css`: added `--font-display` Playfair Display definition to `@theme` and styled `.foot-cta`, `.foot-cta-kicker`, `.foot-cta-link` with warm theme tokens, hover transitions, and dark mode support.
+  - `App.tsx`: added the abufolio portfolio link block (`Like this build? There's more of my work` / `Open my portfolio ↗`) linking to `https://abufolio.vercel.app`; bumped footer version badge to `v2.0.8`.
 
 ### 2.0.7 - replace AI slop with editorial design & add avatar popover nav
 

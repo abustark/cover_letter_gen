@@ -221,11 +221,11 @@ const App: React.FC = () => {
 
       {/* Footer */}
       <footer className="border-t border-gray-200/80 dark:border-gray-800/80 mt-20 bg-white/40 dark:bg-gray-950/40 backdrop-blur-sm">
-        <div className="container mx-auto max-w-5xl px-4 py-8 text-xs text-gray-500 dark:text-gray-400 text-center flex flex-col gap-2">
+        <div className="container mx-auto max-w-5xl px-4 py-8 text-xs text-gray-500 dark:text-gray-400 text-center flex flex-col items-center gap-2.5">
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
             <span className="font-semibold text-stone-700 dark:text-stone-300">
-              CoverCraft Studio v2.0.7
+              CoverCraft Studio v2.0.8
             </span>
             <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">·</span>
             <span>Server-Verified Authentication</span>
@@ -238,6 +238,15 @@ const App: React.FC = () => {
           <span className="text-[11px] text-gray-400 dark:text-gray-500">
             © {new Date().getFullYear()} ABu. All rights reserved.
           </span>
+          <a
+            className="foot-cta"
+            href="https://abufolio.vercel.app"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span className="foot-cta-kicker">Like this build? There's more of my work</span>
+            <span className="foot-cta-link">Open my portfolio ↗</span>
+          </a>
         </div>
       </footer>
     </div>
