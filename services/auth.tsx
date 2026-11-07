@@ -25,6 +25,7 @@ export interface AuthContextValue {
   isInitializing: boolean;
   signInError: string | null;
   handleCredential: (credential: string) => void;
+  handleAccessToken: (token: string, user: AuthUser, expiresInSec?: number) => void;
   signOut: () => void;
   getValidToken: () => string | null;
 }
@@ -130,8 +131,27 @@ const GoogleAuthInner: React.FC<{ children: React.ReactNode }> = ({ children }) 
     setStored(newStored);
   }, []);
 
+  const handleAccessToken = useCallback((token: string, user: AuthUser, expiresInSec = 3600) => {
+    setSignInError(null);
+    const exp = Date.now() + expiresInSec * 1000;
+    const newStored: StoredAuth = { credential: token, user, exp };
+    try {
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newStored));
+    } catch {
+      // Storage unavailable — session lives in memory for this tab only.
+    }
+    setStored(newStored);
+  }, []);
+
   const signOut = useCallback(() => {
     googleLogout();
+    try {
+      if (typeof window !== 'undefined' && (window as any).google?.accounts?.id?.disableAutoSelect) {
+        (window as any).google.accounts.id.disableAutoSelect();
+      }
+    } catch {
+      // ignore
+    }
     try {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     } catch {
@@ -159,6 +179,7 @@ const GoogleAuthInner: React.FC<{ children: React.ReactNode }> = ({ children }) 
     isInitializing,
     signInError,
     handleCredential,
+    handleAccessToken,
     signOut,
     getValidToken,
   };
@@ -176,6 +197,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       isInitializing: false,
       signInError: null,
       handleCredential: () => {},
+      handleAccessToken: () => {},
       signOut: () => {},
       getValidToken: () => null,
     };

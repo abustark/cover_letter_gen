@@ -143,15 +143,23 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
   return (
     <div id="output-section" className="mt-14 scroll-mt-24 space-y-4">
       {/* Document Section Header & Floating Action Island */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-stone-200/80 dark:border-stone-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200/80 dark:border-stone-800/80">
         <div>
-          <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-stone-900 dark:bg-stone-100" />
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-mono text-[10px] tracking-widest uppercase text-emerald-700 dark:text-emerald-400 font-bold">
+              Output 03 · Final Manuscript
+            </span>
+            <span className="px-1.5 py-0.2 rounded-full text-[9px] font-mono uppercase tracking-wider bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/60 font-semibold">
+              Live Synthesis
+            </span>
+          </div>
+          <h2 className="text-lg sm:text-xl font-display font-bold tracking-tight text-stone-900 dark:text-stone-50 flex items-center gap-2.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20" />
             {isLoading ? 'Synthesizing Application Letter…' : coverLetter ? docTitle : 'Document Studio'}
           </h2>
-          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-1">
             {coverLetter
-              ? 'Ready for review, download, or local archive'
+              ? 'Stationery grade formatting · Ready for review, download, or local archive'
               : 'Add your candidate credentials and target job above to draft'}
           </p>
         </div>
@@ -206,12 +214,12 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
         <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800/90 bg-stone-50/80 dark:bg-stone-900/60 p-4 sm:p-5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2.5">
-              <span className="w-6 h-6 rounded-lg bg-stone-200 dark:bg-stone-800 flex items-center justify-center text-stone-700 dark:text-stone-300 font-bold text-xs flex-shrink-0">
+              <span className="w-6 h-6 rounded-lg bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold text-xs flex-shrink-0 border border-emerald-200/80 dark:border-emerald-800/80">
                 ✓
               </span>
               <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-xs font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100 font-mono">
-                  Factuality Checklist
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-900 dark:text-emerald-100 font-mono">
+                  Factuality & Alignment Audit
                 </span>
                 <span className="text-xs text-stone-600 dark:text-stone-400 font-mono">
                   {completedCount} of {CHECKLIST_ITEMS.length} verified ({progressPercent}%)

@@ -223,9 +223,9 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
                       </p>
                     </div>
 
-                    <div className="pt-1">
+                    <div className="pt-1 flex justify-center">
                       <GoogleButton
-                        size="large"
+                        size="small"
                         fullWidth
                         onSuccess={() => setIsMenuOpen(false)}
                       />

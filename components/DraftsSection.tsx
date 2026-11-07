@@ -28,10 +28,15 @@ export const DraftsSection: React.FC<DraftsSectionProps> = ({
 
   return (
     <div className="mt-16 space-y-4">
-      <div className="flex items-center justify-between pb-2 border-b border-stone-200/80 dark:border-stone-800/80">
+      <div className="flex items-center justify-between pb-3 border-b border-stone-200/80 dark:border-stone-800/80">
         <div>
-          <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-stone-900 dark:bg-stone-100" />
+          <div className="flex items-center gap-2 mb-1">
+            <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 dark:text-stone-400 font-bold">
+              Archive 04 · Local Repository
+            </span>
+          </div>
+          <h2 className="text-sm sm:text-base font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-stone-700 dark:bg-stone-300" />
             Saved Drafts Library
             <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200/80 dark:border-stone-700/80">
               {drafts.length}

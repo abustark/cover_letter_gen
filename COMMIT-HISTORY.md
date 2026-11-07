@@ -7,11 +7,27 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.0.9`** (current head is `2.0.8` — see below)
+> - **`main` → `2.0.10`** (current head is `2.0.9` — see below)
 
 ---
 
 ## Commit History
+
+### 2.0.9 - differentiate section headings, stack action icons & fix Google sign-in
+
+- **Date**: 2026-11-07
+- **Why**: user requested clear visual differentiation for section headings in font, size, placement, and colors; removing automatic Gmail ID leakage and centering Google Sign-In via native button (modeled after Linkly and ABot); and stacking icons vertically centered on top of action button text across the page.
+- **Changes**:
+  - `components/GoogleButton.tsx`: replaced Google's auto-personalized iframe with a clean, centered native button with the official 4-color Google G icon; supports `size="small"` (minimized inside the avatar collapse menu) and `size="large"` (centered in the unauthenticated empty card); eliminated automatic Gmail ID leakage and layout displacement.
+  - `services/auth.tsx`: added `handleAccessToken` callback and hooked `google.accounts.id.disableAutoSelect()` into `signOut()` (modeled after ABot) to prevent sticky account locking.
+  - `api/utils/auth.ts`: extended `verifyGoogleToken` to support both RS256 JWT ID tokens and Google OAuth access tokens via Google tokeninfo validation.
+  - `components/Header.tsx`: centered and minimized the Google Sign-In button inside the avatar menu card (`size="small"`).
+  - `components/InputSection.tsx`: stacked icons on top of text for `Upload Document`, `Auto-Format`, and `ExampleToggle` sample actions; centered sign-in card; added `Input 01 · Candidate Profile`, `Input 02 · Target Specification`, and `Config · Prose Stylistics` mono kickers with warm bronze indicator hierarchy.
+  - `components/ModeSelector.tsx`: differentiated heading with `Engine · Model Pipeline` kicker and warm amber status badge.
+  - `components/OutputSection.tsx`: differentiated heading with `Output 03 · Final Manuscript` kicker, emerald live indicator, and executive `Playfair Display` display typography; styled Factuality & Alignment Audit with emerald verified badge.
+  - `components/DraftsSection.tsx`: differentiated heading with `Archive 04 · Local Repository` mono kicker and slate counter pill.
+  - `components/icons.tsx`: added official 4-color `GoogleGIcon`.
+  - `App.tsx`: bumped version badge to `v2.0.9`.
 
 ### 2.0.8 - add abufolio portfolio cta and Playfair Display font in footer
 

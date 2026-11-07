@@ -67,10 +67,10 @@ const ExampleToggle: React.FC<{ title: string; content: string }> = ({ title, co
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex items-center text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
+        className="inline-flex flex-col items-center justify-center gap-1 text-[11px] font-semibold text-stone-600 dark:text-stone-400 hover:text-amber-700 dark:hover:text-amber-400 transition-colors px-2.5 py-1.5 rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 border border-transparent hover:border-stone-200 dark:hover:border-stone-700 active:scale-95"
       >
-        <LightbulbIcon className="w-3.5 h-3.5 mr-1.5 text-accent2-500" />
-        {open ? 'Hide sample' : `Preview sample ${title.toLowerCase()}`}
+        <LightbulbIcon className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+        <span>{open ? 'Hide sample' : `Preview sample ${title.toLowerCase()}`}</span>
       </button>
       {open && (
         <pre className="mt-2.5 p-4 bg-gray-50/80 dark:bg-gray-900/80 border border-gray-200/80 dark:border-gray-800/80 rounded-xl text-[11px] leading-relaxed text-gray-700 dark:text-gray-300 whitespace-pre-wrap font-mono overflow-x-auto shadow-inner">
@@ -286,8 +286,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
         <div className="double-bezel-inner p-4 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-stone-900 dark:bg-stone-100" />
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-mono text-[10px] tracking-widest uppercase text-amber-700 dark:text-amber-400 font-bold">
+                  Input 01 · Candidate Profile
+                </span>
+              </div>
+              <h2 className="text-base font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-600 dark:bg-amber-500" />
                 Candidate Resume
               </h2>
               <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
@@ -296,22 +301,23 @@ export const InputSection: React.FC<InputSectionProps> = ({
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <Button
-                variant="secondary"
-                size="sm"
+              <button
+                type="button"
                 onClick={() => handleFileClick(false)}
                 disabled={isUploading}
-                className="flex-1 sm:flex-initial justify-center"
+                className="flex-1 sm:flex-initial flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800/90 hover:bg-stone-50 dark:hover:bg-stone-700/80 active:scale-95 transition-all shadow-xs disabled:opacity-50 min-w-[96px]"
               >
-                <UploadIcon className="w-3.5 h-3.5 mr-1 text-stone-600 dark:text-stone-300" /> Upload Document
-              </Button>
+                <UploadIcon className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                <span className="text-[11.5px] leading-none">Upload Doc</span>
+              </button>
               <button
                 type="button"
                 onClick={() => handleFileClick(true)}
                 disabled={isUploading}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-stone-700 dark:text-stone-200 border border-stone-200 dark:border-stone-700 bg-stone-50/90 dark:bg-stone-800/90 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-xl px-3 py-1.5 transition-all shadow-xs disabled:opacity-50"
+                className="flex-1 sm:flex-initial flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800/90 hover:bg-stone-50 dark:hover:bg-stone-700/80 active:scale-95 transition-all shadow-xs disabled:opacity-50 min-w-[96px]"
               >
-                Auto-Format
+                <SparklesIcon className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                <span className="text-[11.5px] leading-none">Auto-Format</span>
               </button>
             </div>
           </div>
@@ -368,8 +374,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
         <div className="double-bezel-inner p-4 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-stone-900 dark:bg-stone-100" />
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-mono text-[10px] tracking-widest uppercase text-amber-700 dark:text-amber-400 font-bold">
+                  Input 02 · Target Specification
+                </span>
+              </div>
+              <h2 className="text-base font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-600 dark:bg-amber-500" />
                 Target Opportunity
               </h2>
               <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
@@ -432,8 +443,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
         <div className="double-bezel-inner p-4 sm:p-6 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-stone-900 dark:bg-stone-100" />
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 dark:text-stone-400 font-bold">
+                  Config · Prose Stylistics
+                </span>
+              </div>
+              <h2 className="text-sm sm:text-base font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-stone-700 dark:bg-stone-300" />
                 Narrative Tone
               </h2>
               <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">

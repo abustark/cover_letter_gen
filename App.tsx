@@ -225,7 +225,7 @@ const App: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
             <span className="font-semibold text-stone-700 dark:text-stone-300">
-              CoverCraft Studio v2.0.8
+              CoverCraft Studio v2.0.9
             </span>
             <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">·</span>
             <span>Server-Verified Authentication</span>

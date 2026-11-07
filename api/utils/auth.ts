@@ -103,9 +103,52 @@ export async function verifyGoogleToken(
     return { ok: false, status: 401, error: 'Authentication token is required.' };
   }
 
-  const parts = token.trim().split('.');
+  const trimmed = token.trim();
+  const parts = trimmed.split('.');
+
+  // Audience validation
+  const targetAudience = (
+    expectedClientId ||
+    process.env.GOOGLE_CLIENT_ID ||
+    process.env.VITE_GOOGLE_CLIENT_ID ||
+    ''
+  ).trim();
+
+  if (!targetAudience) {
+    // Server is missing configuration
+    console.error('Google Client ID is not configured on the server.');
+    return { ok: false, status: 500, error: 'Server authentication configuration is missing.' };
+  }
+
+  // Support Google OAuth access tokens (from useGoogleLogin / tokenClient flow)
   if (parts.length !== 3) {
-    return { ok: false, status: 401, error: 'Malformed authentication token.' };
+    try {
+      const res = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(trimmed)}`
+      );
+      if (!res.ok) {
+        return { ok: false, status: 401, error: 'Invalid or expired Google access token.' };
+      }
+      const data = (await res.json()) as {
+        aud?: string;
+        sub?: string;
+        user_id?: string;
+        email?: string;
+        exp?: string | number;
+      };
+      if (data.aud && data.aud !== targetAudience) {
+        return { ok: false, status: 401, error: 'Token audience does not match this application.' };
+      }
+      return {
+        ok: true,
+        user: {
+          sub: data.sub || data.user_id || 'google-user',
+          email: data.email,
+        },
+      };
+    } catch {
+      return { ok: false, status: 401, error: 'Malformed authentication token.' };
+    }
   }
 
   const [headerB64, payloadB64, signatureB64] = parts;
@@ -130,20 +173,6 @@ export async function verifyGoogleToken(
 
   if (header.alg !== 'RS256' || !header.kid) {
     return { ok: false, status: 401, error: 'Unsupported token algorithm or missing key id.' };
-  }
-
-  // Audience validation
-  const targetAudience = (
-    expectedClientId ||
-    process.env.GOOGLE_CLIENT_ID ||
-    process.env.VITE_GOOGLE_CLIENT_ID ||
-    ''
-  ).trim();
-
-  if (!targetAudience) {
-    // Server is missing configuration
-    console.error('Google Client ID is not configured on the server.');
-    return { ok: false, status: 500, error: 'Server authentication configuration is missing.' };
   }
 
   if (payload.aud !== targetAudience) {

@@ -51,13 +51,21 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, setMode
   return (
     <div className="w-full space-y-3">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-stone-700 dark:text-stone-300 flex items-center gap-1.5 font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 dark:bg-amber-400" /> Synthesis Engine
-          </span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wide bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200/80 dark:border-stone-700/80">
-            {meta.badge}
-          </span>
+        <div>
+          <div className="flex items-center gap-2 mb-0.5">
+            <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 dark:text-stone-400 font-bold">
+              Engine · Model Pipeline
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm sm:text-base font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-amber-600 dark:bg-amber-400" />
+              Synthesis Engine
+            </span>
+            <span className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wide bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/80 font-semibold">
+              {meta.badge}
+            </span>
+          </div>
         </div>
         <Segmented
           options={MODE_OPTIONS}
