@@ -157,16 +157,16 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
         </div>
 
         {coverLetter && !isLoading && (
-          <div className="flex items-center gap-1 rounded-2xl bg-white/90 dark:bg-gray-900/90 border border-gray-200/80 dark:border-gray-800/80 p-1 shadow-sm backdrop-blur-md">
+          <div className="flex flex-wrap items-center justify-end gap-1 rounded-2xl bg-white/90 dark:bg-gray-900/90 border border-gray-200/80 dark:border-gray-800/80 p-1 shadow-xs backdrop-blur-md">
             <button
               onClick={handleSaveWithFeedback}
               title="Save to local drafts"
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {saved ? (
                 <CheckIcon className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
               ) : (
-                <SaveIcon className="w-3.5 h-3.5 text-accent-600" />
+                <SaveIcon className="w-3.5 h-3.5 text-accent-600 dark:text-accent-400" />
               )}
               <span>{saved ? 'Saved' : 'Save draft'}</span>
             </button>
@@ -174,7 +174,7 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
             <button
               onClick={handleCopy}
               title="Copy to clipboard"
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {copied ? (
                 <CheckIcon className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
@@ -203,17 +203,17 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
 
       {/* Review Before Sending Checklist */}
       {coverLetter && !isLoading && (
-        <div className="rounded-2xl border border-accent-200/60 dark:border-accent-800/60 bg-gradient-to-r from-accent-50/50 via-white to-accent2-50/40 dark:from-accent-950/20 dark:via-gray-900/40 dark:to-accent2-950/20 p-4 sm:p-5 shadow-xs">
-          <div className="flex items-center justify-between gap-3">
+        <div className="rounded-2xl border border-accent-200/60 dark:border-accent-800/60 bg-gradient-to-r from-accent-50/50 via-white to-accent2-50/40 dark:from-accent-950/40 dark:via-gray-900/60 dark:to-accent2-950/40 p-4 sm:p-5 shadow-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2.5">
-              <span className="w-6 h-6 rounded-lg bg-accent-100 dark:bg-accent-900/50 flex items-center justify-center text-accent-700 dark:text-accent-300">
+              <span className="w-6 h-6 rounded-lg bg-accent-100 dark:bg-accent-900/50 flex items-center justify-center text-accent-700 dark:text-accent-300 flex-shrink-0">
                 <SparklesIcon className="w-3.5 h-3.5" />
               </span>
-              <div>
+              <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-gray-100">
                   Pre-Flight Factuality Checklist
                 </span>
-                <span className="ml-2 text-xs text-accent-700 dark:text-accent-300 font-semibold">
+                <span className="text-xs text-accent-700 dark:text-accent-300 font-semibold">
                   {completedCount} of {CHECKLIST_ITEMS.length} verified ({progressPercent}%)
                 </span>
               </div>
@@ -222,7 +222,7 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
             <button
               type="button"
               onClick={() => setIsChecklistOpen((v) => !v)}
-              className="text-xs font-semibold text-gray-500 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
+              className="text-xs font-semibold text-gray-500 hover:text-accent-600 dark:hover:text-accent-400 transition-colors self-end sm:self-auto"
             >
               {isChecklistOpen ? 'Collapse' : 'Show checklist'}
             </button>
@@ -308,11 +308,11 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
 
           {/* Empty Placeholder State */}
           {!isLoading && !coverLetter && !error && (
-            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center p-8">
-              <div className="w-14 h-14 rounded-2xl bg-accent-50/80 dark:bg-accent-900/20 border border-accent-200/60 dark:border-accent-800/60 flex items-center justify-center mb-4 text-accent-600 dark:text-accent-300">
-                <FileIcon className="w-6 h-6" />
+            <div className="flex flex-col items-center justify-center min-h-[38vh] sm:min-h-[48vh] text-center p-6 sm:p-8">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-accent-50/80 dark:bg-accent-950/60 border border-accent-200/60 dark:border-accent-800/60 flex items-center justify-center mb-3 sm:mb-4 text-accent-600 dark:text-accent-300">
+                <FileIcon className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <p className="text-base font-bold text-gray-800 dark:text-gray-200">
+              <p className="text-sm sm:text-base font-bold text-gray-800 dark:text-gray-200">
                 Your Cover Letter Will Appear Here
               </p>
               <p className="text-xs mt-1.5 text-gray-400 dark:text-gray-500 max-w-sm leading-relaxed">
@@ -323,8 +323,8 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
 
           {/* Rendered Letter */}
           {!isLoading && coverLetter && (
-            <div className="p-6 sm:p-14 overflow-y-auto">
-              <article className="doc-surface px-4 sm:px-12 py-8 sm:py-14 text-gray-900 leading-8 sm:leading-9 text-[15px] sm:text-[16px] whitespace-pre-wrap font-serif tracking-normal selection:bg-accent2-200 bg-white rounded-lg shadow-xs border border-gray-100/80">
+            <div className="p-4 sm:p-12 overflow-y-auto">
+              <article className="doc-surface px-5 sm:px-12 py-8 sm:py-14 text-stone-900 dark:text-stone-100 leading-8 sm:leading-9 text-[15px] sm:text-[16px] whitespace-pre-wrap font-serif tracking-normal selection:bg-accent2-200 bg-[#fdfdfc] dark:bg-stone-900/90 rounded-xl shadow-xs border border-stone-200/80 dark:border-stone-800/80">
                 {renderWithLinks(coverLetter)}
               </article>
             </div>

@@ -50,12 +50,12 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, setMode
   const meta = MODE_META[currentMode];
   return (
     <div className="w-full space-y-3">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold uppercase tracking-wider text-accent-700 dark:text-accent-300 flex items-center gap-1.5">
             <SparklesIcon className="w-3.5 h-3.5 text-accent-600 dark:text-accent-400" /> Model Intelligence
           </span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-accent-50 dark:bg-accent-900/30 text-accent-700 dark:text-accent-300 border border-accent-200/60 dark:border-accent-800/60">
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-accent-50 dark:bg-accent-950/60 text-accent-700 dark:text-accent-300 border border-accent-200/60 dark:border-accent-800/60">
             {meta.badge}
           </span>
         </div>
@@ -64,6 +64,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, setMode
           value={currentMode}
           onChange={setMode}
           disabled={disabled}
+          gridOnMobile={true}
         />
       </div>
 
@@ -71,7 +72,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, setMode
         className={`rounded-xl border p-3.5 flex items-start justify-between gap-3 transition-all duration-200 ${
           disabled
             ? 'border-amber-300/60 dark:border-amber-700/50 bg-amber-50/50 dark:bg-amber-900/10'
-            : 'border-accent-200/70 dark:border-accent-800/50 bg-white/60 dark:bg-gray-900/40 backdrop-blur-sm shadow-xs'
+            : 'border-accent-200/70 dark:border-accent-800/50 bg-white/70 dark:bg-gray-900/50 backdrop-blur-sm shadow-xs'
         }`}
       >
         <div className="flex items-start gap-2.5">
@@ -81,11 +82,11 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, setMode
             }`}
           />
           <div className="space-y-0.5">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
                 {disabled ? 'URL Mode Active' : meta.label}
               </span>
-              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-mono">
+              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-mono px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800">
                 {meta.model}
               </span>
             </div>

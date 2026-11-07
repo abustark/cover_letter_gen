@@ -114,6 +114,7 @@ interface SegmentedProps<T extends string> {
   onChange: (value: T) => void;
   disabled?: boolean;
   className?: string;
+  gridOnMobile?: boolean;
 }
 
 export function Segmented<T extends string>({
@@ -122,11 +123,23 @@ export function Segmented<T extends string>({
   onChange,
   disabled,
   className = '',
+  gridOnMobile = true,
 }: SegmentedProps<T>) {
+  const isFour = options.length === 4;
+  const isTwo = options.length === 2;
+
+  const layoutClass = gridOnMobile
+    ? isFour
+      ? 'grid grid-cols-2 sm:flex sm:flex-nowrap w-full sm:w-auto'
+      : isTwo
+      ? 'grid grid-cols-2 sm:inline-flex w-full sm:w-auto'
+      : 'flex flex-wrap sm:flex-nowrap w-full sm:w-auto'
+    : 'inline-flex items-center flex-nowrap overflow-x-auto no-scrollbar';
+
   return (
     <div
       role="tablist"
-      className={`inline-flex items-center rounded-xl bg-gray-100/90 dark:bg-gray-900/90 p-1 border border-gray-200/60 dark:border-gray-800/60 flex-nowrap max-w-full overflow-x-auto no-scrollbar shadow-inner ${className}`}
+      className={`rounded-xl bg-gray-100/90 dark:bg-gray-900/90 p-1 border border-gray-200/60 dark:border-gray-800/60 gap-1 shadow-inner ${layoutClass} ${className}`}
     >
       {options.map((opt) => {
         const active = opt === value;
@@ -134,13 +147,14 @@ export function Segmented<T extends string>({
           <button
             key={opt}
             role="tab"
+            type="button"
             aria-selected={active}
             disabled={disabled}
             onClick={() => onChange(opt)}
-            className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold tracking-wide transition-all duration-200 focus-ring disabled:cursor-not-allowed select-none
+            className={`rounded-lg px-3 py-1.5 text-xs font-semibold tracking-wide transition-all duration-150 focus-ring disabled:cursor-not-allowed select-none text-center whitespace-nowrap flex items-center justify-center
               ${
                 active
-                  ? 'bg-white dark:bg-gray-800 text-accent-700 dark:text-accent-200 shadow-sm ring-1 ring-black/5 dark:ring-white/10'
+                  ? 'bg-white dark:bg-gray-800 text-accent-700 dark:text-accent-200 shadow-xs ring-1 ring-black/5 dark:ring-white/10 font-bold'
                   : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-white/40 dark:hover:bg-gray-800/40'
               }`}
           >

@@ -7,11 +7,28 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.0.6`** (current head is `2.0.5` — see below)
+> - **`main` → `2.0.7`** (current head is `2.0.6` — see below)
 
 ---
 
 ## Commit History
+
+### 2.0.6 - fix mobile and desktop UI misplacements verified with Playwright
+
+- **Date**: 2026-11-07
+- **Why**: user requested checking and fixing UI misplacements across desktop and mobile viewports with Playwright automation, followed by end-to-end interactive and gates testing.
+- **Changes**:
+  - `components/UI.tsx`: upgraded `Segmented` component with adaptive mobile responsive layout (`grid grid-cols-2 sm:flex` for 4 options and 2 options); eliminated horizontal clipping, word wrapping, and tab overflow.
+  - `components/Header.tsx`: balanced responsive navbar layout on small viewports (<400px); prevented Google Sign-In and theme toggle collision; added `id="theme-toggle-btn"` and compact mobile brand badge.
+  - `components/InputSection.tsx`: fixed squished `[ Text | URL ]` tab header by switching to responsive column-to-row flex; balanced "Upload PDF / DOCX" and "AI format" buttons to full container width on mobile; updated textarea typography to clean sans-serif; unified sample preview triggers.
+  - `components/ModeSelector.tsx`: integrated responsive 2x2 grid for mobile tabs (`Standard`, `Thinking Mode`, `Low Latency`, `Search Grounding`); fixed label wrapping and improved contrast.
+  - `components/OutputSection.tsx`: made floating action toolbar responsive with `flex-wrap` and compact icon-first labels on mobile; fixed checklist header wrapping; enhanced document sheet styling with warm ivory and rich dark stationery themes.
+  - `components/DraftsSection.tsx`: ensured draft deletion button is accessible on touch screens without requiring desktop hover.
+  - `index.css`: defined missing Tailwind v4 `--color-accent-950` and `--color-accent2-950` variables; optimized `.double-bezel` container padding for mobile; fixed dark-mode button contrast.
+  - `App.tsx`: bumped version badge to `v2.0.6`; made footer metadata flex-wrap to prevent horizontal overflow; fixed hero eyebrow contrast.
+  - `scripts/inspect-ui.cjs`: automated Playwright test suite capturing desktop & mobile (light, dark, interactive) and asserting zero horizontal page overflow.
+  - `artifacts/`: saved desktop & mobile before/after and interactive screenshots in accordance with `AGENTS.md` Rule 4.
+  - Verification: all 48 test suites passing (`npm test`), clean TypeScript check (`npm run typecheck`), production build succeeded (`npm run build`), and Playwright test suite exited with code 0.
 
 ### 2.0.5 - harden security, SSRF protection, agency visual redesign & tests
 

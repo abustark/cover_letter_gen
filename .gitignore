@@ -31,3 +31,4 @@ dist-ssr
 
 # Working images (screenshots, crops) — local only
 artifacts/
+.playwright-cli/

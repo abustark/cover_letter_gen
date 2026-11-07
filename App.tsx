@@ -147,7 +147,7 @@ const App: React.FC = () => {
       <main className="container mx-auto px-4 md:px-6 py-10 max-w-5xl pb-28">
         {/* Hero Section */}
         <div className="mb-10 text-center sm:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-wide bg-accent-50/80 dark:bg-accent-950/60 text-accent-700 dark:text-accent-300 border border-accent-200/70 dark:border-accent-800/70 mb-4 shadow-2xs">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-wide bg-accent-50/80 dark:bg-accent-950/80 text-accent-700 dark:text-accent-300 border border-accent-200/70 dark:border-accent-800/70 mb-4 shadow-2xs">
             <SparklesIcon className="w-3.5 h-3.5 text-accent-600 dark:text-accent-400" />
             <span>AI Career Studio · Grounded & Factuality-Checked</span>
           </div>
@@ -222,17 +222,17 @@ const App: React.FC = () => {
       {/* Footer */}
       <footer className="border-t border-gray-200/80 dark:border-gray-800/80 mt-20 bg-white/40 dark:bg-gray-950/40 backdrop-blur-sm">
         <div className="container mx-auto max-w-5xl px-4 py-8 text-xs text-gray-500 dark:text-gray-400 text-center flex flex-col gap-2">
-          <div className="flex items-center justify-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+          <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
             <span className="font-semibold text-gray-700 dark:text-gray-300">
-              CoverCraft Studio v2.0.5
+              CoverCraft Studio v2.0.6
             </span>
-            <span className="text-gray-300 dark:text-gray-700">·</span>
+            <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">·</span>
             <span>Server-Verified Authentication</span>
-            <span className="text-gray-300 dark:text-gray-700">·</span>
+            <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">·</span>
             <span>SSRF Protected</span>
           </div>
-          <span>
+          <span className="leading-relaxed">
             Client-side parsing ensures documents never leave your machine · Drafts preserved locally
           </span>
           <span className="text-[11px] text-gray-400 dark:text-gray-500">

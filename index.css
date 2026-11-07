@@ -85,6 +85,7 @@
   --color-accent-700: #6227ab;
   --color-accent-800: #52238c;
   --color-accent-900: #431f72;
+  --color-accent-950: #250e44;
 
   /* Secondary accent — calm teal / emerald patina */
   --color-accent2-50: #f0fdfc;
@@ -97,6 +98,7 @@
   --color-accent2-700: #0f766e;
   --color-accent2-800: #115e59;
   --color-accent2-900: #134e4a;
+  --color-accent2-950: #082f2c;
 
   /* Neutral surfaces */
   --color-surface: #ffffff;
@@ -156,10 +158,10 @@
 
   /* Doppelrand / Double-Bezel nested container */
   .double-bezel {
-    @apply rounded-2xl p-1.5 sm:p-2 bg-gradient-to-b from-gray-200/70 via-gray-100/40 to-gray-200/50 dark:from-white/10 dark:via-white/5 dark:to-white/10 shadow-sm;
+    @apply rounded-2xl p-1 sm:p-2 bg-gradient-to-b from-gray-200/70 via-gray-100/40 to-gray-200/50 dark:from-white/10 dark:via-white/5 dark:to-white/10 shadow-sm;
   }
   .double-bezel-inner {
-    @apply rounded-xl bg-white dark:bg-gray-900 border border-gray-100/80 dark:border-gray-800/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)];
+    @apply rounded-[14px] sm:rounded-xl bg-white dark:bg-gray-900 border border-gray-100/80 dark:border-gray-800/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.8)] dark:shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)];
   }
 
   /* Luxury Document Surface: realistic paper drop shadow with tactile top ribbon */

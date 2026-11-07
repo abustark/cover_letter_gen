@@ -267,10 +267,10 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const isUploading = fileParsing || isFormatting;
 
   const inputClass =
-    'w-full bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 rounded-xl p-3.5 text-[14px] text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 focus-ring transition-all resize-none shadow-xs';
+    'w-full bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 rounded-xl p-3.5 text-[13.5px] sm:text-[14px] text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 focus-ring transition-all resize-none shadow-xs font-sans leading-relaxed';
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* 1. Resume Container (Double Bezel) */}
       <div
         className={`double-bezel transition-colors duration-200 ${
@@ -283,7 +283,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
       >
-        <div className="double-bezel-inner p-5 sm:p-6 space-y-4">
+        <div className="double-bezel-inner p-4 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-bold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -295,12 +295,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 w-full sm:w-auto">
               <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => handleFileClick(false)}
                 disabled={isUploading}
+                className="flex-1 sm:flex-initial justify-center"
               >
                 <UploadIcon className="w-3.5 h-3.5 mr-1" /> Upload PDF / DOCX
               </Button>
@@ -308,7 +309,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 type="button"
                 onClick={() => handleFileClick(true)}
                 disabled={isUploading}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent-700 dark:text-accent-300 border border-accent-200 dark:border-accent-800/80 bg-accent-50/80 dark:bg-accent-950/40 hover:bg-accent-100 dark:hover:bg-accent-900/40 rounded-xl px-3 py-1.5 transition-all shadow-xs disabled:opacity-50"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-accent-700 dark:text-accent-300 border border-accent-200 dark:border-accent-800 bg-accent-50/80 dark:bg-accent-950/70 hover:bg-accent-100 dark:hover:bg-accent-900/50 rounded-xl px-3 py-1.5 transition-all shadow-xs disabled:opacity-50"
               >
                 <SparklesIcon className="w-3.5 h-3.5 text-accent-500" /> AI format
               </button>
@@ -323,12 +324,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
               setFileError('');
             }}
             placeholder="Paste your resume text here, or drag & drop a PDF / DOCX resume into this area…"
-            className={`${inputClass} min-h-[240px] font-mono text-[12.5px] leading-relaxed`}
+            className={`${inputClass} min-h-[200px] sm:min-h-[240px]`}
             disabled={isUploading}
           />
 
-          <div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+            <div className="flex items-center gap-3 flex-wrap">
               {fileParsing && (
                 <span className="inline-flex items-center text-accent-600 dark:text-accent-400 font-medium">
                   <SpinnerIcon className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Parsing “{fileName}”…
@@ -347,7 +348,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
               {fileError && <span className="text-red-600 dark:text-red-400 font-medium">{fileError}</span>}
             </div>
 
-            <ExampleToggle title="Resume" content={RESUME_EXAMPLE} />
+            <div className="self-end sm:self-auto">
+              <ExampleToggle title="Resume" content={RESUME_EXAMPLE} />
+            </div>
           </div>
 
           <input
@@ -362,8 +365,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
       {/* 2. Target Job Container (Double Bezel) */}
       <div className="double-bezel">
-        <div className="double-bezel-inner p-5 sm:p-6 space-y-4">
-          <div className="flex items-center justify-between gap-3">
+        <div className="double-bezel-inner p-4 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-bold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-accent-500" />
@@ -378,6 +381,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
               options={JOB_TYPES}
               value={jobInputType}
               onChange={(v) => setJobInputType(v as JobDescriptionInputType)}
+              gridOnMobile={false}
             />
           </div>
 
@@ -393,16 +397,18 @@ export const InputSection: React.FC<InputSectionProps> = ({
           </Field>
 
           {jobInputType === JobDescriptionInputType.Text ? (
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Field label="Job description text">
                 <textarea
                   value={jobDescription}
                   onChange={(e) => setJobDescription(e.target.value)}
                   placeholder="Paste the requirements, responsibilities, and about the company…"
-                  className={`${inputClass} min-h-[160px] font-mono text-[12.5px] leading-relaxed`}
+                  className={`${inputClass} min-h-[160px]`}
                 />
               </Field>
-              <ExampleToggle title="Job Description" content={JOB_DESC_EXAMPLE} />
+              <div className="flex justify-end">
+                <ExampleToggle title="Job Description" content={JOB_DESC_EXAMPLE} />
+              </div>
             </div>
           ) : (
             <Field
@@ -423,7 +429,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
 
       {/* 3. Tone Selector Container */}
       <div className="double-bezel">
-        <div className="double-bezel-inner p-5 sm:p-6 space-y-3">
+        <div className="double-bezel-inner p-4 sm:p-6 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 className="text-sm font-bold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
@@ -434,7 +440,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 Tunes diction and pacing without fabricating or exaggerating facts
               </p>
             </div>
-            <Segmented options={TONES} value={tone} onChange={setTone} />
+            <Segmented options={TONES} value={tone} onChange={setTone} gridOnMobile={true} />
           </div>
         </div>
       </div>

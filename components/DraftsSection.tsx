@@ -95,7 +95,7 @@ export const DraftsSection: React.FC<DraftsSectionProps> = ({
                       e.stopPropagation();
                       onDelete(draft.id);
                     }}
-                    className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
+                    className="opacity-70 sm:opacity-0 sm:group-hover:opacity-100 focus-visible:opacity-100 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
                   >
                     <TrashIcon className="w-3.5 h-3.5" />
                   </IconButton>
