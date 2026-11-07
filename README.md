@@ -10,7 +10,7 @@
 
 [Live demo](https://coverltr.vercel.app/) · [Issues](https://github.com/abustark/cover_letter_gen/issues) · [Project facts](PROJECT-INFO.md)
 
-CoverCraft turns two unstructured documents — a resume (PDF or DOCX) and a job description (pasted text or a posting URL) — into a job-specific cover letter you can copy, export as PDF/DOCX, or keep as a draft. The browser never holds the model API key.
+CoverCraft turns two unstructured documents — a resume (PDF or DOCX) and a job description (pasted text or a posting URL) — into a job-specific cover letter you can review, copy, export as PDF/DOCX, or save as a draft.
 
 ---
 
@@ -18,51 +18,57 @@ CoverCraft turns two unstructured documents — a resume (PDF or DOCX) and a job
 
 | | |
 |---|---|
-| **Four generation modes** | Balanced, Thinking (deeper reasoning for senior roles), Low Latency, From URL (reads the posting from a link) |
-| **Four tones** | Professional, Enthusiastic, Confident, Creative — injected into the system prompt |
-| **Resume intake** | PDF via `pdfjs-dist`, DOCX via `mammoth`, both lazy-loaded; optional AI reformatting into clean sections |
-| **Dual job input** | Paste text, or paste a URL — the posting is fetched and cleaned server-side, which sidesteps browser CORS |
-| **Google sign-in** | `@react-oauth/google`; the ID token is decoded client-side and expires after one hour |
-| **Export suite** | One-click copy, PDF (`jsPDF`), DOCX (`docx`), save draft, regenerate |
-| **Local drafts** | UUID keys and ISO timestamps in `localStorage`; click to reload, hover to delete |
-| **Dark / light theme** | Persisted preference, View-Transition wave from the toggle, CSS ripple fallback |
-| **Accessible controls** | `role="tablist"` segmented controls, visible focus rings, ≥44 px targets, `prefers-reduced-motion` respected |
+| **Four generation modes** | Balanced, Thinking (deep reasoning for senior roles), Low Latency, From URL (reads the posting from a link) |
+| **Four tones** | Professional, Enthusiastic, Confident, Creative — enforced in server-controlled prompts |
+| **Server-side security boundary** | Google ID tokens verified cryptographically server-side for all API endpoints; API keys never ship to browser |
+| **SSRF-hardened URL reader** | HTTPS enforcement, private/cloud-metadata IP blocking, DNS resolution, bounded manual redirects, streaming byte cap |
+| **Strict AI contract** | Model allowlist, input size caps, prompt-injection isolation via XML delimiters, anti-hallucination factual grounding |
+| **Resume intake** | PDF (up to 10 pages) via `pdfjs-dist`, DOCX via `mammoth`, client-side parsing (no file uploads to server), scanned document detection |
+| **User review checklist** | Interactive "Review before sending" checklist to verify role, claims, metrics, and tone before sending |
+| **Rate limiting** | Sliding-window quotas by verified Google user `sub` and client IP address; Upstash Redis / Vercel KV adapter support |
+| **Export suite** | One-click copy, PDF (`jsPDF`), DOCX (`docx`), local draft storage with quota recovery and schema migration |
+| **Dark / light theme** | Persisted preference, View-Transition wave from toggle, CSS ripple fallback |
+| **Automated testing & CI** | Suite covering token auth, SSRF defense, prompt architecture, file validation, and storage; GitHub Actions CI |
 
 ---
 
 ## Architecture
 
-A thin server boundary around a rich client: the SPA does parsing, prompting and export; two Vercel functions hold the credentials and the network edge cases.
+A hardened server security boundary with a rich, privacy-conscious client:
 
 ```
 Browser (React SPA)
-  ├── resume PDF/DOCX ──► pdfjs-dist / mammoth  (lazy import) ──► text
+  ├── resume PDF/DOCX ──► pdfjs-dist / mammoth (client-side parse) ──► bounded text
   ├── job description ──► pasted text
-  └── job posting URL ──► POST /api/fetch-url ──► stripped text (≤ 12k chars)
+  └── job posting URL ──► POST /api/fetch-url [Auth + SSRF + Rate Limit] ──► clean text (≤ 12k chars)
                                    │
                                    ▼
-                     POST /api/openrouter ──► OpenRouter
-                                   │            (3 free models, temp 0.7)
+                POST /api/openrouter [Auth + Server Prompts + Rate Limit]
+                                   │
                                    ▼
-              letter ──► copy · PDF · DOCX · draft (localStorage)
+                      OpenRouter Chat Completions
+                       (Model allowlist, temp 0.7)
+                                   │
+                                   ▼
+              letter ──► checklist · copy · PDF · DOCX · draft (localStorage)
 ```
 
 ### Endpoints
 
-| Method | Route | Purpose | Guardrails |
+| Method | Route | Purpose | Security & Guardrails |
 |---|---|---|---|
-| `POST` | `/api/openrouter` | Proxies chat completions to OpenRouter | Key from server env only · temperature pinned at `0.7` · `400` on missing `model`/`messages` · `502` on empty completion |
-| `POST` | `/api/fetch-url` | Fetches a job posting and strips it to text | `<script>`/`<style>` removed · tags collapsed · capped at **12,000 chars** · `502` on fetch failure |
+| `POST` | `/api/openrouter` | Generates cover letters or formats resumes | Requires Google ID token via `Authorization: Bearer` · server verifies signature against Google JWKS · user & IP rate limits · server-owned system prompts with prompt-injection fences · model allowlist · 50 KB resume cap · 25 KB JD cap · pinned temp 0.7 · redacted error logs |
+| `POST` | `/api/fetch-url` | Safely fetches & extracts job posting text | Requires Google ID token · user & IP rate limits · HTTPS-only · port 443 only · blocks localhost, private IPs, link-local, and cloud metadata (`169.254.169.254`) · DNS resolution checks · manual redirects (max 3) · 8s timeout · 2 MB stream cap · HTML text extraction (≤ 12k chars) |
 
-### Model routing
+### Model routing (server-enforced allowlist)
 
-| Mode | Model |
-|---|---|
-| Balanced | `nvidia/nemotron-3-ultra-550b-a55b:free` |
-| Thinking Mode | `nvidia/nemotron-3-super-120b-a12b:free` |
-| Low Latency | `google/gemma-4-26b-a4b-it:free` |
-| From URL | `nvidia/nemotron-3-ultra-550b-a55b:free` |
-| Resume formatting | `google/gemma-4-26b-a4b-it:free` |
+| Mode | Model ID | Purpose |
+|---|---|---|
+| Balanced (Standard) | `nvidia/nemotron-3-ultra-550b-a55b:free` | Frontier quality, 1M context |
+| Deep reasoning (Thinking) | `nvidia/nemotron-3-super-120b-a12b:free` | Reasoning MoE for complex senior roles |
+| Quick draft (Low Latency) | `google/gemma-4-26b-a4b-it:free` | Fast iteration MoE model |
+| From URL | `nvidia/nemotron-3-ultra-550b-a55b:free` | Long context for extracted web pages |
+| Resume formatting | `google/gemma-4-26b-a4b-it:free` | Fast structural cleanup utility |
 
 ---
 
@@ -74,109 +80,81 @@ Browser (React SPA)
 | Build | Vite 6, `@vitejs/plugin-react` |
 | Styling | Tailwind CSS v4 (`@tailwindcss/vite`) |
 | Language | TypeScript 5.8 (`tsc --noEmit` gate) |
-| AI | OpenRouter chat completions — three free models |
-| Auth | Google OAuth 2.0 (`@react-oauth/google`) |
-| Parsing | `pdfjs-dist`, `mammoth` (dynamic imports) |
-| Export | `jsPDF`, `docx` (dynamic imports) |
-| Hosting | Vercel — `api/*.ts` become serverless functions |
-
----
-
-## Project layout
-
-```
-.
-├── api/                    Vercel functions: LLM proxy + posting fetch
-├── components/             Header, InputSection, ModeSelector, OutputSection,
-│                           DraftsSection, GoogleButton, UI primitives, icons
-├── services/               OpenRouter prompts/routing · Google auth state
-├── public/                 favicon, Open Graph image
-├── docs/
-│   ├── PORTFOLIO-FRAMING.md    how to present this project on a portfolio
-│   ├── bugs-and-fixes/         bug-registry protocol kit
-│   └── sandbox-browser/        headless visual-check kit
-├── App.tsx                 app shell, state, generation flow
-├── index.tsx               React entry point
-├── index.css               Tailwind theme tokens and document surface
-├── types.ts                shared enums and interfaces
-├── vite.config.ts          dev-only key injection, chunk splitting
-├── PROJECT-INFO.md         fact sheet (stack, architecture, metrics)
-├── AGENTS.md               working rules for AI agents
-└── COMMIT-HISTORY.md       versioned commit log
-```
+| AI Gateway | OpenRouter chat completions with server-side model allowlist |
+| Auth | Google OAuth 2.0 (`@react-oauth/google`) with server-side cryptographic token verification |
+| Parsing | `pdfjs-dist`, `mammoth` (lazy dynamic imports, client-side only) |
+| Export | `jsPDF`, `docx` (lazy dynamic imports) |
+| Testing | Automated test suite (`tsx --test`), GitHub Actions CI |
+| Hosting | Vercel (`api/*.ts` serverless functions) / Vite dev server middleware |
 
 ---
 
 ## Getting started
 
-**Prerequisites:** Node.js 18+ (Vite 6), a Google OAuth client, and an OpenRouter API key.
+**Prerequisites:** Node.js 18+ (Vite 6), a Google OAuth client ID, and an OpenRouter API key.
 
 ```bash
 npm install
-cp .env.example .env.local   # then fill in both values
+cp .env.example .env.local   # fill in OPENROUTER_API_KEY and VITE_GOOGLE_CLIENT_ID
 npm run dev                  # http://localhost:3000
 ```
 
-When port 3000 is taken, Vite picks the next free port.
+### Development Parity
 
-### Google OAuth setup
+In local development, `npm run dev` uses a Vite server middleware to execute the exact same `/api/openrouter` and `/api/fetch-url` handlers as Vercel serverless functions.
+- The browser **never** receives `OPENROUTER_API_KEY` in development or production.
+- URL fetching runs server-side in Node, preventing CORS failures when reading job postings.
+- Google ID tokens are verified through the server middleware.
 
-1. Google Cloud Console → **APIs & Services** → **Credentials** → **Create credentials** → **OAuth client ID** → **Web application**.
-2. Under **Authorized JavaScript origins**, add `http://localhost:3000` and your production domain.
-3. Copy the client ID into `VITE_GOOGLE_CLIENT_ID`.
+### Automated Testing
 
-### Environment variables
+Run the automated test suite covering authentication, SSRF protection, prompts, drafts, and file validation:
 
-| Variable | Where | Notes |
-|---|---|---|
-| `OPENROUTER_API_KEY` | `.env.local` (dev) · Vercel env (prod) | Read from `.env.local` first, so a stale machine-level key cannot silently win |
-| `VITE_GOOGLE_CLIENT_ID` | `.env.local` · Vercel env | Public by design — client IDs are meant to be shipped |
+```bash
+npm test
+```
 
----
+To typecheck:
 
-## Deploy to Vercel
+```bash
+npm run typecheck
+```
 
-1. Import the repo in Vercel — framework preset **Vite**, no `vercel.json` needed.
-2. Add `OPENROUTER_API_KEY` and `VITE_GOOGLE_CLIENT_ID` under **Settings → Environment Variables**.
-3. Add the production domain to the OAuth client's **Authorized JavaScript origins**.
-4. Deploy. `api/openrouter.ts` and `api/fetch-url.ts` are detected automatically.
+To build for production:
 
-`npm run build` runs `tsc --noEmit` before bundling into `dist/`; `npm run typecheck` runs the type gate alone.
-
----
-
-## Security model
-
-**Protected by design**
-
-- In production the bundle contains **no API key** — `vite.config.ts` injects it only when `mode === 'development'`; every deployed request goes through `/api/openrouter`.
-- The key is read from `.env.local` before environment variables, so a stale machine-level key can't override the project one.
-- Job postings are fetched server-side with a `User-Agent` header, which avoids both browser CORS and leaking the key to third-party pages.
-- `localStorage` holds only a Google ID token (1-hour expiry), drafts, and the theme.
-
-**Not protected (known and deliberate)**
-
-- `/api/openrouter` is an open proxy: no authentication and **no rate limiting**.
-- `/api/fetch-url` accepts any URL — there is no scheme or host allowlist, so it is an SSRF surface.
-- Sign-in is a **client-side gate**: the ID token is decoded, not verified server-side. Generation is blocked in the UI, not at the API.
+```bash
+npm run build
+```
 
 ---
 
-## Status & limitations
+## Security Model
 
-- **No database.** Drafts live in `localStorage` and stay on one browser.
-- **No automated tests.** The gates are `npm run typecheck` and `npm run build`.
-- **Free-tier models** rate-limit and can respond slowly under load.
-- This is a single-user utility, not a multi-tenant service — see the security notes above.
+**Server-enforced protections:**
+
+- **Server Authentication Boundary:** All generation and URL-fetch endpoints require a Google ID token in the `Authorization: Bearer` header. The server verifies token signature against Google's public JWKS, verifies issuer (`accounts.google.com`), checks expiry with clock-skew tolerance, and matches audience against the configured client ID.
+- **SSRF Defense:** The URL fetcher parses destination URLs with strict rules: HTTPS scheme only, no URL credentials, standard port 443 only. It resolves hostnames via DNS and blocks loopback (`127.0.0.0/8`, `::1`), private networks (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`, `fc00::/7`), carrier-grade NAT (`100.64.0.0/10`), and cloud instance metadata services (`169.254.169.254`). Redirects are followed manually (max 3) and re-validated at each hop.
+- **AI Proxy Hardening:** Arbitrary `messages` arrays or client-supplied `system` prompts are rejected. Prompts are generated server-side using fixed templates that treat candidate resumes and job descriptions as untrusted data enclosed in XML tags. System instructions explicitly command the model to ignore prompt-injection attempts and ground all candidate claims strictly in the resume.
+- **Secret Isolation:** `OPENROUTER_API_KEY` is strictly confined to server-side Node runtime and is never bundled into the client build.
+- **Rate Limiting:** Protects endpoints against abuse with sliding-window quotas per verified user `sub` and per IP address. Supports Upstash Redis / Vercel KV with graceful in-memory fallback.
+- **Client-Side Document Privacy:** Uploaded PDF and DOCX files are parsed in-memory in the browser. The original files are never uploaded to any server. Drafts are saved in browser `localStorage` and never sent to a cloud database.
+
+---
+
+## Status & Limitations
+
+- **Single-tenant / local-first storage:** Drafts live in browser `localStorage` with quota protection and do not sync across devices.
+- **Free-tier upstream models:** Upstream models on OpenRouter free tier may experience provider latency or rate limits during peak traffic.
+- **Factuality assistance:** The app uses defensive prompt grounding and an interactive checklist, but users should always review letters before submitting.
 
 ---
 
 ## Docs
 
-- [`PROJECT-INFO.md`](PROJECT-INFO.md) — stack, architecture and metrics in one sheet
+- [`PROJECT-INFO.md`](PROJECT-INFO.md) — stack, architecture, metrics, and security sheet
 - [`docs/PORTFOLIO-FRAMING.md`](docs/PORTFOLIO-FRAMING.md) — positioning copy for portfolio/resume use
 - [`docs/bugs-and-fixes/`](docs/bugs-and-fixes/) — bug registry protocol and template
-- [`docs/sandbox-browser/`](docs/sandbox-browser/) — headless visual-check kit (reference implementation)
+- [`docs/sandbox-browser/`](docs/sandbox-browser/) — headless visual-check kit
 - [`AGENTS.md`](AGENTS.md) · [`COMMIT-HISTORY.md`](COMMIT-HISTORY.md)
 
 ---

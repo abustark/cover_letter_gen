@@ -6,9 +6,9 @@ import { ModeSelector } from './components/ModeSelector';
 import { DraftsSection } from './components/DraftsSection';
 import { generateCoverLetter } from './services/geminiService';
 import { useAuth } from './services/auth';
+import { loadSavedDrafts, persistDrafts, clearAllDrafts } from './services/draftStorage';
 import { GenerationMode, JobDescriptionInputType, Theme, Draft, Tone } from './types';
-
-const DRAFTS_KEY = 'drafts_local';
+import { SparklesIcon } from './components/icons';
 
 const App: React.FC = () => {
   // Inputs
@@ -16,20 +16,25 @@ const App: React.FC = () => {
   const [jobDescription, setJobDescription] = useState('');
   const [jobUrl, setJobUrl] = useState('');
   const [companyName, setCompanyName] = useState('');
-  const [jobInputType, setJobInputType] = useState<JobDescriptionInputType>(JobDescriptionInputType.Text);
+  const [jobInputType, setJobInputType] = useState<JobDescriptionInputType>(
+    JobDescriptionInputType.Text
+  );
   const [tone, setTone] = useState<Tone>('Professional');
-  
+
   // Outputs & State
   const [coverLetter, setCoverLetter] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<GenerationMode>(GenerationMode.Standard);
 
-  // New Features State
-  const [theme, setTheme] = useState<Theme>(() => (localStorage.getItem('theme') as Theme) || 'dark');
-  const [drafts, setDrafts] = useState<Draft[]>([]);
+  // Theme & Drafts State
+  const [theme, setTheme] = useState<Theme>(
+    () => (localStorage.getItem('theme') as Theme) || 'dark'
+  );
+  const [drafts, setDrafts] = useState<Draft[]>(() => loadSavedDrafts());
+  const [storageNotice, setStorageNotice] = useState<string | null>(null);
 
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, getValidToken } = useAuth();
 
   // Theme effect
   useEffect(() => {
@@ -48,58 +53,62 @@ const App: React.FC = () => {
     }
   }, [jobInputType]);
 
-  // Load drafts from localStorage on mount.
-  useEffect(() => {
-    const savedDrafts = localStorage.getItem(DRAFTS_KEY);
-    if (savedDrafts) {
-      setDrafts(JSON.parse(savedDrafts));
-    }
-  }, []);
-
   const handleSaveDraft = () => {
     if (!coverLetter) return;
     const newDraft: Draft = {
       id: crypto.randomUUID(),
-      companyName: companyName || "Untitled Draft",
+      companyName: companyName.trim() || 'Untitled Draft',
       coverLetter,
       createdAt: new Date().toISOString(),
     };
     const updatedDrafts = [newDraft, ...drafts];
-    setDrafts(updatedDrafts);
-    localStorage.setItem(DRAFTS_KEY, JSON.stringify(updatedDrafts));
+    const result = persistDrafts(updatedDrafts);
+    if (result.success) {
+      setDrafts(updatedDrafts);
+      setStorageNotice(result.error || null);
+    } else {
+      setError(result.error || 'Could not save draft.');
+    }
   };
 
   const handleDeleteDraft = (draftId: string) => {
-    const updatedDrafts = drafts.filter(draft => draft.id !== draftId);
+    const updatedDrafts = drafts.filter((draft) => draft.id !== draftId);
     setDrafts(updatedDrafts);
-    localStorage.setItem(DRAFTS_KEY, JSON.stringify(updatedDrafts));
+    persistDrafts(updatedDrafts);
+  };
+
+  const handleClearAllDrafts = () => {
+    clearAllDrafts();
+    setDrafts([]);
   };
 
   const handleLoadDraft = (draft: Draft) => {
     setCoverLetter(draft.coverLetter);
-    setCompanyName(draft.companyName);
-    // Smooth scroll to the output section for better UX
+    setCompanyName(draft.companyName === 'Untitled Draft' ? '' : draft.companyName);
     document.getElementById('output-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
-
   const handleGenerate = useCallback(async () => {
-    if (!isAuthenticated) {
+    const token = getValidToken();
+    if (!isAuthenticated || !token) {
       setError('Please sign in with Google to generate your cover letter.');
       document.getElementById('input-section')?.scrollIntoView({ behavior: 'smooth' });
       return;
     }
 
-    const isJobInputValid = (jobInputType === JobDescriptionInputType.Text && jobDescription.trim()) || 
-                            (jobInputType === JobDescriptionInputType.Url && jobUrl.trim());
+    const isJobInputValid =
+      (jobInputType === JobDescriptionInputType.Text && jobDescription.trim()) ||
+      (jobInputType === JobDescriptionInputType.Url && jobUrl.trim());
 
     if (!resume.trim() || !isJobInputValid) {
       setError('Please provide your resume and the job details.');
       return;
     }
+
     setIsLoading(true);
     setError(null);
     setCoverLetter('');
+    setStorageNotice(null);
 
     try {
       const jobInput = {
@@ -107,42 +116,57 @@ const App: React.FC = () => {
         value: jobInputType === JobDescriptionInputType.Text ? jobDescription : jobUrl,
       };
 
-      const response = await generateCoverLetter(resume, jobInput, mode, tone);
-      const text = response.text;
+      const response = await generateCoverLetter(
+        resume,
+        jobInput,
+        mode,
+        tone,
+        token,
+        companyName
+      );
 
+      const text = response.text;
       if (text) {
         setCoverLetter(text);
+        document.getElementById('output-section')?.scrollIntoView({ behavior: 'smooth' });
       } else {
         setError('Failed to generate a cover letter. The response was empty.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred.');
-      console.error(err);
+      console.error('Generation error:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [resume, jobDescription, jobUrl, jobInputType, mode, tone, isAuthenticated]);
+  }, [resume, jobDescription, jobUrl, jobInputType, mode, tone, companyName, isAuthenticated, getValidToken]);
 
   return (
     <div className="min-h-[100dvh] font-sans text-gray-900 dark:text-gray-100 transition-colors duration-300 bg-ambient relative">
-       
-      <Header 
-        theme={theme}
-        setTheme={setTheme}
-      />
-      
-      <main className="container mx-auto px-4 md:px-6 py-8 max-w-5xl pb-24">
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-gray-900 dark:text-gray-50">
-            Write a cover letter that gets noticed
+      <Header theme={theme} setTheme={setTheme} />
+
+      <main className="container mx-auto px-4 md:px-6 py-10 max-w-5xl pb-28">
+        {/* Hero Section */}
+        <div className="mb-10 text-center sm:text-left">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-wide bg-accent-50/80 dark:bg-accent-950/60 text-accent-700 dark:text-accent-300 border border-accent-200/70 dark:border-accent-800/70 mb-4 shadow-2xs">
+            <SparklesIcon className="w-3.5 h-3.5 text-accent-600 dark:text-accent-400" />
+            <span>AI Career Studio · Grounded & Factuality-Checked</span>
+          </div>
+
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-950 dark:text-white leading-[1.15]">
+            Craft a cover letter that{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-600 via-accent-500 to-accent2-500">
+              commands attention.
+            </span>
           </h1>
-          <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-2xl leading-relaxed">
-            Pair your resume with the role you're targeting, and CoverCraft drafts a tailored, professional letter — ready to review and send.
+
+          <p className="mt-3 text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
+            Pair your verified resume with any job posting or careers link. CoverCraft synthesizes an
+            authentic, tailored letter with zero invented credentials — ready to review and send.
           </p>
         </div>
 
-        {/* Unified workspace control strip */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-gray-200 dark:border-gray-800 pb-4 mb-8">
+        {/* Workspace Control Strip: Model Intelligence */}
+        <div className="mb-8 p-1.5 rounded-2xl bg-white/40 dark:bg-gray-950/40 border border-gray-200/60 dark:border-gray-800/60 backdrop-blur-sm shadow-xs">
           <ModeSelector
             currentMode={mode}
             setMode={setMode}
@@ -150,8 +174,8 @@ const App: React.FC = () => {
           />
         </div>
 
-        {/* Inputs workspace — one cohesive form, not floating cards */}
-        <div className="mb-10" id="input-section">
+        {/* Inputs Workspace */}
+        <div className="mb-12" id="input-section">
           <InputSection
             resume={resume}
             setResume={setResume}
@@ -170,7 +194,13 @@ const App: React.FC = () => {
           />
         </div>
 
-        {/* Output — the hero of the product */}
+        {storageNotice && (
+          <div className="mb-6 rounded-xl border border-amber-300/80 dark:border-amber-700/80 bg-amber-50/70 dark:bg-amber-900/20 p-3.5 text-xs text-amber-800 dark:text-amber-300 shadow-xs">
+            {storageNotice}
+          </div>
+        )}
+
+        {/* Document Preview & Export Section */}
         <OutputSection
           coverLetter={coverLetter}
           isLoading={isLoading}
@@ -180,18 +210,33 @@ const App: React.FC = () => {
           companyName={companyName}
         />
 
-        <DraftsSection 
+        {/* Saved Drafts Library */}
+        <DraftsSection
           drafts={drafts}
           onLoad={handleLoadDraft}
           onDelete={handleDeleteDraft}
+          onClearAll={handleClearAllDrafts}
         />
       </main>
 
-      <footer className="border-t border-gray-200 dark:border-gray-800 mt-16">
-        <div className="container mx-auto max-w-5xl px-4 py-8 text-xs text-gray-400 dark:text-gray-500 text-center flex flex-col gap-1.5">
-          <span>© {new Date().getFullYear()} ABu. All rights reserved.</span>
+      {/* Footer */}
+      <footer className="border-t border-gray-200/80 dark:border-gray-800/80 mt-20 bg-white/40 dark:bg-gray-950/40 backdrop-blur-sm">
+        <div className="container mx-auto max-w-5xl px-4 py-8 text-xs text-gray-500 dark:text-gray-400 text-center flex flex-col gap-2">
+          <div className="flex items-center justify-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+            <span className="font-semibold text-gray-700 dark:text-gray-300">
+              CoverCraft Studio v2.0.5
+            </span>
+            <span className="text-gray-300 dark:text-gray-700">·</span>
+            <span>Server-Verified Authentication</span>
+            <span className="text-gray-300 dark:text-gray-700">·</span>
+            <span>SSRF Protected</span>
+          </div>
           <span>
-            Draft a cover letter that reads like you wrote it — tailored to every role you apply for.
+            Client-side parsing ensures documents never leave your machine · Drafts preserved locally
+          </span>
+          <span className="text-[11px] text-gray-400 dark:text-gray-500">
+            © {new Date().getFullYear()} ABu. All rights reserved.
           </span>
         </div>
       </footer>

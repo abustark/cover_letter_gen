@@ -32,6 +32,7 @@
     "components",
     "services",
     "api",
+    "test",
     "vite-env.d.ts"
   ],
   "exclude": [

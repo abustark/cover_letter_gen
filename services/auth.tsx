@@ -17,20 +17,24 @@ interface StoredAuth {
   exp: number;
 }
 
-interface AuthContextValue {
+export interface AuthContextValue {
   clientId: string | null;
   user: AuthUser | null;
+  credential: string | null;
   isAuthenticated: boolean;
   isInitializing: boolean;
   signInError: string | null;
   handleCredential: (credential: string) => void;
   signOut: () => void;
+  getValidToken: () => string | null;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-/* Decode a Google ID token (JWT) in the browser. Only the user profile and
-   expiry are read — the token is never sent anywhere else. */
+/**
+ * Decode a Google ID token (JWT) in the browser to extract profile and expiry for the UI.
+ * Cryptographic verification happens on the CoverCraft server.
+ */
 const decodeCredential = (credential: string): { user: AuthUser; exp: number } | null => {
   try {
     const payload = credential.split('.')[1] || '';
@@ -74,7 +78,7 @@ const readStoredAuth = (): StoredAuth | null => {
 };
 
 const GoogleAuthInner: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<AuthUser | null>(() => readStoredAuth()?.user ?? null);
+  const [stored, setStored] = useState<StoredAuth | null>(() => readStoredAuth());
   const [isInitializing, setIsInitializing] = useState(true);
   const [signInError, setSignInError] = useState<string | null>(null);
 
@@ -83,6 +87,33 @@ const GoogleAuthInner: React.FC<{ children: React.ReactNode }> = ({ children }) 
     return () => window.clearTimeout(t);
   }, []);
 
+  // Monitor expiry
+  useEffect(() => {
+    if (!stored?.exp) return;
+    const timeLeft = stored.exp - Date.now();
+    if (timeLeft <= 0) {
+      setStored(null);
+      try {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setStored(null);
+      try {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+      setSignInError('Your session has expired. Please sign in again with Google.');
+    }, timeLeft);
+
+    return () => window.clearTimeout(timer);
+  }, [stored?.exp]);
+
   const handleCredential = useCallback((credential: string) => {
     setSignInError(null);
     const decoded = decodeCredential(credential);
@@ -90,13 +121,13 @@ const GoogleAuthInner: React.FC<{ children: React.ReactNode }> = ({ children }) 
       setSignInError('Could not read your Google profile. Please try signing in again.');
       return;
     }
-    const stored: StoredAuth = { credential, user: decoded.user, exp: decoded.exp };
+    const newStored: StoredAuth = { credential, user: decoded.user, exp: decoded.exp };
     try {
-      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(stored));
+      localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(newStored));
     } catch {
       // Storage unavailable — session lives in memory for this tab only.
     }
-    setUser(decoded.user);
+    setStored(newStored);
   }, []);
 
   const signOut = useCallback(() => {
@@ -104,19 +135,32 @@ const GoogleAuthInner: React.FC<{ children: React.ReactNode }> = ({ children }) 
     try {
       localStorage.removeItem(AUTH_STORAGE_KEY);
     } catch {
-      // Ignore — nothing else to clean up.
+      // Ignore
     }
-    setUser(null);
+    setStored(null);
   }, []);
 
+  const getValidToken = useCallback((): string | null => {
+    if (!stored?.credential || !stored?.exp) return null;
+    if (Date.now() >= stored.exp) {
+      signOut();
+      return null;
+    }
+    return stored.credential;
+  }, [stored, signOut]);
+
+  const isAuthenticated = !!(stored?.user && stored?.credential && Date.now() < stored.exp);
+
   const value: AuthContextValue = {
-    clientId: CLIENT_ID,
-    user,
-    isAuthenticated: !!user,
+    clientId: CLIENT_ID || null,
+    user: isAuthenticated ? stored?.user ?? null : null,
+    credential: isAuthenticated ? stored?.credential ?? null : null,
+    isAuthenticated,
     isInitializing,
     signInError,
     handleCredential,
     signOut,
+    getValidToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -127,11 +171,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const value: AuthContextValue = {
       clientId: null,
       user: null,
+      credential: null,
       isAuthenticated: false,
       isInitializing: false,
       signInError: null,
       handleCredential: () => {},
       signOut: () => {},
+      getValidToken: () => null,
     };
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
   }

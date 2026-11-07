@@ -7,11 +7,38 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.0.5`** (current head is `2.0.4` — see below)
+> - **`main` → `2.0.6`** (current head is `2.0.5` — see below)
 
 ---
 
 ## Commit History
+
+### 2.0.5 - harden security, SSRF protection, agency visual redesign & tests
+
+- **Date**: 2026-11-07
+- **Why**: comprehensive security, reliability, SSRF protection, and factuality hardening per Product Completion Guide, plus agency-tier visual redesign and verification gates pass.
+- **Changes**:
+  - `api/utils/auth.ts`: implemented server-side cryptographic Google ID token verification against Google JWKS (`https://www.googleapis.com/oauth2/v3/certs`) checking signature, issuer, expiry with clock-skew tolerance, audience, and subject.
+  - `api/utils/urlSecurity.ts`: comprehensive SSRF prevention for job-posting URL fetching (enforcing HTTPS, blocking non-standard ports and credentials, resolving DNS and blocking private/loopback/cloud-metadata IPv4/IPv6 addresses including `169.254.169.254`, manual redirect checking up to 3 hops, 8s timeout, 2 MB streaming byte cap, and HTML text cleanup).
+  - `api/utils/rateLimiter.ts`: sliding-window rate limiter by verified user `sub` and client IP address; supports Upstash Redis / Vercel KV with in-memory fallback.
+  - `api/utils/prompts.ts`: server-owned prompt templates with XML data encapsulation (`<candidate_resume>` and `<target_job_description>`), prompt-injection defense directives, anti-hallucination factual grounding rules, model allowlist, and mode/tone validation.
+  - `api/openrouter.ts`: hardened proxy endpoint requiring Google ID token, applying rate limits, rejecting arbitrary `messages`/`model` contracts, and mapping upstream errors (429/502) with redacted logs.
+  - `api/fetch-url.ts`: hardened URL endpoint requiring Google ID token, applying rate limits, and executing SSRF-safe URL fetching.
+  - `vite.config.ts`: added local development server middleware routing `/api/*` requests through server handlers for complete development-to-production parity without exposing API keys to the client bundle.
+  - `services/auth.tsx`: updated AuthContext to manage token lifecycle, monitor expiry, and expose active credentials for API calls.
+  - `services/geminiService.ts`: converted to pure authenticated client calling server `/api/*` endpoints; eliminated all direct browser calls to OpenRouter and third-party URLs.
+  - `components/Header.tsx`: transformed into a floating detached glass island navbar with refined brand monogram (`C`), PRO badge, verified user status chip, and tactile theme switcher.
+  - `components/UI.tsx`: upgraded button system with button-in-button trailing icon badges, micro-scale tactile feedback (`active:scale-[0.98]`), concentric radii, and polished segmented tab controls.
+  - `components/ModeSelector.tsx`: overhauled model intelligence strip with model badges (Recommended, High Precision, Fastest, Web Grounded), hardware-style segmented pills, and contextual model descriptors.
+  - `components/InputSection.tsx`: implemented double-bezel concentric container architecture for candidate resume, target job, and tone selectors; added drag-and-drop resume intake (5 MB cap, 10-page limit, scanned document detection) with word-count indicators and sample previewers.
+  - `components/OutputSection.tsx`: transformed document preview into an executive stationery letterpress surface with realistic paper drop-shadow (`doc-surface-card`), top gradient foil accent rule, floating action toolbar island, and progress-tracked pre-flight factuality checklist.
+  - `components/DraftsSection.tsx`: upgraded local drafts library into an elegant masonry grid with company monogram tiles, formatted dates, line excerpts, and hover micro-interactions.
+  - `services/draftStorage.ts`: implemented schema v2 with migration from `drafts_local`, quota recovery, and clear-all action.
+  - `index.css`: added multi-layer atmospheric radial mesh lighting (`.bg-ambient`), concentric curves, double-bezel utilities, and luxury document paper shadow profiles.
+  - `App.tsx`: updated hero section with high-contrast headline, optical eyebrow badge, and balanced layout rhythm.
+  - `test/`: added comprehensive automated test suite covering auth, SSRF, prompts, drafts, and file validation (48 tests passing).
+  - `package.json` & `.github/workflows/ci.yml`: added `npm test` script and GitHub Actions CI workflow.
+  - `README.md` & `PROJECT-INFO.md`: updated documentation, architecture, security model, and metrics.
 
 ### 2.0.4 - remove stale snapshot and unused AI Studio metadata
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Theme } from '../types';
-import { MoonIcon, SunIcon, SignOutIcon } from './icons';
+import { MoonIcon, SunIcon, SignOutIcon, SparklesIcon } from './icons';
 import { GoogleButton } from './GoogleButton';
 import { useAuth } from '../services/auth';
 
@@ -18,7 +18,7 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
     el.style.left = `${x}px`;
     el.style.top = `${y}px`;
     document.body.appendChild(el);
-    window.setTimeout(() => el.remove(), 1300);
+    window.setTimeout(() => el.remove(), 1100);
   };
 
   const toggleTheme = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -44,83 +44,94 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white/90 dark:bg-gray-950/90 border-b border-gray-200 dark:border-gray-800 backdrop-blur-sm">
-      <div className="container mx-auto max-w-5xl px-4 h-16 flex items-center justify-between">
+    <header className="sticky top-3 z-50 px-3 sm:px-6">
+      <div className="container mx-auto max-w-5xl rounded-2xl bg-white/80 dark:bg-gray-950/80 border border-gray-200/80 dark:border-gray-800/80 backdrop-blur-xl shadow-xs transition-all duration-300">
+        <div className="h-16 px-4 sm:px-6 flex items-center justify-between gap-4">
+          {/* Brand */}
+          <div className="flex items-center gap-3">
+            <div className="relative group">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-600 via-accent-700 to-accent-900 flex items-center justify-center shadow-sm shadow-accent-600/20 ring-1 ring-white/20 transition-transform duration-200 group-hover:scale-105">
+                <span className="text-white font-bold text-base tracking-wider leading-none">C</span>
+              </div>
+              <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-accent2-400 rounded-full ring-2 ring-white dark:ring-gray-950" />
+            </div>
 
-        {/* Brand */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-500 to-accent-700 flex items-center justify-center shadow-sm ring-1 ring-accent-400/40">
-            <span className="text-white font-bold text-base leading-none">C</span>
-          </div>
-          <div className="flex flex-col leading-none hidden sm:flex">
-            <span className="text-base font-bold tracking-tight text-gray-900 dark:text-gray-50">
-              CoverCraft
-            </span>
-            <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500 tracking-wide hidden sm:block">
-              Cover Letter Builder
-            </span>
-          </div>
-        </div>
-
-        {/* Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {isInitializing ? (
-            <div className="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-800 animate-pulse" />
-          ) : isAuthenticated && user ? (
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="hidden sm:flex flex-col items-end leading-tight">
-                <span className="text-xs font-semibold text-gray-800 dark:text-gray-100 max-w-[140px] truncate">
-                  {user.name}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-2">
+                <span className="text-base font-bold tracking-tight text-gray-900 dark:text-gray-50">
+                  CoverCraft
                 </span>
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 max-w-[140px] truncate">
-                  {user.email}
+                <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide bg-accent-50 dark:bg-accent-900/40 text-accent-700 dark:text-accent-300 border border-accent-200/60 dark:border-accent-800/60">
+                  PRO
                 </span>
               </div>
-              {user.picture ? (
-                <img
-                  src={user.picture}
-                  alt={user.name}
-                  referrerPolicy="no-referrer"
-                  className="w-9 h-9 rounded-full ring-1 ring-gray-200 dark:ring-gray-700 object-cover select-none"
-                />
-              ) : (
-                <div className="w-9 h-9 rounded-full bg-accent-600 text-white flex items-center justify-center text-sm font-semibold select-none">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-              )}
-              <button
-                type="button"
-                onClick={signOut}
-                aria-label="Sign out"
-                title="Sign out"
-                className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-150 focus-ring"
-              >
-                <SignOutIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-              </button>
+              <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500 hidden sm:block">
+                AI Cover Letter Studio
+              </span>
             </div>
-          ) : (
-            <GoogleButton size="medium" fullWidth={false} />
-          )}
+          </div>
 
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            className="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors duration-150 focus-ring
-              bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100
-              border border-gray-300 dark:border-gray-600
-              shadow-sm hover:shadow
-              hover:bg-accent-50 hover:text-accent-700 hover:border-accent-300
-              dark:hover:bg-accent-900/30 dark:hover:text-accent-200 dark:hover:border-accent-700"
-          >
-            {theme === 'light' ? (
-              <MoonIcon className="w-4 h-4 text-accent2-600" />
+          {/* Controls */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {isInitializing ? (
+              <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-800 animate-pulse" />
+            ) : isAuthenticated && user ? (
+              <div className="flex items-center gap-2 rounded-full pl-2.5 pr-1.5 py-1 bg-gray-100/80 dark:bg-gray-900/80 border border-gray-200/70 dark:border-gray-800/70">
+                <div className="hidden md:flex flex-col items-end leading-none pr-1">
+                  <span className="text-xs font-semibold text-gray-800 dark:text-gray-100 max-w-[130px] truncate">
+                    {user.name}
+                  </span>
+                  <span className="text-[10px] text-accent2-600 dark:text-accent2-400 font-medium flex items-center gap-1 mt-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-accent2-500 animate-pulse" /> Verified
+                  </span>
+                </div>
+                {user.picture ? (
+                  <img
+                    src={user.picture}
+                    alt={user.name}
+                    referrerPolicy="no-referrer"
+                    className="w-7 h-7 rounded-full ring-1 ring-gray-200 dark:ring-gray-700 object-cover select-none"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full bg-accent-600 text-white flex items-center justify-center text-xs font-bold select-none">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={signOut}
+                  aria-label="Sign out"
+                  title="Sign out"
+                  className="w-7 h-7 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+                >
+                  <SignOutIcon className="w-3.5 h-3.5" />
+                </button>
+              </div>
             ) : (
-              <SunIcon className="w-4 h-4 text-amber-400" />
+              <GoogleButton size="medium" fullWidth={false} />
             )}
-            <span className="hidden sm:inline">{theme === 'light' ? 'Light' : 'Dark'}</span>
-          </button>
+
+            {/* Theme Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-200 focus-ring
+                bg-gray-100/80 dark:bg-gray-900/80 text-gray-700 dark:text-gray-200
+                border border-gray-200/80 dark:border-gray-800/80
+                hover:border-accent-300 dark:hover:border-accent-700 hover:bg-accent-50/50 dark:hover:bg-accent-900/20 active:scale-95"
+            >
+              {theme === 'light' ? (
+                <MoonIcon className="w-3.5 h-3.5 text-accent-600" />
+              ) : (
+                <SunIcon className="w-3.5 h-3.5 text-amber-400" />
+              )}
+              <span className="hidden sm:inline font-medium text-[11px] tracking-wide">
+                {theme === 'light' ? 'Dark' : 'Light'}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </header>
