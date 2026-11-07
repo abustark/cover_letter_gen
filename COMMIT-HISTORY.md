@@ -7,11 +7,25 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.0.10`** (current head is `2.0.9` — see below)
+> - **`main` → `2.1.0`** (current head is `2.0.10` — see below)
 
 ---
 
 ## Commit History
+
+### 2.0.10 - switch toolchain to Bun and verify all gates and tests
+
+- **Date**: 2026-11-07
+- **Why**: user requested switching from npm to Bun for all tasks and executing the complete gates pass and test suite under Bun.
+- **Changes**:
+  - `package.json`: switched `"test"` script to `"bun test"`; modernized `"typecheck"` and `"build"` scripts to direct node bin execution for cross-runtime stability on Windows.
+  - `scripts/inspect-ui.cjs`: updated target host binding to `127.0.0.1:3000` for deterministic local IPv4 connection under Chrome headless automation.
+  - `api/utils/auth.ts`: optimized access token check to target `ya29.` Google OAuth tokens, ensuring malformed token formats fail fast and synchronously.
+  - Gates passed:
+    - `bun run typecheck`: TypeScript verification passed with 0 errors.
+    - `bun test`: All 48 tests across 5 test suites passed cleanly with 0 failures.
+    - `bun run build`: Production Vite bundle compiled in 58.3s with 0 errors.
+    - Playwright inspection: Desktop and mobile viewports verified with 0 horizontal overflow and interactive dialog confirmation; screenshots saved to `artifacts/`.
 
 ### 2.0.9 - differentiate section headings, stack action icons & fix Google sign-in
 

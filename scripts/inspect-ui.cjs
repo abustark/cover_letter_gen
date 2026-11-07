@@ -55,7 +55,7 @@ async function run() {
       viewport: { width: 1280, height: 800 }
     });
     const page = await context.newPage();
-    await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+    await page.goto('http://127.0.0.1:3000', { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => {
       localStorage.setItem('theme', 'light');
       document.documentElement.classList.remove('dark');
@@ -75,7 +75,7 @@ async function run() {
       viewport: { width: 1280, height: 800 }
     });
     const page = await context.newPage();
-    await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+    await page.goto('http://127.0.0.1:3000', { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => {
       localStorage.setItem('theme', 'dark');
       document.documentElement.classList.remove('light');
@@ -98,7 +98,7 @@ async function run() {
       deviceScaleFactor: 2
     });
     const page = await context.newPage();
-    await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+    await page.goto('http://127.0.0.1:3000', { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => {
       localStorage.setItem('theme', 'light');
       document.documentElement.classList.remove('dark');
@@ -124,7 +124,7 @@ async function run() {
       deviceScaleFactor: 2
     });
     const page = await context.newPage();
-    await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+    await page.goto('http://127.0.0.1:3000', { waitUntil: 'domcontentloaded' });
     await page.evaluate(() => {
       localStorage.setItem('theme', 'dark');
       document.documentElement.classList.remove('light');
@@ -145,7 +145,7 @@ async function run() {
   {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     const page = await context.newPage();
-    await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+    await page.goto('http://127.0.0.1:3000', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(300);
 
     // Test Theme toggle button
@@ -213,7 +213,7 @@ async function run() {
       deviceScaleFactor: 2
     });
     const page = await context.newPage();
-    await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
+    await page.goto('http://127.0.0.1:3000', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(300);
 
     // Test Avatar Circle click to open the Popover

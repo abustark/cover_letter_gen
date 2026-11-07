@@ -120,8 +120,8 @@ export async function verifyGoogleToken(
     return { ok: false, status: 500, error: 'Server authentication configuration is missing.' };
   }
 
-  // Support Google OAuth access tokens (from useGoogleLogin / tokenClient flow)
-  if (parts.length !== 3) {
+  // Support Google OAuth access tokens (starts with ya29.)
+  if (trimmed.startsWith('ya29.')) {
     try {
       const res = await fetch(
         `https://oauth2.googleapis.com/tokeninfo?access_token=${encodeURIComponent(trimmed)}`
@@ -149,6 +149,10 @@ export async function verifyGoogleToken(
     } catch {
       return { ok: false, status: 401, error: 'Malformed authentication token.' };
     }
+  }
+
+  if (parts.length !== 3) {
+    return { ok: false, status: 401, error: 'Malformed authentication token.' };
   }
 
   const [headerB64, payloadB64, signatureB64] = parts;
