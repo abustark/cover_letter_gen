@@ -143,13 +143,13 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
   return (
     <div id="output-section" className="mt-14 scroll-mt-24 space-y-4">
       {/* Document Section Header & Floating Action Island */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-gray-200/80 dark:border-gray-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-stone-200/80 dark:border-stone-800/80">
         <div>
-          <h2 className="text-sm font-bold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-accent-500" />
-            {isLoading ? 'Synthesizing Cover Letter…' : coverLetter ? docTitle : 'Document Preview Studio'}
+          <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-stone-900 dark:bg-stone-100" />
+            {isLoading ? 'Synthesizing Application Letter…' : coverLetter ? docTitle : 'Document Studio'}
           </h2>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
             {coverLetter
               ? 'Ready for review, download, or local archive'
               : 'Add your candidate credentials and target job above to draft'}
@@ -157,16 +157,16 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
         </div>
 
         {coverLetter && !isLoading && (
-          <div className="flex flex-wrap items-center justify-end gap-1 rounded-2xl bg-white/90 dark:bg-gray-900/90 border border-gray-200/80 dark:border-gray-800/80 p-1 shadow-xs backdrop-blur-md">
+          <div className="flex flex-wrap items-center justify-end gap-1 rounded-xl bg-white/95 dark:bg-stone-900/95 border border-stone-200 dark:border-stone-800 p-1 shadow-xs backdrop-blur-md">
             <button
               onClick={handleSaveWithFeedback}
               title="Save to local drafts"
-              className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             >
               {saved ? (
-                <CheckIcon className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                <CheckIcon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               ) : (
-                <SaveIcon className="w-3.5 h-3.5 text-accent-600 dark:text-accent-400" />
+                <SaveIcon className="w-3.5 h-3.5 text-stone-700 dark:text-stone-300" />
               )}
               <span>{saved ? 'Saved' : 'Save draft'}</span>
             </button>
@@ -174,28 +174,28 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
             <button
               onClick={handleCopy}
               title="Copy to clipboard"
-              className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
             >
               {copied ? (
-                <CheckIcon className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                <CheckIcon className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               ) : (
-                <CopyIcon className="w-3.5 h-3.5 text-gray-500" />
+                <CopyIcon className="w-3.5 h-3.5 text-stone-500 dark:text-stone-400" />
               )}
               <span>{copied ? 'Copied' : 'Copy'}</span>
             </button>
 
-            <div className="h-4 w-px bg-gray-200 dark:bg-gray-800 mx-0.5" />
+            <div className="h-4 w-px bg-stone-200 dark:bg-stone-800 mx-0.5" />
 
             <IconButton label="Download PDF" onClick={handleDownloadPdf}>
-              <DownloadIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              <DownloadIcon className="w-4 h-4 text-stone-600 dark:text-stone-300" />
             </IconButton>
 
             <IconButton label="Download DOCX" onClick={handleDownloadDocx}>
-              <FileIcon className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+              <FileIcon className="w-4 h-4 text-stone-600 dark:text-stone-300" />
             </IconButton>
 
             <IconButton label="Regenerate" onClick={onRegenerate}>
-              <RegenerateIcon className="w-4 h-4 text-accent2-600 dark:text-accent2-400" />
+              <RegenerateIcon className="w-4 h-4 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100" />
             </IconButton>
           </div>
         )}
@@ -203,17 +203,17 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
 
       {/* Review Before Sending Checklist */}
       {coverLetter && !isLoading && (
-        <div className="rounded-2xl border border-accent-200/60 dark:border-accent-800/60 bg-gradient-to-r from-accent-50/50 via-white to-accent2-50/40 dark:from-accent-950/40 dark:via-gray-900/60 dark:to-accent2-950/40 p-4 sm:p-5 shadow-xs">
+        <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800/90 bg-stone-50/80 dark:bg-stone-900/60 p-4 sm:p-5 shadow-xs">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <div className="flex items-center gap-2.5">
-              <span className="w-6 h-6 rounded-lg bg-accent-100 dark:bg-accent-900/50 flex items-center justify-center text-accent-700 dark:text-accent-300 flex-shrink-0">
-                <SparklesIcon className="w-3.5 h-3.5" />
+              <span className="w-6 h-6 rounded-lg bg-stone-200 dark:bg-stone-800 flex items-center justify-center text-stone-700 dark:text-stone-300 font-bold text-xs flex-shrink-0">
+                ✓
               </span>
               <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-xs font-bold uppercase tracking-wider text-gray-900 dark:text-gray-100">
-                  Pre-Flight Factuality Checklist
+                <span className="text-xs font-bold uppercase tracking-wider text-stone-900 dark:text-stone-100 font-mono">
+                  Factuality Checklist
                 </span>
-                <span className="text-xs text-accent-700 dark:text-accent-300 font-semibold">
+                <span className="text-xs text-stone-600 dark:text-stone-400 font-mono">
                   {completedCount} of {CHECKLIST_ITEMS.length} verified ({progressPercent}%)
                 </span>
               </div>
@@ -222,38 +222,38 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
             <button
               type="button"
               onClick={() => setIsChecklistOpen((v) => !v)}
-              className="text-xs font-semibold text-gray-500 hover:text-accent-600 dark:hover:text-accent-400 transition-colors self-end sm:self-auto"
+              className="text-xs font-semibold text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors self-end sm:self-auto"
             >
               {isChecklistOpen ? 'Collapse' : 'Show checklist'}
             </button>
           </div>
 
           {/* Progress track */}
-          <div className="w-full bg-gray-200/80 dark:bg-gray-800/80 h-1 rounded-full mt-3 overflow-hidden">
+          <div className="w-full bg-stone-200 dark:bg-stone-800 h-1 rounded-full mt-3 overflow-hidden">
             <div
-              className="bg-gradient-to-r from-accent-600 to-accent2-500 h-full transition-all duration-300 rounded-full"
+              className="bg-stone-900 dark:bg-stone-100 h-full transition-all duration-300 rounded-full"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
 
           {isChecklistOpen && (
-            <div className="mt-3.5 pt-3 border-t border-gray-200/60 dark:border-gray-800/60 space-y-2">
-              <p className="text-[11px] text-gray-500 dark:text-gray-400">
+            <div className="mt-3.5 pt-3 border-t border-stone-200/60 dark:border-stone-800/60 space-y-2">
+              <p className="text-[11px] text-stone-500 dark:text-stone-400">
                 AI outputs should always be verified by the applicant. Confirm all points below before submitting:
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
                 {CHECKLIST_ITEMS.map((item) => (
                   <label
                     key={item.id}
-                    className="flex items-start gap-2.5 text-xs text-gray-700 dark:text-gray-300 cursor-pointer select-none group"
+                    className="flex items-start gap-2.5 text-xs text-stone-700 dark:text-stone-300 cursor-pointer select-none group"
                   >
                     <input
                       type="checkbox"
                       checked={!!checkedItems[item.id]}
                       onChange={() => toggleCheck(item.id)}
-                      className="mt-0.5 rounded-md border-gray-300 dark:border-gray-700 text-accent-600 focus:ring-accent-500/50 cursor-pointer"
+                      className="mt-0.5 rounded-md border-stone-300 dark:border-stone-700 text-stone-900 focus:ring-stone-500 cursor-pointer"
                     />
-                    <span className="group-hover:text-gray-900 dark:group-hover:text-white transition-colors">
+                    <span className="group-hover:text-stone-900 dark:group-hover:text-stone-100 transition-colors">
                       {item.label}
                     </span>
                   </label>
@@ -266,9 +266,9 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
 
       {/* Luxury Document Surface Container */}
       <div className="double-bezel">
-        <div className="double-bezel-inner overflow-hidden min-h-[55vh] relative doc-surface-card bg-white dark:bg-gray-900">
-          {/* Top Decorative Foil Rule */}
-          <div className="h-1 bg-gradient-to-r from-accent-500 via-accent2-400 to-accent-600" />
+        <div className="double-bezel-inner overflow-hidden min-h-[55vh] relative doc-surface-card bg-stone-50/50 dark:bg-stone-950/60">
+          {/* Subtle Top Rule */}
+          <div className="h-0.5 bg-stone-200/80 dark:bg-stone-800/80" />
 
           {/* Loading State */}
           {isLoading && (
@@ -309,13 +309,13 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
           {/* Empty Placeholder State */}
           {!isLoading && !coverLetter && !error && (
             <div className="flex flex-col items-center justify-center min-h-[38vh] sm:min-h-[48vh] text-center p-6 sm:p-8">
-              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-accent-50/80 dark:bg-accent-950/60 border border-accent-200/60 dark:border-accent-800/60 flex items-center justify-center mb-3 sm:mb-4 text-accent-600 dark:text-accent-300">
+              <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center mb-3 sm:mb-4 text-stone-600 dark:text-stone-300 shadow-2xs">
                 <FileIcon className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <p className="text-sm sm:text-base font-bold text-gray-800 dark:text-gray-200">
+              <p className="text-sm sm:text-base font-bold text-stone-800 dark:text-stone-200">
                 Your Cover Letter Will Appear Here
               </p>
-              <p className="text-xs mt-1.5 text-gray-400 dark:text-gray-500 max-w-sm leading-relaxed">
+              <p className="text-xs mt-1.5 text-stone-400 dark:text-stone-500 max-w-sm leading-relaxed">
                 Provide your candidate resume and target role above, then click Generate to produce a tailored letter.
               </p>
             </div>
@@ -324,7 +324,7 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
           {/* Rendered Letter */}
           {!isLoading && coverLetter && (
             <div className="p-4 sm:p-12 overflow-y-auto">
-              <article className="doc-surface px-5 sm:px-12 py-8 sm:py-14 text-stone-900 dark:text-stone-100 leading-8 sm:leading-9 text-[15px] sm:text-[16px] whitespace-pre-wrap font-serif tracking-normal selection:bg-accent2-200 bg-[#fdfdfc] dark:bg-stone-900/90 rounded-xl shadow-xs border border-stone-200/80 dark:border-stone-800/80">
+              <article className="doc-surface px-5 sm:px-12 py-8 sm:py-14 text-stone-900 dark:text-stone-100 leading-8 sm:leading-9 text-[15px] sm:text-[16px] whitespace-pre-wrap font-serif tracking-normal selection:bg-amber-100 dark:selection:bg-stone-700 bg-[#fffdfa] dark:bg-stone-900 rounded-xl shadow-xs border border-stone-200/80 dark:border-stone-800/80">
                 {renderWithLinks(coverLetter)}
               </article>
             </div>

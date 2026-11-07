@@ -52,10 +52,10 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, setMode
     <div className="w-full space-y-3">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-accent-700 dark:text-accent-300 flex items-center gap-1.5">
-            <SparklesIcon className="w-3.5 h-3.5 text-accent-600 dark:text-accent-400" /> Model Intelligence
+          <span className="text-[11px] font-mono uppercase tracking-wider text-stone-700 dark:text-stone-300 flex items-center gap-1.5 font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 dark:bg-amber-400" /> Synthesis Engine
           </span>
-          <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-accent-50 dark:bg-accent-950/60 text-accent-700 dark:text-accent-300 border border-accent-200/60 dark:border-accent-800/60">
+          <span className="px-2 py-0.5 rounded-full text-[10px] font-mono uppercase tracking-wide bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200/80 dark:border-stone-700/80">
             {meta.badge}
           </span>
         </div>
@@ -71,26 +71,26 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({ currentMode, setMode
       <div
         className={`rounded-xl border p-3.5 flex items-start justify-between gap-3 transition-all duration-200 ${
           disabled
-            ? 'border-amber-300/60 dark:border-amber-700/50 bg-amber-50/50 dark:bg-amber-900/10'
-            : 'border-accent-200/70 dark:border-accent-800/50 bg-white/70 dark:bg-gray-900/50 backdrop-blur-sm shadow-xs'
+            ? 'border-amber-300/80 dark:border-amber-700/70 bg-amber-50/60 dark:bg-amber-950/20'
+            : 'border-stone-200/80 dark:border-stone-800/80 bg-white/70 dark:bg-stone-900/50 backdrop-blur-sm shadow-xs'
         }`}
       >
         <div className="flex items-start gap-2.5">
           <span
             className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${
-              disabled ? 'bg-amber-500' : 'bg-accent2-500 ring-2 ring-accent2-200 dark:ring-accent2-900'
+              disabled ? 'bg-amber-500' : 'bg-stone-700 dark:bg-stone-300'
             }`}
           />
           <div className="space-y-0.5">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
+              <span className="text-xs font-bold text-stone-900 dark:text-stone-100">
                 {disabled ? 'URL Mode Active' : meta.label}
               </span>
-              <span className="text-[10px] text-gray-400 dark:text-gray-500 font-mono px-1.5 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800">
+              <span className="text-[10px] text-stone-500 dark:text-stone-400 font-mono px-1.5 py-0.5 rounded-md bg-stone-100 dark:bg-stone-800 border border-stone-200/60 dark:border-stone-700/60">
                 {meta.model}
               </span>
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+            <p className="text-xs text-stone-500 dark:text-stone-400 leading-relaxed">
               {disabled
                 ? 'Switch target job input to “Text” to select other AI models.'
                 : meta.description}

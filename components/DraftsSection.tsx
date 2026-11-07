@@ -28,16 +28,16 @@ export const DraftsSection: React.FC<DraftsSectionProps> = ({
 
   return (
     <div className="mt-16 space-y-4">
-      <div className="flex items-center justify-between pb-2 border-b border-gray-200/80 dark:border-gray-800/80">
+      <div className="flex items-center justify-between pb-2 border-b border-stone-200/80 dark:border-stone-800/80">
         <div>
-          <h2 className="text-sm font-bold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-accent2-500" />
+          <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-stone-900 dark:bg-stone-100" />
             Saved Drafts Library
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-accent-50 dark:bg-accent-950/40 text-accent-700 dark:text-accent-300 border border-accent-200/60 dark:border-accent-800/60">
+            <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200/80 dark:border-stone-700/80">
               {drafts.length}
             </span>
           </h2>
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+          <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
             Archived locally in your browser — reload any previous draft with one click
           </p>
         </div>
@@ -46,14 +46,14 @@ export const DraftsSection: React.FC<DraftsSectionProps> = ({
           <button
             type="button"
             onClick={handleClearAll}
-            className="text-xs font-semibold text-red-500 hover:text-red-700 dark:hover:text-red-400 transition-colors"
+            className="text-xs font-semibold text-stone-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
           >
             Clear all
           </button>
           <button
             type="button"
             onClick={() => setIsCollapsed((o) => !o)}
-            className="text-xs font-semibold text-gray-500 hover:text-accent-600 dark:hover:text-accent-400 transition-colors"
+            className="text-xs font-semibold text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors"
           >
             {isCollapsed ? 'Expand library' : 'Collapse'}
           </button>
@@ -68,18 +68,18 @@ export const DraftsSection: React.FC<DraftsSectionProps> = ({
               <div
                 key={draft.id}
                 onClick={() => onLoad(draft)}
-                className="group relative rounded-2xl bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 p-4 hover:border-accent-300 dark:hover:border-accent-700 hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.99]"
+                className="group relative rounded-2xl bg-white dark:bg-stone-900 border border-stone-200/90 dark:border-stone-800/90 p-4 hover:border-stone-400 dark:hover:border-stone-600 hover:shadow-xs transition-all duration-200 cursor-pointer active:scale-[0.99]"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-50 to-accent-100 dark:from-accent-950/60 dark:to-accent-900/30 border border-accent-200/60 dark:border-accent-800/60 text-accent-700 dark:text-accent-300 flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-xs">
+                    <div className="w-10 h-10 rounded-xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-stone-900 dark:text-stone-100 flex items-center justify-center font-bold text-sm flex-shrink-0 shadow-2xs">
                       {initial}
                     </div>
                     <div className="min-w-0">
-                      <h3 className="text-xs font-bold text-gray-900 dark:text-gray-100 truncate group-hover:text-accent-700 dark:group-hover:text-accent-300 transition-colors">
+                      <h3 className="text-xs font-bold text-stone-900 dark:text-stone-100 truncate group-hover:text-amber-800 dark:group-hover:text-amber-300 transition-colors">
                         {draft.companyName}
                       </h3>
-                      <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-0.5">
+                      <p className="text-[11px] text-stone-400 dark:text-stone-500 mt-0.5">
                         {new Date(draft.createdAt).toLocaleDateString(undefined, {
                           month: 'short',
                           day: 'numeric',

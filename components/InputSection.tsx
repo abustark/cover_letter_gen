@@ -267,14 +267,14 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const isUploading = fileParsing || isFormatting;
 
   const inputClass =
-    'w-full bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-800/80 rounded-xl p-3.5 text-[13.5px] sm:text-[14px] text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-600 focus-ring transition-all resize-none shadow-xs font-sans leading-relaxed';
+    'w-full bg-white dark:bg-stone-900 border border-stone-200/90 dark:border-stone-800/90 rounded-xl p-3.5 text-[13.5px] sm:text-[14px] text-stone-900 dark:text-stone-100 placeholder-stone-400 dark:placeholder-stone-500 focus-ring transition-all resize-none shadow-xs font-sans leading-relaxed';
 
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* 1. Resume Container (Double Bezel) */}
       <div
         className={`double-bezel transition-colors duration-200 ${
-          isDragging ? 'ring-2 ring-accent-500 ring-offset-2' : ''
+          isDragging ? 'ring-2 ring-stone-900 dark:ring-stone-100 ring-offset-2' : ''
         }`}
         onDragOver={(e) => {
           e.preventDefault();
@@ -286,11 +286,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
         <div className="double-bezel-inner p-4 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-sm font-bold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-accent2-500" />
+              <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-stone-900 dark:bg-stone-100" />
                 Candidate Resume
               </h2>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                 Drop your PDF or DOCX file (up to 10 pages) or paste text directly
               </p>
             </div>
@@ -303,15 +303,15 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 disabled={isUploading}
                 className="flex-1 sm:flex-initial justify-center"
               >
-                <UploadIcon className="w-3.5 h-3.5 mr-1" /> Upload PDF / DOCX
+                <UploadIcon className="w-3.5 h-3.5 mr-1 text-stone-600 dark:text-stone-300" /> Upload Document
               </Button>
               <button
                 type="button"
                 onClick={() => handleFileClick(true)}
                 disabled={isUploading}
-                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-accent-700 dark:text-accent-300 border border-accent-200 dark:border-accent-800 bg-accent-50/80 dark:bg-accent-950/70 hover:bg-accent-100 dark:hover:bg-accent-900/50 rounded-xl px-3 py-1.5 transition-all shadow-xs disabled:opacity-50"
+                className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 text-xs font-semibold text-stone-700 dark:text-stone-200 border border-stone-200 dark:border-stone-700 bg-stone-50/90 dark:bg-stone-800/90 hover:bg-stone-100 dark:hover:bg-stone-700 rounded-xl px-3 py-1.5 transition-all shadow-xs disabled:opacity-50"
               >
-                <SparklesIcon className="w-3.5 h-3.5 text-accent-500" /> AI format
+                Auto-Format
               </button>
             </div>
           </div>
@@ -331,17 +331,17 @@ export const InputSection: React.FC<InputSectionProps> = ({
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-3 flex-wrap">
               {fileParsing && (
-                <span className="inline-flex items-center text-accent-600 dark:text-accent-400 font-medium">
+                <span className="inline-flex items-center text-stone-600 dark:text-stone-400 font-medium">
                   <SpinnerIcon className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Parsing “{fileName}”…
                 </span>
               )}
               {isFormatting && (
-                <span className="inline-flex items-center text-accent2-600 dark:text-accent2-400 font-medium">
-                  <SpinnerIcon className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Structuring resume with AI…
+                <span className="inline-flex items-center text-amber-700 dark:text-amber-400 font-medium">
+                  <SpinnerIcon className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Structuring resume…
                 </span>
               )}
               {resume && !isUploading && (
-                <span className="inline-flex items-center text-green-600 dark:text-green-400 font-medium bg-green-50 dark:bg-green-950/30 px-2 py-0.5 rounded-full border border-green-200/60 dark:border-green-800/60">
+                <span className="inline-flex items-center text-emerald-700 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-950/30 px-2 py-0.5 rounded-full border border-emerald-200/60 dark:border-emerald-800/60">
                   <CheckIcon className="w-3 h-3 mr-1" /> Resume loaded ({resume.split(/\s+/).filter(Boolean).length} words)
                 </span>
               )}
@@ -368,11 +368,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
         <div className="double-bezel-inner p-4 sm:p-6 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-sm font-bold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-accent-500" />
+              <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-stone-900 dark:bg-stone-100" />
                 Target Opportunity
               </h2>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                 Paste the job description or provide the direct posting link
               </p>
             </div>
@@ -432,11 +432,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
         <div className="double-bezel-inner p-4 sm:p-6 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
-              <h2 className="text-sm font-bold tracking-tight text-gray-900 dark:text-gray-100 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-accent2-500" />
+              <h2 className="text-sm font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-stone-900 dark:bg-stone-100" />
                 Narrative Tone
               </h2>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+              <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
                 Tunes diction and pacing without fabricating or exaggerating facts
               </p>
             </div>
@@ -446,12 +446,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
       </div>
 
       {/* Privacy Callout */}
-      <div className="rounded-xl border border-gray-200/80 dark:border-gray-800/80 bg-gray-50/70 dark:bg-gray-900/40 p-4 text-xs text-gray-500 dark:text-gray-400 leading-relaxed flex items-start gap-3 shadow-xs">
-        <div className="w-7 h-7 rounded-lg bg-accent2-50 dark:bg-accent2-950/40 flex items-center justify-center flex-shrink-0 text-accent2-600 dark:text-accent2-400 border border-accent2-200/50 dark:border-accent2-800/50">
+      <div className="rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/70 dark:bg-stone-900/40 p-4 text-xs text-stone-500 dark:text-stone-400 leading-relaxed flex items-start gap-3 shadow-xs">
+        <div className="w-7 h-7 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center flex-shrink-0 text-stone-600 dark:text-stone-400 border border-stone-200/60 dark:border-stone-700/60">
           <LockIcon className="w-3.5 h-3.5" />
         </div>
         <div>
-          <span className="font-semibold text-gray-700 dark:text-gray-200">
+          <span className="font-semibold text-stone-700 dark:text-stone-200">
             Privacy & Trust Architecture:{' '}
           </span>
           Your resume is parsed in-memory on your device and never uploaded as a document file.
@@ -467,8 +467,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
           size="lg"
           onClick={onGenerate}
           disabled={isGenerateDisabled}
-          className="w-full text-base font-semibold py-4 shadow-lg shadow-accent-600/25"
-          iconTrailing={<SparklesIcon className="w-4 h-4 text-white" />}
+          className="w-full text-base font-semibold py-4 shadow-sm"
         >
           {isLoading ? (
             <>
@@ -480,14 +479,14 @@ export const InputSection: React.FC<InputSectionProps> = ({
           )}
         </Button>
       ) : (
-        <div className="rounded-2xl border border-gray-200/90 dark:border-gray-800/90 bg-white/90 dark:bg-gray-900/90 p-6 sm:p-8 text-center shadow-sm">
-          <div className="w-12 h-12 mx-auto mb-3.5 rounded-2xl bg-gradient-to-br from-accent-50 to-accent-100 dark:from-accent-950/40 dark:to-accent-900/20 border border-accent-200/60 dark:border-accent-800/60 flex items-center justify-center text-accent-600 dark:text-accent-300 shadow-xs">
+        <div className="rounded-2xl border border-stone-200/90 dark:border-stone-800/90 bg-white dark:bg-stone-900/90 p-6 sm:p-8 text-center shadow-xs">
+          <div className="w-12 h-12 mx-auto mb-3.5 rounded-2xl bg-stone-100 dark:bg-stone-800 border border-stone-200 dark:border-stone-700 flex items-center justify-center text-stone-700 dark:text-stone-300 shadow-xs">
             <LockIcon className="w-5 h-5" />
           </div>
-          <h3 className="text-base font-bold text-gray-900 dark:text-gray-50">
+          <h3 className="text-base font-bold text-stone-900 dark:text-stone-50">
             Sign in with Google to Generate
           </h3>
-          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1.5 mb-6 max-w-sm mx-auto leading-relaxed">
+          <p className="text-xs sm:text-sm text-stone-500 dark:text-stone-400 mt-1.5 mb-6 max-w-sm mx-auto leading-relaxed">
             One-click sign-in protects the API proxy. Your documents remain local on your machine.
           </p>
           <div className="max-w-xs mx-auto">

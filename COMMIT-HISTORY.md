@@ -7,11 +7,27 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.0.7`** (current head is `2.0.6` — see below)
+> - **`main` → `2.0.8`** (current head is `2.0.7` — see below)
 
 ---
 
 ## Commit History
+
+### 2.0.7 - replace AI slop with editorial design & add avatar popover nav
+
+- **Date**: 2026-11-07
+- **Why**: user requested eliminating "AI slop" design (neon purple/teal gradients, sparkles, glowing badges) in favor of high-end editorial options, and fixing the mobile navbar Google Sign-In leakage using an avatar circle popover with embedded sign-in and theme toggle.
+- **Changes**:
+  - `index.css`: eliminated neon gradients and glowing mesh overlays; instituted a timeless editorial design system with obsidian (`#0c0c0d`), warm alabaster/parchment (`#faf9f5`), antique saddle bronze, and forest patina; redesigned tactile hardware `.double-bezel` containers and stationery paper surfaces.
+  - `components/Header.tsx`: completely resolved mobile header nav bar button overflow by replacing raw Google OAuth buttons with a clean, unified avatar circle button (`#profile-menu-button`). Clicking opens an animated floating popover dialog (`role="dialog"`) with full Google Sign-In, profile details, sign out, and a tactile two-pill light/dark mode segmented toggle with outside-click and `Escape` dismissals.
+  - `components/UI.tsx`: removed tacky purple gradient styling from primary CTA buttons in favor of commanding obsidian/chalk editorial buttons (`bg-stone-900 dark:bg-stone-100`); refined neutral stone segmented controls.
+  - `components/icons.tsx`: added clean, minimalist SVG `UserIcon` for avatar fallback state.
+  - `App.tsx`: replaced rainbow gradient headline with grotesque typography and italic serif emphasis (`em`); replaced sparkle pills with editorial mono badge `EDITORIAL STUDIO · FACTUALLY GROUNDED`; bumped version to `v2.0.7`.
+  - `components/ModeSelector.tsx`: replaced sparkles with technical `Synthesis Engine` indicator and understated stone badge cards.
+  - `components/InputSection.tsx`: upgraded inputs to warm stone borders; replaced tacky "AI format" pill with clean `Auto-Format` utility; refined privacy callout and unauthenticated empty state.
+  - `components/OutputSection.tsx`: replaced rainbow foil gradient rule with subtle hairline divider; refined factuality checklist and letterhead stationery preview.
+  - `components/DraftsSection.tsx`: replaced purple badges and multi-color gradient avatars with muted stone monogram tiles.
+  - `scripts/inspect-ui.cjs`: updated automated Playwright inspection script to test the new `#profile-menu-button` popover dialog, theme switching, and desktop/mobile responsiveness.
 
 ### 2.0.6 - fix mobile and desktop UI misplacements verified with Playwright
 

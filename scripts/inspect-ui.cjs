@@ -203,8 +203,8 @@ async function run() {
     await context.close();
   }
 
-  // 6. Mobile Interactive Workflow Test
-  console.log('\n[6/6] Testing Interactive UI on Mobile (390x844)...');
+  // 6. Mobile Interactive & Avatar Dropdown Test
+  console.log('\n[6/6] Testing Mobile Interactive & Avatar Circle Dropdown (390x844)...');
   {
     const context = await browser.newContext({
       viewport: { width: 390, height: 844 },
@@ -215,6 +215,27 @@ async function run() {
     const page = await context.newPage();
     await page.goto('http://localhost:3000', { waitUntil: 'domcontentloaded' });
     await page.waitForTimeout(300);
+
+    // Test Avatar Circle click to open the Popover
+    console.log('Clicking mobile profile menu avatar circle (#profile-menu-button)...');
+    const avatarBtn = await page.locator('#profile-menu-button');
+    await avatarBtn.click();
+    await page.waitForTimeout(300);
+
+    const isPopoverVisible = await page.locator('role=dialog').isVisible();
+    console.log('Avatar dropdown popover visible:', isPopoverVisible);
+
+    // Check inside popover for Sign in text & theme toggle
+    const signInTitle = await page.locator('text=Sign in to CoverCraft').isVisible();
+    console.log('Sign in title visible inside popover:', signInTitle);
+
+    // Capture the avatar menu popover on mobile
+    await page.screenshot({ path: path.join(artifactsDir, 'mobile-avatar-menu.png') });
+    console.log('Saved mobile-avatar-menu.png');
+
+    // Click outside to close the popover
+    await page.mouse.click(50, 400);
+    await page.waitForTimeout(200);
 
     // Verify all 4 tones are accessible and clickable on mobile
     for (const tone of ['Professional', 'Enthusiastic', 'Confident', 'Creative']) {

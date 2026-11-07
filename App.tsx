@@ -147,21 +147,21 @@ const App: React.FC = () => {
       <main className="container mx-auto px-4 md:px-6 py-10 max-w-5xl pb-28">
         {/* Hero Section */}
         <div className="mb-10 text-center sm:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-wide bg-accent-50/80 dark:bg-accent-950/80 text-accent-700 dark:text-accent-300 border border-accent-200/70 dark:border-accent-800/70 mb-4 shadow-2xs">
-            <SparklesIcon className="w-3.5 h-3.5 text-accent-600 dark:text-accent-400" />
-            <span>AI Career Studio · Grounded & Factuality-Checked</span>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-wider bg-stone-100/90 dark:bg-stone-800/90 text-stone-700 dark:text-stone-300 border border-stone-200/80 dark:border-stone-700/80 mb-4 shadow-2xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 dark:bg-amber-400 animate-pulse" />
+            <span>Editorial Studio · Factually Grounded</span>
           </div>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-950 dark:text-white leading-[1.15]">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-stone-900 dark:text-stone-50 leading-[1.14]">
             Craft a cover letter that{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-accent-600 via-accent-500 to-accent2-500">
+            <em className="font-serif italic font-normal text-stone-900 dark:text-stone-100">
               commands attention.
-            </span>
+            </em>
           </h1>
 
-          <p className="mt-3 text-sm sm:text-base text-gray-600 dark:text-gray-400 max-w-2xl leading-relaxed">
-            Pair your verified resume with any job posting or careers link. CoverCraft synthesizes an
-            authentic, tailored letter with zero invented credentials — ready to review and send.
+          <p className="mt-3.5 text-sm sm:text-base text-stone-600 dark:text-stone-400 max-w-2xl leading-relaxed">
+            Ground your verified experience directly in target role requirements. CoverCraft synthesizes an
+            authentic, tailored letter with zero hallucinated credentials — ready to review and send.
           </p>
         </div>
 
@@ -224,8 +224,8 @@ const App: React.FC = () => {
         <div className="container mx-auto max-w-5xl px-4 py-8 text-xs text-gray-500 dark:text-gray-400 text-center flex flex-col gap-2">
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
-            <span className="font-semibold text-gray-700 dark:text-gray-300">
-              CoverCraft Studio v2.0.6
+            <span className="font-semibold text-stone-700 dark:text-stone-300">
+              CoverCraft Studio v2.0.7
             </span>
             <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">·</span>
             <span>Server-Verified Authentication</span>

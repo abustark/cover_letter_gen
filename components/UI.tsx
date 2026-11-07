@@ -8,13 +8,13 @@ const baseBtn =
 
 const variantCls: Record<Variant, string> = {
   primary:
-    'bg-gradient-to-r from-accent-600 via-accent-700 to-accent-800 text-white shadow-md shadow-accent-600/20 hover:from-accent-500 hover:to-accent-700 border border-white/10',
+    'bg-stone-900 hover:bg-stone-800 text-stone-50 dark:bg-stone-100 dark:hover:bg-white dark:text-stone-950 shadow-sm border border-black/5 dark:border-white/20 font-semibold',
   secondary:
-    'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-200/90 dark:border-gray-800/90 hover:bg-accent-50/60 hover:text-accent-700 dark:hover:bg-gray-800/80 dark:hover:text-accent-300 shadow-xs hover:border-accent-300/60 dark:hover:border-accent-700/60',
+    'bg-white dark:bg-stone-900 text-stone-700 dark:text-stone-200 border border-stone-200/90 dark:border-stone-800/90 hover:bg-stone-100/70 hover:text-stone-900 dark:hover:bg-stone-800 dark:hover:text-stone-100 shadow-xs',
   ghost:
-    'bg-transparent text-gray-600 dark:text-gray-400 hover:bg-gray-100/70 dark:hover:bg-gray-800/70 hover:text-gray-900 dark:hover:text-gray-100',
+    'bg-transparent text-stone-600 dark:text-stone-400 hover:bg-stone-100/70 dark:hover:bg-stone-800/70 hover:text-stone-900 dark:hover:text-stone-100',
   accent:
-    'bg-accent2-50 dark:bg-accent2-900/30 text-accent2-700 dark:text-accent2-300 border border-accent2-200 dark:border-accent2-800/60 hover:bg-accent2-100/80 dark:hover:bg-accent2-800/40',
+    'bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-200 border border-amber-200 dark:border-amber-800/60 hover:bg-amber-100/80 dark:hover:bg-amber-800/40',
 };
 
 const sizeCls: Record<Size, string> = {
@@ -139,7 +139,7 @@ export function Segmented<T extends string>({
   return (
     <div
       role="tablist"
-      className={`rounded-xl bg-gray-100/90 dark:bg-gray-900/90 p-1 border border-gray-200/60 dark:border-gray-800/60 gap-1 shadow-inner ${layoutClass} ${className}`}
+      className={`rounded-xl bg-stone-100/90 dark:bg-stone-800/90 p-1 border border-stone-200/80 dark:border-stone-700/80 gap-1 shadow-inner ${layoutClass} ${className}`}
     >
       {options.map((opt) => {
         const active = opt === value;
@@ -154,8 +154,8 @@ export function Segmented<T extends string>({
             className={`rounded-lg px-3 py-1.5 text-xs font-semibold tracking-wide transition-all duration-150 focus-ring disabled:cursor-not-allowed select-none text-center whitespace-nowrap flex items-center justify-center
               ${
                 active
-                  ? 'bg-white dark:bg-gray-800 text-accent-700 dark:text-accent-200 shadow-xs ring-1 ring-black/5 dark:ring-white/10 font-bold'
-                  : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 hover:bg-white/40 dark:hover:bg-gray-800/40'
+                  ? 'bg-white dark:bg-stone-900 text-stone-950 dark:text-stone-50 shadow-xs ring-1 ring-black/5 dark:ring-white/10 font-bold'
+                  : 'text-stone-500 dark:text-stone-400 hover:text-stone-800 dark:hover:text-stone-200 hover:bg-white/40 dark:hover:bg-stone-700/40'
               }`}
           >
             {opt}
