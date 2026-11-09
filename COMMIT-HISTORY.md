@@ -7,11 +7,24 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.1.8`** (current head is `2.1.7` — see below)
+> - **`main` → `2.1.9`** (current head is `2.1.8` — see below)
 
 ---
 
 ## Commit History
+
+### 2.1.8 - add docs/POSTING-GUIDE.md for social launch & portfolio references
+
+- **Date**: 2026-11-09
+- **Why**: user requested saving and documenting social showcase hooks, LinkedIn architecture talking points, Twitter/X video demo script, and portfolio card copy in a dedicated file for future AI reference and human posting.
+- **Changes**:
+  - `docs/POSTING-GUIDE.md`: created comprehensive social posting reference guide covering platform-specific hooks (LinkedIn system design & SSRF narrative, Twitter/X visual showcase demo script, portfolio card block for `abufolio.vercel.app`, and AI rule checklist).
+  - `docs/PORTFOLIO-FRAMING.md`: updated language rules to recognize verified automated test suites, server-side JWKS auth, and rate limiting; cross-referenced `docs/POSTING-GUIDE.md`.
+  - `README.md`: linked `docs/POSTING-GUIDE.md` under Docs section.
+  - `PROJECT-INFO.md`: synced version to `v2.1.8` and registered `docs/POSTING-GUIDE.md` in directory map.
+  - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.8`.
+  - `components/UpdateNotification.tsx`: bumped `CURRENT_APP_VERSION` to `2.1.8`.
+  - `public/version.json`: bumped deployed metadata version to `2.1.8`.
 
 ### 2.1.7 - codify user supremacy and immediate commit and push rule in AGENTS.md
 

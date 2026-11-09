@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | Name | **CoverCraft — AI Cover Letter Builder & Editorial Studio** |
-| Current Version | **v2.1.7** (Production release, November 2026) |
+| Current Version | **v2.1.8** (Production release, November 2026) |
 | App Type | Full-stack web application (AI document pipeline & career productivity studio) |
 | Author | ABu (`abustark` on GitHub) |
 | Live Site | https://coverltr.vercel.app/ |
@@ -296,7 +296,8 @@ cover_letter_gen/
 │   ├── assets/                    # Light & dark mode application previews
 │   ├── bugs-and-fixes/            # Bug logging protocols and templates
 │   ├── sandbox-browser/           # Playwright visual check kit & scripts
-│   └── PORTFOLIO-FRAMING.md       # High-conviction positioning copy for portfolio/resume
+│   ├── PORTFOLIO-FRAMING.md       # High-conviction positioning copy for portfolio/resume
+│   └── POSTING-GUIDE.md           # Platform posting hooks, Twitter demo scripts & launch copy
 ├── public/
 │   ├── favicon.svg                # Vector dual-tone CC monogram browser tab favicon
 │   └── version.json               # Deployed app version metadata for client polling

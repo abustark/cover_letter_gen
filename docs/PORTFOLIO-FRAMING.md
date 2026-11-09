@@ -102,22 +102,20 @@ Showing that you know which project supports which role is itself a signal.
 ## 7. Language rules
 
 **Use:** pipeline, extraction, routing, boundary, constraint, proxy, server-side,
-client-side, pinned, validated, stripped.
+client-side, pinned, validated, stripped, cryptographic JWKS, SSRF defense.
 
 **Ban:** AI-powered (as the lead), seamless, powerful, cutting-edge, leverage,
 effortless, revolutionary, beautiful.
 
-**Never claim** (none of these exist): automated test suite, database,
-server-side auth, user counts, latency figures, conversion metrics.
+**Never claim** (these do not exist in the architecture): database, cloud draft sync,
+user counts, conversion metrics. (Note: Automated test suite, server-side JWKS auth,
+and rate limiting are fully implemented and verified).
 
 **Match the site's register:** past tense, verb first, one mechanism per sentence,
 at most one number per sentence, no adjectives standing in for evidence.
 
 ---
 
-## 8. What stays out of the card
+## 8. Social & Launch Posting Guide
 
-Three real limitations — no server-side token verification, no rate limiting on
-the proxy, no per-user draft sync — belong in the case-notes page (item 3), not
-in a 60-word card slot. Stating them there reads as senior judgment; stating
-them here reads as an unfinished product.
+For comprehensive LinkedIn hooks, Twitter / X video scripts, copy templates, and ready-to-post snippets across platforms, refer directly to [`docs/POSTING-GUIDE.md`](POSTING-GUIDE.md).
