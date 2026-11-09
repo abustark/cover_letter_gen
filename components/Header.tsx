@@ -83,8 +83,11 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
         <div className="h-15 sm:h-16 px-3.5 sm:px-6 flex items-center justify-between gap-3">
           {/* Brand */}
           <div className="flex items-center gap-2.5 sm:gap-3 flex-shrink-0 min-w-0">
-            <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-xl bg-stone-900 dark:bg-stone-100 flex items-center justify-center text-white dark:text-stone-950 shadow-xs ring-1 ring-black/5 dark:ring-white/10 transition-transform duration-200 hover:scale-105 select-none">
-              <span className="font-bold text-xs sm:text-sm tracking-widest leading-none">CC</span>
+            <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-xl bg-stone-900 dark:bg-stone-950 border border-amber-500/35 flex items-center justify-center shadow-xs ring-1 ring-black/10 dark:ring-white/5 transition-transform duration-200 hover:scale-105 select-none flex-shrink-0">
+              <span className="font-serif font-bold text-xs sm:text-[13.5px] tracking-tight leading-none flex items-center">
+                <span className="text-stone-50">C</span>
+                <span className="text-amber-500">C</span>
+              </span>
             </div>
 
             <div className="flex flex-col min-w-0">

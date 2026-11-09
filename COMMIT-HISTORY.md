@@ -7,13 +7,22 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.1.5`** (current head is `2.1.4` — see below)
+> - **`main` → `2.1.6`** (current head is `2.1.5` — see below)
 
 ---
 
 ## Commit History
 
-### 2.1.4 - make serverless functions self-contained & add update notification toast
+### 2.1.5 - redesign logo with bespoke CC serif monogram and sync browser tab favicon
+
+- **Date**: 2026-11-09
+- **Why**: user requested updating the logo badge to a professional-looking "CC" as text and synchronizing the exact same design for the browser tab icon.
+- **Changes**:
+  - `components/Header.tsx`: upgraded brand logo to a high-end editorial monogram badge featuring an obsidian squircle (`bg-stone-900 dark:bg-stone-950`), subtle warm amber border (`border-amber-500/35`), and serif typography (`Playfair Display`) with dual-tone lettering (off-white "C" and warm amber "C").
+  - `public/favicon.svg` & `favicon.svg`: redesigned browser tab favicon with an identical obsidian squircle, amber accent border stroke, and matching Playfair serif dual-tone "CC" typography for crisp, recognizable display in browser tabs across light and dark OS themes.
+  - `components/UpdateNotification.tsx`: bumped `CURRENT_APP_VERSION` to `2.1.5`.
+  - `public/version.json`: bumped version metadata to `2.1.5`.
+  - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.5`.
 
 - **Date**: 2026-11-09
 - **Why**: Vercel serverless runtime (`@vercel/node`) fails to resolve subdirectories inside `api/` (such as `api/_utils/`), resulting in runtime `FUNCTION_INVOCATION_FAILED` (HTTP 500) before reaching function handlers; add proactive update notification toast so users are prompted to refresh whenever a new deployment is published.

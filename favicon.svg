@@ -1,4 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="7" fill="#6f43b0"/>
-  <text x="16" y="22" font-family="Inter, ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="700" fill="#ffffff" text-anchor="middle">C</text>
+  <rect width="32" height="32" rx="7.5" fill="#18181b"/>
+  <rect x="0.75" y="0.75" width="30.5" height="30.5" rx="6.75" fill="none" stroke="#f59e0b" stroke-width="1.2" stroke-opacity="0.4"/>
+  <text x="16" y="21.5" font-family="'Playfair Display', Georgia, 'Times New Roman', serif" font-size="14.5" font-weight="700" letter-spacing="-1px" text-anchor="middle">
+    <tspan fill="#fafaf9">C</tspan><tspan fill="#f59e0b">C</tspan>
+  </text>
 </svg>
