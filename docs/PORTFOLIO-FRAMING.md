@@ -47,7 +47,7 @@ Do not spend a sentence on UI polish until the mechanism is on the page.
 | API key is safe | key boundary — dev-only bundle injection, production key lives only in the Vercel function env |
 | Drafts | local-first persistence — UUID keys, ISO timestamps, no database |
 | Export to PDF/DOCX | client-side document generation, heavy libs dynamically imported |
-| Google sign-in | OAuth identity gate with a 1-hour JWT expiry, decoded client-side |
+| Google sign-in | server-verified OAuth boundary (RS256 JWKS signature + access token fallback), custom native button (no Gmail ID leakage) |
 | Dark mode / responsiveness | **omit from the card.** It is table stakes, not a differentiator |
 
 ---
@@ -64,7 +64,7 @@ body:    Turns two unstructured documents — a PDF/DOCX resume and a job postin
          and stripped server-side to escape browser CORS; a second Vercel function
          proxies three OpenRouter free models so the key never reaches the bundle.
          Four modes × four tones, temperature pinned at 0.7.
-tags:    React 19 · TypeScript · Vercel Functions · OpenRouter · Google OAuth
+tags:    React 19 · TypeScript · Bun · Vercel Functions · OpenRouter · Google OAuth
 links:   Live site (coverltr.vercel.app) · GitHub repo
 ```
 
@@ -82,7 +82,7 @@ links:   Live site (coverltr.vercel.app) · GitHub repo
 
 - Built a document-to-letter pipeline (React 19, TypeScript, Vercel Functions) that parses PDF/DOCX resumes and job-posting URLs, then routes the combined context through **4 modes × 4 tones = 16 prompt profiles**, mapping each mode to one of three OpenRouter free models at a pinned temperature of 0.7.
 - Kept the LLM key out of the production bundle by proxying OpenRouter through a serverless function, and moved posting retrieval server-side (HTML stripped, capped at 12,000 chars) to defeat browser CORS on LinkedIn-style pages.
-- Kept the initial bundle lean by dynamically importing `pdfjs-dist`, `mammoth`, `jsPDF` and `docx` on first use; persisted drafts, theme and session locally with UUID keys and validated 1-hour JWT expiry instead of adding a database.
+- Kept the initial bundle lean by dynamically importing `pdfjs-dist`, `mammoth`, `jsPDF` and `docx` on first use; persisted drafts, theme and session locally with UUID keys and server-verified Google tokens (RS256 JWKS) instead of adding a database.
 
 ---
 

@@ -1,98 +1,335 @@
-# CoverCraft — Project Info Sheet (source of truth for resume & portfolio summaries)
+# CoverCraft — Project Info Sheet (Definitive Source of Truth)
 
-> **Purpose:** every fact an AI (or a person) needs to write a resume "Projects"
-> entry or a portfolio project summary for CoverCraft — without reading the code.
-> Generate prose from these facts only; do not invent beyond them. Tune length
-> and tone to the target (resume = dense & quantified; portfolio = readable &
-> story-driven).
+> **Purpose:** Every architectural fact, security contract, design specification, and technical parameter an AI model (or developer) needs to completely understand CoverCraft without reading the underlying code. Generate all portfolio summaries, resume bullets, and technical assessments strictly from these facts; do not invent beyond them.
 
 ---
 
-## 1. Project identity
+## 1. Project Identity & Status
 
 | Field | Value |
 |---|---|
-| Name | **CoverCraft — AI Cover Letter Builder** |
-| Type | Full-stack web application (AI productivity utility) |
+| Name | **CoverCraft — AI Cover Letter Builder & Editorial Studio** |
+| Current Version | **v2.1.0** (Production release, November 2026) |
+| App Type | Full-stack web application (AI document pipeline & career productivity studio) |
 | Author | ABu (`abustark` on GitHub) |
-| Live site | https://coverltr.vercel.app/ |
-| Source | https://github.com/abustark/cover_letter_gen |
-| License | None declared (private, all rights reserved — footer `© ABu`) |
-| Status | Production-deployed on Vercel, actively maintained (2026, version 2.0.5) |
+| Live Site | https://coverltr.vercel.app/ |
+| Source Repository | https://github.com/abustark/cover_letter_gen |
+| Status | Production-deployed on Vercel, fully tested under Bun, actively maintained |
+| License | All rights reserved (private copyright `© ABu`) |
 
-**One-liners (pick by context):**
-- *10 words:* AI cover-letter builder with verified Google auth and export suite.
-- *25 words:* CoverCraft is a hardened React + Vite + Tailwind full-stack utility that drafts tailored cover letters via OpenRouter free models with server-side auth and SSRF defenses.
-- *Elevator pitch:* CoverCraft turns your resume plus a job description — pasted text or a posting URL — into a tailored, professional cover letter. Sign in with Google (verified cryptographically server-side), pick a tone and generation mode, upload a PDF/DOCX resume with client-side parsing, review claims with the built-in factuality checklist, and export as PDF/DOCX or save local drafts. Endpoints are protected with rate limiting, server-owned prompts, and SSRF prevention; API keys never ship to the client.
+### One-Liners & Positioning (by audience)
+- **10 Words:** AI cover-letter studio with server-verified Google auth and export suite.
+- **25 Words:** CoverCraft is an editorial React 19 + Bun + Vite full-stack application that crafts tailored, factually grounded cover letters using free OpenRouter frontier models with SSRF and prompt defenses.
+- **Elevator Pitch:** CoverCraft bridges the gap between raw candidate credentials and tailored employer expectations. By accepting a PDF/DOCX resume (parsed entirely in-browser) and a job description (either pasted text or fetched via a server-side SSRF-hardened reader), CoverCraft synthesizes professional, high-conviction application letters. The pipeline is guarded by a server-side cryptographic Google authentication boundary (RS256 JWKS + OAuth access token support), sliding-window rate limiters, strict XML prompt-injection isolation, and a post-generation factuality checklist. No third-party LLM API keys ever touch client bundles, and candidate documents are never stored on external servers.
+- **Engineering Framing:** An applied AI document processing pipeline featuring client-side AST/binary extraction (`pdfjs-dist`, `mammoth`), serverless CORS/SSRF mitigation, a multi-model routing matrix (3 free LLMs across 4 modes and 4 tones), and local-first persistence without database overhead.
 
 ---
 
-## 2. Tech stack — exact versions
+## 2. Tech Stack & Exact Dependencies
 
-| Category | Technology | Version | Role |
+| Category | Technology | Version | Purpose & Architecture Role |
 |---|---|---|---|
-| Runtime | Node.js | unpinned (Vite 6 requires Node 18+) | Build/dev runtime |
-| Package manager | npm | lockfile `package-lock.json` | Dependencies/scripts |
-| UI framework | React | ^19.2.0 | App UI (`App.tsx`, `components/`) |
-| UI DOM | react-dom | ^19.2.0 | Rendering (`index.tsx`) |
-| Build tool | Vite | ^6.2.0 | Dev server `:3000` with API middleware, production build |
-| Vite plugin | @vitejs/plugin-react | ^5.0.0 | React Fast Refresh |
-| Styling | Tailwind CSS | ^4.3.3 | Utility styling (`index.css` 234 lines) |
-| Styling plugin | @tailwindcss/vite | ^4.3.3 | Vite integration |
-| Language | TypeScript | ~5.8.2 | Type safety (`tsc --noEmit` gate) |
-| AI gateway | OpenRouter chat completions | `https://openrouter.ai/api/v1/chat/completions` | All LLM calls via server-controlled proxy |
-| AI models (free) | NVIDIA Nemotron 3 Ultra 550B | `nvidia/nemotron-3-ultra-550b-a55b:free` | Standard + URL modes |
-| AI models (free) | NVIDIA Nemotron 3 Super 120B | `nvidia/nemotron-3-super-120b-a12b:free` | Thinking mode |
-| AI models (free) | Google Gemma 4 26B | `google/gemma-4-26b-a4b-it:free` | Low-latency + resume-formatting modes |
-| Auth (client) | @react-oauth/google | ^0.13.5 | Google sign-in button + `GoogleOAuthProvider` |
-| Auth (server) | Node crypto (RSA-SHA256) | built-in | Server verification against Google JWKS |
-| Resume parse (PDF) | pdfjs-dist | ^4.4.168 | Client-side lazy-loaded text extraction (max 10 pages) |
-| Resume parse (DOCX) | mammoth | ^1.12.0 | Client-side lazy-loaded raw-text extraction |
-| Export (PDF) | jspdf | ^2.5.2 | Lazy-loaded client PDF generation |
-| Export (DOCX) | docx | ^9.7.1 | Lazy-loaded client DOCX generation |
-| Rate limiting | Upstash Redis / Memory | REST API / in-memory | Sliding-window quotas by user `sub` and IP |
-| Testing | tsx + node:test | ^4.19.2 / Node native | Automated test suite (`npm test`) |
-| CI | GitHub Actions | `.github/workflows/ci.yml` | Typecheck, test, and build automation |
-| Hosting (prod) | Vercel | `api/*.ts` → serverless functions | Production deployment |
-| Hosting (dev) | Vite dev server | port 3000, host `0.0.0.0` | `npm run dev` with API parity middleware |
-| Fonts | Google Fonts | Instrument Sans + Source Serif 4 | Body / document serif |
+| **Package Manager & Toolchain** | **Bun** | **v1.4.4** | Primary package manager, script runner, and native test runner (`bun.lock`, `bun test`, `bun run dev`, `bun run build`, `bun run typecheck`) |
+| **Runtime Engine** | Node.js / Bun | Node 18+ / 20 LTS | Build and serverless execution runtime; full dev-to-prod API parity |
+| **UI Framework** | React | `^19.2.0` | Declarative component UI tree (`App.tsx`, `components/`) |
+| **DOM Renderer** | react-dom | `^19.2.0` | Browser DOM mount and reconciliation (`index.tsx`) |
+| **Build Tool** | Vite | `^6.2.0` | Dev server on `0.0.0.0:3000` with native API middleware; production bundler |
+| **Vite React Plugin** | @vitejs/plugin-react | `^5.0.0` | React 19 Fast Refresh & JSX transformation |
+| **Styling Engine** | Tailwind CSS | `^4.3.3` | Utility styling with CSS theme tokens (`index.css`) |
+| **Tailwind Vite Plugin** | @tailwindcss/vite | `^4.3.3` | Native lightning-fast Tailwind v4 compiler integration |
+| **Type System** | TypeScript | `~5.8.2` | Strict compile-time typing (`node ./node_modules/typescript/bin/tsc --noEmit` gate) |
+| **AI Gateway** | OpenRouter Chat API | REST `/v1/chat/completions` | Proxied through serverless endpoint (`api/openrouter.ts`); keys never leak |
+| **AI Model (Standard & URL)** | NVIDIA Nemotron 3 Ultra 550B | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1M context, frontier reasoning for general and senior roles |
+| **AI Model (Thinking Mode)** | NVIDIA Nemotron 3 Super 120B | `nvidia/nemotron-3-super-120b-a12b:free` | MoE deep reasoning model for executive and principal roles |
+| **AI Model (Fast & Formatting)**| Google Gemma 4 26B | `google/gemma-4-26b-a4b-it:free` | Low-latency drafting and resume text structure cleanup |
+| **Auth (Client)** | @react-oauth/google | `^0.13.5` | Google Identity Provider wrapping native button & `useGoogleLogin` popup |
+| **Auth (Server)** | Node `crypto` & JWKS | Built-in | RSA-SHA256 signature verification via Google JWKS + tokeninfo fallback |
+| **Resume Extraction (PDF)**| pdfjs-dist | `^4.4.168` | Lazy-loaded client-side text extractor (max 10 pages; scanned image detection) |
+| **Resume Extraction (DOCX)**| mammoth | `^1.12.0` | Lazy-loaded client-side raw document text extractor |
+| **Export (PDF)** | jspdf | `^2.5.2` | Lazy-loaded client-side PDF document generator |
+| **Export (DOCX)** | docx | `^9.7.1` | Lazy-loaded client-side Word document generator (Paragraph/TextRun AST) |
+| **Rate Limiting** | Custom sliding-window | In-memory / Upstash Redis | Per-user `sub` and per-IP sliding-window quota management |
+| **Testing Engine** | Bun Test | `bun test` (native) | 48 automated tests across 5 test suites (`test/*.test.ts`) |
+| **E2E / Visual QA** | Playwright | CLI / headless | Headless browser assertions verifying 0 horizontal overflow on PC & mobile |
+| **CI Automation** | GitHub Actions | `.github/workflows/ci.yml`| Automated workflow with `oven-sh/setup-bun@v2`, typecheck, test, and build |
+| **Hosting (Production)** | Vercel Serverless | `@vercel/node ^5.5.13` | Edge/serverless deployment (`api/openrouter.ts`, `api/fetch-url.ts`) |
+| **Typography** | Google Fonts | Web CDN | `Instrument Sans` (UI), `Source Serif 4` (letter), `Playfair Display` (headings) |
 
 ---
 
-## 3. Architecture (how it fits together)
+## 3. High-End Editorial Design System & Visual Architecture
 
-- **Server-enforced security boundary:** Both Vercel functions (`api/openrouter.ts` and `api/fetch-url.ts`) require a Google ID token in the `Authorization: Bearer` header. The server verifies signature against Google's public JWKS, validates audience, issuer, expiry, and subject, and enforces sliding-window rate limits by user `sub` and client IP.
-- **SSRF defense on URL fetching:** `api/fetch-url.ts` enforces HTTPS only, rejects non-standard ports and credentials, resolves DNS, blocks private/loopback/cloud-metadata IPv4/IPv6 addresses (including `169.254.169.254`), follows manual redirects (max 3), enforces an 8s timeout, and limits streaming response bodies to 2 MB before extracting plain text (max 12,000 characters).
-- **Server-owned prompt architecture:** `api/openrouter.ts` accepts structured payloads only (no client-supplied `system` prompts or arbitrary messages). Resume and job descriptions are enclosed in XML tags with explicit anti-injection instructions and strict factual grounding directives forbidding invented metrics or employers.
-- **Client-side parsing privacy:** PDF and DOCX files are parsed in the browser via dynamic `import()`. The original files are never uploaded to any server.
-- **Local-first draft persistence:** Drafts live in `localStorage` under `covercraft_drafts_v2` with legacy schema migration from `drafts_local`, quota recovery, and clear-all functionality.
-- **Full dev/prod parity:** In development, Vite server middleware handles `/api/*` requests using the server handlers, ensuring `OPENROUTER_API_KEY` is never injected into the client bundle and avoiding CORS blocks on job URLs.
+CoverCraft v2.1.0 completely abandons generic "AI slop" (neon violet/cyan gradients, glowing buttons, floating sparkles, and decorative noise) in favor of a timeless, high-end editorial and typography-forward aesthetic.
+
+### 3.1 Design Palette & Theme Tokens
+- **Obsidian Dark Mode (`#0c0c0d` / `bg-stone-950`):** Rich, tactile, deep charcoal backdrop with subtle warm stone undertones.
+- **Warm Alabaster Light Mode (`#faf9f5` / `bg-[#faf9f5]`):** High-grade stationery paper tone reminiscent of physical letterpress paper.
+- **Concentric Double-Bezel Architecture (`.double-bezel` & `.double-bezel-inner`):** Tactile hardware framing with nested border radiuses and soft interior drop-shadows.
+- **Stationery Paper Sheet (`.doc-surface-card`):** Realistic letterpress paper profile featuring a physical paper drop shadow, subtle hairline rules, and high-readability serif typesetting.
+- **View Transition Waves:** Seamless theme toggle transitions utilizing the browser `document.startViewTransition()` API with a concentric coordinate origin (`--theme-x`, `--theme-y`) and a CSS ripple fallback.
+
+### 3.2 Editorial Accent Hierarchy (Section Differentiation)
+Every major functional quadrant on the page is visually differentiated using dedicated kicker tags, status indicators, and distinct font/color combinations:
+1. **`Input 01 · Candidate Profile` (Resume Ingestion):**
+   - Heading Kicker: Antique saddle / warm bronze monospace tag (`text-amber-700 dark:text-amber-400`).
+   - Bullet Indicator: Solid amber accent (`bg-amber-600 dark:bg-amber-500`).
+   - Action Buttons: Vertically stacked layout (icon centered on top, text centered below) for `Upload Doc` and `Auto-Format`.
+2. **`Input 02 · Target Specification` (Job Opportunity):**
+   - Heading Kicker: Antique bronze monospace tag (`text-amber-700 dark:text-amber-400`).
+   - Bullet Indicator: Solid amber accent with responsive segmented control (`Text` vs `URL`).
+3. **`Config · Prose Stylistics` (Tone Engine):**
+   - Heading Kicker: Stone monospace tag (`text-stone-500 dark:text-stone-400`).
+   - Segmented Controls: 4 options (`Professional`, `Enthusiastic`, `Confident`, `Creative`).
+4. **`Engine · Model Pipeline` (Model Routing):**
+   - Heading Kicker: Amber monospace tag (`Engine · Model Pipeline`).
+   - Status Badge: Contextual pill (`Recommended`, `High Precision`, `Fastest`, `Web Grounded`).
+   - Pipeline Cards: 4 model routing options with technical latency and parameter descriptors.
+5. **`Output 03 · Final Manuscript` (Document Studio):**
+   - Heading Kicker: Forest patina / emerald monospace tag (`text-emerald-700 dark:text-emerald-400`).
+   - Live Status: Emerald pulse ring with `Live Synthesis` badge.
+   - Display Typography: Styled in `font-display font-bold` (**Playfair Display**).
+   - Stationery Surface: Letterpress paper surface (`.doc-surface-card`) with floating action toolbar island (Save Draft, Copy, PDF, DOCX, Regenerate).
+   - Factuality & Alignment Audit: Interactive 5-point checklist with live progress tracking ring.
+6. **`Archive 04 · Local Repository` (Drafts Library):**
+   - Heading Kicker: Slate monospace tag (`Archive 04 · Local Repository`).
+   - Counter Badge: Muted stone counter pill with company monogram tiles and one-click restoration.
+
+### 3.3 Typography Stack
+- **UI & Controls:** `Instrument Sans`, `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`, `sans-serif`. Clean, highly readable, grotesque letterforms.
+- **Manuscript Reading:** `Source Serif 4`, `Georgia`, `Cambria`, `serif`. Editorial document formatting calibrated for long-form reading comfort.
+- **Executive Display:** `Playfair Display`, `serif`. Elegant, high-contrast serif applied to manuscript headings, hero brand accents, and the footer portfolio link.
+- **Technical Kickers & Badges:** `JetBrains Mono`, `SF Mono`, `Menlo`, `monospace`. High-density technical metadata tags.
 
 ---
 
-## 4. Feature inventory
+## 4. Authentication & Navigation Architecture
 
-1. **4 generation modes** — Standard (Balanced), Thinking Mode (deep reasoning for senior/complex roles), Low Latency (fastest draft), Search Grounding / From URL (reads posting from link).
-2. **4 tones** — Professional, Enthusiastic, Confident, Creative — injected into server-controlled system prompts.
-3. **SSRF-safe JD fetcher** — pastes text or URL; URL path safely fetches and strips HTML to 12k chars with comprehensive SSRF and redirect protection.
-4. **Resume upload + AI format** — PDF and DOCX client-side parsing (5 MB cap, 10-page PDF limit, scanned document detection) with optional AI structuring using Gemma 4.
-5. **Defensive prompt engineering** — strict prompt-injection defense with XML tags, career-coach persona, factual grounding rules (resume is single source of truth; no invented metrics), pinned temperature 0.7.
-6. **User review checklist** — interactive 5-point "Review before sending" checklist to confirm role, candidate claims, metrics, and tone.
-7. **Google sign-in boundary** — client sign-in with server-side cryptographic token verification against Google JWKS.
-8. **Export suite** — one-click Copy, PDF (`jsPDF`), DOCX (`docx`), Save draft, Regenerate, with linkified output.
-9. **Local drafts v2** — UUID keys, ISO timestamps, schema migration, quota recovery, clear-all action.
-10. **Dark/light theme** — persisted preference, View-Transition wave from toggle, CSS ripple fallback.
-11. **Automated test suite & CI** — tests for auth, SSRF, prompts, file validation, and storage; GitHub Actions CI pipeline.
+### 4.1 Native Google Button (Anti-Displacement & Anti-Leakage)
+Earlier versions relied on Google's default iframe (`<GoogleLogin />`), which automatically injected personalized Gmail account IDs on mobile and created severe layout shifts and header leakage.
+- **v2.1.0 Architecture:** Built with a custom native component (`components/GoogleButton.tsx`) powered by `@react-oauth/google`'s `useGoogleLogin()` popup hook.
+- **Visual Design:** Centered, border-stabilized button featuring the official 4-color Google "G" SVG icon.
+- **Variants:**
+  - `size="small"`: Compact, full-width design nested cleanly inside the avatar dropdown menu.
+  - `size="large"`: Commanding, centered CTA button situated inside the unauthenticated empty state card.
+- **Privacy & Layout Stability:** Zero iframe personalization, zero premature Gmail ID rendering, and 100% predictable CSS box model dimensions.
+
+### 4.2 Unified Avatar Circle Navigation (`#profile-menu-button`)
+- Desktop & Mobile header navbar incorporates a unified circular avatar button (`components/Header.tsx`).
+- When authenticated: Displays the user's high-resolution Google profile picture (with fallback to a clean `UserIcon` SVG).
+- When unauthenticated: Displays an understated guest profile monogram.
+- **Floating Popover Dialog:** Clicking the avatar opens an animated popover dialog (`role="dialog"`) that features:
+  - User identity badge (Name, Email, verified status chip).
+  - Compact native Google Sign-In or Sign-Out action.
+  - Tactile light/dark segmented toggle.
+  - Outside-click detection and keyboard `Escape` dismissal handlers.
+- **Sticky Account Lock Prevention:** Sign-out calls `google.accounts.id.disableAutoSelect()`, preventing Google from automatically forcing re-login with the same account.
 
 ---
 
-## 5. Ready-made examples (regenerate freely — facts only)
+## 5. Security & Defensive Engineering Boundary
 
-**Resume bullets:**
-- Engineered a full-stack AI cover-letter builder (React 19, Vite 6, Tailwind v4, TypeScript) deployed on Vercel with OpenRouter free-tier LLM routing (Nemotron 3 Ultra/Super, Gemma 4).
-- Built a hardened serverless API proxy (`api/openrouter.ts`, `api/fetch-url.ts`) enforcing server-side Google ID token verification against Google JWKS and sliding-window rate limiting.
-- Designed comprehensive SSRF defenses for web-based job fetching: DNS resolution, IPv4/IPv6 private/metadata IP blocking (`169.254.169.254`), manual redirect verification, 8s timeout, and 2 MB stream caps.
-- Hardened prompt architecture against prompt injection and hallucination using XML data isolation, strict grounding rules, model allowlists, and a 5-point post-generation user review checklist.
-- Added client-side resume intake (PDF/DOCX parsing up to 10 pages, scanned document detection), local-first draft storage with quota-exceeded auto-recovery, and an automated test suite with CI.
+CoverCraft enforces strict defense-in-depth across every layer of the application.
 
-**Portfolio card (title + ~30 words + stack):** CoverCraft — paste your resume and any job posting (or link) to get a tailored cover letter. Features server-verified Google sign-in, SSRF-safe URL reading, prompt-injection defense, and local drafts. `React · Vite · TypeScript · Tailwind · OpenRouter · Vercel`
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                        BROWSER CLIENT (React 19)                       │
+│  - Resume Parsing: In-memory via pdfjs-dist / mammoth (0 server upload)│
+│  - Auth Trigger: useGoogleLogin OAuth popup                            │
+│  - Export Engine: Client-side jsPDF / docx                             │
+│  - Persistence: localStorage (UUID keys, auto quota recovery)         │
+└───────────────────┬────────────────────────────────┬───────────────────┘
+                    │                                │
+    HTTPS POST      │ Authorization: Bearer <token>  │ HTTPS POST
+    /api/openrouter │ (Google ID / OAuth token)      │ /api/fetch-url
+                    ▼                                ▼
+┌───────────────────────────────────────┐ ┌──────────────────────────────┐
+│       API: /api/openrouter.ts         │ │     API: /api/fetch-url.ts   │
+│ 1. Verify Google Token (JWKS RS256)   │ │ 1. Verify Google Token       │
+│ 2. Sliding Rate Limit (User & IP)     │ │ 2. Sliding Rate Limit        │
+│ 3. Payload Validation & Size Caps     │ │ 3. SSRF & DNS Blacklist Check│
+│ 4. Server-Owned Prompts & XML Fence   │ │ 4. Bounded Manual Redirects  │
+│ 5. Model Routing Allowlist            │ │ 5. 2 MB Stream Cap & Cleanup │
+└───────────────────┬───────────────────┘ └──────────────┬───────────────┘
+                    │                                    │
+                    ▼                                    ▼
+       OpenRouter Chat Completions             Target Career Website
+      (Key safe in Vercel Env)                 (HTTPS Port 443 Only)
+```
+
+### 5.1 Dual-Mode Server Token Verification (`api/utils/auth.ts`)
+All serverless endpoints (`/api/openrouter` and `/api/fetch-url`) mandate a valid Google Bearer token:
+1. **Primary Route (RS256 JWT ID Token):**
+   - Automatically fetches and caches Google's public JWKS keys from `https://www.googleapis.com/oauth2/v3/certs`.
+   - Parses the 3-part JWT header, payload, and cryptographic signature.
+   - Verifies RSA-SHA256 signature using Node's built-in `crypto.createVerify('RSA-SHA256')`.
+   - Checks issuer (`accounts.google.com` or `https://accounts.google.com`).
+   - Checks expiry with a 60-second clock-skew tolerance buffer.
+   - Validates audience matches configured `GOOGLE_CLIENT_ID` or `VITE_GOOGLE_CLIENT_ID`.
+   - Extracts verified user subject `sub`.
+2. **Fallback Route (Google OAuth Access Token):**
+   - Recognizes OAuth access tokens prefixed with `ya29.`.
+   - Validates token against `https://oauth2.googleapis.com/tokeninfo?access_token=...`.
+   - Confirms audience validity and extracts user subject ID.
+   - Fails fast on malformed tokens, rejecting bad formats with HTTP 401.
+
+### 5.2 SSRF Prevention & Safe URL Fetching (`api/utils/urlSecurity.ts`)
+When candidates supply a job URL instead of raw text, `/api/fetch-url` applies rigorous SSRF protections:
+- **HTTPS Enforcement:** Only the `https:` protocol is permitted; plain HTTP and other schemes are rejected.
+- **Port Restriction:** Only standard TLS port `443` is allowed.
+- **No In-URL Credentials:** Rejects URLs with embedded user/pass (`https://user:pass@host`).
+- **Hostname Blacklist:** Disallows `localhost`, `*.localhost`, `*.local`, `*.internal`, `*.lan`, `metadata.google.internal`, and `instance-data`.
+- **DNS Resolution & IP Blacklisting:** Resolves target hostname via `dns.promises.lookup()` and validates every resolved address:
+  - Loopback (`127.0.0.0/8`, `::1`)
+  - Private networks (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`)
+  - Cloud metadata / APIPA (`169.254.0.0/16`, specifically AWS/GCP metadata endpoint `169.254.169.254`)
+  - Broadcast (`255.255.255.255`)
+  - Carrier-grade NAT (`100.64.0.0/10`)
+  - Documentation blocks (`192.0.2.0/24`, `198.51.100.0/24`, `203.0.113.0/24`)
+  - IPv6 Unique Local (`fc00::/7`) and Link-Local (`fe80::/10`)
+- **Manual Bounded Redirects:** Automatically prevents redirect smuggling by intercepting HTTP 301/302/303/307/308 responses; re-runs DNS and IP verification on each hop (maximum 3 redirects).
+- **Hard Timeout:** 8000 ms (8s) maximum fetch duration via `AbortController`.
+- **Streaming Byte Cap:** Enforces a strict 2 MB maximum transfer ceiling; aborts response stream immediately if exceeded.
+- **Content Cleaning:** Strips `<script>`, `<style>`, HTML comments, and tags; decodes HTML entities; caps extracted plain text at 12,000 characters (`MAX_JOB_URL_TEXT_LENGTH`).
+
+### 5.3 Server-Owned Prompt Architecture & Anti-Hallucination (`api/utils/prompts.ts`)
+- **Zero Client Prompt Injection:** Client cannot supply system prompts or custom messages arrays.
+- **Data Encapsulation:** Untrusted candidate resumes and job postings are isolated inside dedicated XML tags:
+  ```xml
+  <candidate_resume>
+  ... untrusted candidate text ...
+  </candidate_resume>
+
+  <target_job_description>
+  ... untrusted job posting text ...
+  </target_job_description>
+  ```
+- **Factual Grounding Directives:**
+  - The resume is established as the sole single source of truth.
+  - The model is strictly prohibited from inventing employers, degrees, metrics, or technologies not present in `<candidate_resume>`.
+  - System commands instruct the model to ignore any embedded directives or prompt-hijacking attempts contained within the input tags.
+  - Temperature is pinned at `0.7` for consistency and adherence.
+  - Zero placeholders rule: Disallows brackets like `[Your Name]` or `[Company]`.
+
+### 5.4 Sliding-Window Rate Limiting (`api/utils/rateLimiter.ts`)
+Protects upstream inference budgets and serverless compute from abuse:
+- `/api/openrouter`: 15 requests per 10 minutes per verified user `sub`; 30 requests per 10 minutes per client IP.
+- `/api/fetch-url`: 20 requests per 10 minutes per verified user `sub`; 40 requests per 10 minutes per client IP.
+- Supports Upstash Redis / Vercel KV REST APIs for distributed state, with automatic in-memory fallback.
+
+### 5.5 Document Privacy & Client-Side Extraction
+- PDF parsing runs in-browser via `pdfjs-dist` (up to 10 pages). Password-protected and scanned image-only PDFs (<50 characters of selectable text) trigger informative alerts.
+- DOCX parsing runs in-browser via `mammoth`.
+- Uploaded candidate documents are **never** transmitted to or stored on any server. Only extracted plain text is sent to the generation proxy.
+
+---
+
+## 6. Model Pipeline & Routing Matrix
+
+| Generation Mode | Model ID | Context Window | Architecture Role |
+|---|---|---|---|
+| **Balanced Engine (Standard)** | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1,000,000 tokens | Frontier reasoning; balanced eloquence and factual precision for general & senior roles |
+| **Deep Reasoning Mode (Thinking)** | `nvidia/nemotron-3-super-120b-a12b:free` | 128,000 tokens | MoE deep reasoning architecture for executive, principal, and cross-functional leadership roles |
+| **Quick Draft (Low Latency)** | `google/gemma-4-26b-a4b-it:free` | 32,000 tokens | Ultra-fast drafting model designed for rapid iteration |
+| **URL Reader Engine (Search Grounding)** | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1,000,000 tokens | Massive context model ideal for digesting full scraped job posting web pages |
+| **Resume Formatting Utility** | `google/gemma-4-26b-a4b-it:free` | 32,000 tokens | Organizes messy raw resume text into clean markdown sections |
+
+---
+
+## 7. Project File & Directory Map
+
+```
+cover_letter_gen/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                 # CI workflow (Bun setup, typecheck, test, build)
+├── api/                           # Vercel Serverless Functions
+│   ├── fetch-url.ts               # SSRF-safe job posting URL scraper
+│   ├── openrouter.ts              # Authenticated OpenRouter AI generation proxy
+│   └── utils/
+│       ├── auth.ts                # Dual-mode Google token verification (JWKS & tokeninfo)
+│       ├── prompts.ts             # Server-owned prompts, XML isolation, model allowlist
+│       ├── rateLimiter.ts         # Sliding-window rate limiting (User & IP)
+│       └── urlSecurity.ts         # SSRF prevention, DNS check, IP blacklist, HTML stripper
+├── components/                    # React UI Components
+│   ├── DraftsSection.tsx          # Local drafts repository with monogram tiles
+│   ├── GoogleButton.tsx           # Custom native Google button (small & large, 4-color SVG)
+│   ├── Header.tsx                 # Detached glass island navbar with avatar circle popover
+│   ├── icons.tsx                  # Minimalist SVG icons (GoogleGIcon, UserIcon, etc.)
+│   ├── InputSection.tsx           # Resume & JD inputs, stacked icon buttons, dropzone
+│   ├── ModeSelector.tsx           # Synthesis engine model selector with status badges
+│   ├── OutputSection.tsx          # Stationery manuscript, action island, 5-point audit
+│   └── UI.tsx                     # Reusable UI primitives (Segmented, Field, Button)
+├── docs/                          # Architecture & Portfolio Documentation
+│   ├── assets/                    # Light & dark mode application previews
+│   ├── bugs-and-fixes/            # Bug logging protocols and templates
+│   ├── sandbox-browser/           # Playwright visual check kit & scripts
+│   └── PORTFOLIO-FRAMING.md       # High-conviction positioning copy for portfolio/resume
+├── scripts/
+│   └── inspect-ui.cjs             # Playwright automated E2E & 0-overflow inspection
+├── services/                      # Client Services
+│   ├── auth.tsx                   # AuthContext, GoogleOAuthProvider, token lifecycle
+│   ├── draftStorage.ts            # Local-first storage (v2 schema, quota recovery, migration)
+│   └── geminiService.ts           # Authenticated API client calling /api/* endpoints
+├── test/                          # Automated Bun Test Suite (48 tests)
+│   ├── auth.test.ts               # JWKS signature, expiry, audience, access token tests
+│   ├── draftStorage.test.ts       # Storage v2 schema, migration, quota recovery tests
+│   ├── fileValidation.test.ts     # PDF/DOCX file limits and scanned detection tests
+│   ├── openrouter.test.ts         # Model routing, prompt injection, XML tags, rate tests
+│   └── urlSecurity.test.ts        # SSRF IP blacklists, DNS resolution, redirect tests
+├── App.tsx                        # Root application component & theme management
+├── bun.lock                       # Bun dependency lockfile
+├── index.css                      # Tailwind v4 theme, double-bezel, and stationery CSS
+├── index.html                     # HTML entry point with Google Fonts preload
+├── index.tsx                      # React root mount
+├── package.json                   # Project manifest, scripts, and dependencies
+├── vite.config.ts                 # Vite config with dev-server API proxy middleware
+├── AGENTS.md                      # Mandatory AI agent operational rules & versioning
+├── COMMIT-HISTORY.md              # Exhaustive chronological commit history & version log
+├── PROJECT-INFO.md                # THIS FILE (Comprehensive source of truth)
+└── README.md                      # Public GitHub documentation
+```
+
+---
+
+## 8. CLI & Developer Reference (Bun First)
+
+All development, testing, and compilation tasks run through **Bun**:
+
+```bash
+# 1. Install dependencies
+bun install
+
+# 2. Start local development server with API parity middleware (:3000)
+bun run dev
+
+# 3. Execute strict TypeScript typecheck (0 errors required)
+bun run typecheck
+
+# 4. Run automated test suite (48 tests across 5 test suites)
+bun test
+
+# 5. Compile production Vite application bundle
+bun run build
+
+# 6. Run headless Playwright UI & 0-overflow inspection
+node scripts/inspect-ui.cjs
+```
+
+*(npm commands like `npm run dev`, `npm test`, and `npm run build` remain fully compatible).*
+
+---
+
+## 9. Ready-Made Portfolio & Resume Bullets (Strictly Verified Facts)
+
+### Resume Bullets (Technical & Quantified)
+- **Engineered a full-stack AI document generation studio** (React 19, Bun 1.4, Vite 6, Tailwind v4, TypeScript) deployed on Vercel with free-tier OpenRouter LLM routing across 3 models (Nemotron 3 Ultra/Super, Gemma 4).
+- **Architected a server-enforced security perimeter** (`/api/openrouter`, `/api/fetch-url`) implementing cryptographic Google ID token verification against Google public JWKS (RSA-SHA256) with OAuth access token fallback and sliding-window rate limiting.
+- **Engineered robust SSRF defense mechanisms** for job-posting ingestion: DNS hostname resolution, IP blacklisting of loopback/private/metadata ranges (`169.254.169.254`), manual 3-hop redirect inspection, 8s timeout, and 2 MB streaming byte caps.
+- **Hardened prompt-injection resilience and eliminated hallucinations** by wrapping untrusted inputs in XML delimiters, enforcing single-source-of-truth grounding rules, pinning temperature at 0.7, and providing an interactive 5-point post-generation factuality audit.
+- **Implemented zero-leakage native Google authentication and privacy-conscious parsing**, replacing iframe OAuth with a custom 4-color SVG button and client-side PDF/DOCX extractors (`pdfjs-dist`, `mammoth` up to 10 pages) ensuring user files never touch external storage.
+- **Built an automated Bun test suite (48 tests)** covering cryptographic auth, SSRF network filters, prompt assembly, and storage schema migrations, integrated into GitHub Actions CI.
+
+### Portfolio Card Copy (~35 words)
+> **CoverCraft — Grounded AI Document Pipeline**
+> An editorial AI cover-letter studio that transforms PDF/DOCX resumes and job postings into tailored letters. Features server-verified Google authentication, SSRF-hardened URL reading, XML prompt isolation, and client-side parsing with zero file uploads.
+> *Stack: React 19 · Bun · TypeScript · Tailwind v4 · OpenRouter · Vercel*

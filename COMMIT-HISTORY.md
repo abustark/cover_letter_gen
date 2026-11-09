@@ -7,11 +7,22 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.1.0`** (current head is `2.0.10` — see below)
+> - **`main` → `2.1.1`** (current head is `2.1.0` — see below)
 
 ---
 
 ## Commit History
+
+### 2.1.0 - update PROJECT-INFO.md and repo documentation for Bun & v2.1.0 architecture
+
+- **Date**: 2026-11-09
+- **Why**: user requested updating repo files, documentation, and creating a comprehensive, up-to-date PROJECT-INFO.md source of truth for AI models to understand the project completely without reading code.
+- **Changes**:
+  - `PROJECT-INFO.md`: completely overhauled and expanded as the definitive source of truth; covers project identity (v2.1.0), Bun v1.4.4 toolchain, exact dependencies, high-end editorial design system, typography tokens (Playfair Display, Instrument Sans, Source Serif 4), Editorial Accent Hierarchy (`Input 01`, `Input 02`, `Config`, `Engine`, `Output 03`, `Archive 04`), native Google button architecture, avatar popover navigation, dual-mode authentication (RS256 JWKS + OAuth access token fallback), SSRF network defense matrix, server-owned prompt architecture with XML isolation, sliding-window rate limiting, client-side document privacy, model routing matrix, file directory map, Bun CLI reference, and verified portfolio/resume bullets.
+  - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.0`.
+  - `README.md`: updated getting started, stack table, features table, testing, and security model to reflect Bun toolchain (`bun install`, `bun run dev`, `bun test`, `bun run typecheck`, `bun run build`), native Google button, avatar popover menu, and dual-mode token verification.
+  - `.github/workflows/ci.yml`: modernized CI pipeline to use `oven-sh/setup-bun@v2` with `bun install`, `bun run typecheck`, `bun test`, and `bun run build`.
+  - `docs/PORTFOLIO-FRAMING.md`: updated portfolio card tags, resume bullets, and auth specifications to reflect Bun and server-verified Google authentication.
 
 ### 2.0.10 - switch toolchain to Bun and verify all gates and tests
 
