@@ -1,12 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { extractBearerToken, verifyGoogleToken } from './utils/auth';
-import { checkRateLimit, getClientIp } from './utils/rateLimiter';
+import { extractBearerToken, verifyGoogleToken } from './_utils/auth.ts';
+import { checkRateLimit, getClientIp } from './_utils/rateLimiter.ts';
 import {
   buildCoverLetterPrompts,
   buildResumeFormattingPrompt,
   validateFormatPayload,
   validateGenerationPayload,
-} from './utils/prompts';
+} from './_utils/prompts.ts';
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
@@ -14,7 +14,9 @@ const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const FALLBACK_CANDIDATES = [
   'nvidia/nemotron-3-ultra-550b-a55b:free',
   'nvidia/nemotron-3.5-super-vl:free',
+  'nvidia/nemotron-3.5-lightning:free',
   'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+  'google/gemma-4-31b-it:free',
 ];
 
 // AI generation quotas: 15 per 10 min per user, 30 per 10 min per IP
@@ -43,7 +45,7 @@ async function callOpenRouter(
           { role: 'user', content: userPrompt },
         ],
         temperature: 0.7,
-        max_tokens: 2048,
+        max_tokens: 3072,
       }),
     });
 
@@ -60,12 +62,13 @@ async function callOpenRouter(
     }
 
     const data = await response.json();
-    const content = data?.choices?.[0]?.message?.content;
-    if (!content || typeof content !== 'string' || !content.trim()) {
+    const rawContent = data?.choices?.[0]?.message?.content ?? data?.choices?.[0]?.text;
+    const content = typeof rawContent === 'string' ? rawContent.trim() : '';
+    if (!content) {
       return { ok: false, status: 502, message: 'Empty response returned from upstream provider.' };
     }
 
-    return { ok: true, content: content.trim() };
+    return { ok: true, content };
   } catch (err) {
     return { ok: false, status: 500, message: err instanceof Error ? err.message : 'Network error' };
   }

@@ -7,13 +7,25 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.1.3`** (current head is `2.1.2` — see below)
+> - **`main` → `2.1.4`** (current head is `2.1.3` — see below)
 
 ---
 
 ## Commit History
 
-### 2.1.2 - update agent instructions for explicit gate and commit approvals
+### 2.1.3 - fix resume auto-format spacing & repair Vercel serverless ESM execution
+
+- **Date**: 2026-11-09
+- **Why**: fix cramped resume text caused by single-space PDF extraction and silent failure in auto-format; repair Vercel serverless 500 invocation crash (`FUNCTION_INVOCATION_FAILED`) that was breaking cover letter generation on production; add heuristic resume structuring.
+- **Changes**:
+  - `api/_utils/`: moved serverless utility modules (`auth.ts`, `prompts.ts`, `rateLimiter.ts`, `urlSecurity.ts`) into `api/_utils/` with explicit `.ts` import extensions to fix Node ESM resolution (`ERR_MODULE_NOT_FOUND`) and prevent Vercel from deploying internal helper files as standalone public endpoints.
+  - `api/openrouter.ts`: updated imports to `./_utils/*.ts`; expanded fallback pool to include `nvidia/nemotron-3.5-lightning:free` and `google/gemma-4-31b-it:free`; increased `max_tokens` from 2048 to 3072 to prevent reasoning token truncation; added fallback to `choices[0].text`.
+  - `api/fetch-url.ts`: updated helper imports to `./_utils/*.ts`.
+  - `services/resumeCleaner.ts`: added heuristic structuring utility `cleanCrampedResumeText` that identifies section headers (`EXPERIENCE`, `EDUCATION`, `SKILLS`, etc.), inserts double newlines, places bullet points (`•`, `●`, `▪`, etc.) onto new lines, isolates contact info, and normalizes spacing.
+  - `components/InputSection.tsx`: refactored PDF text extraction to track Y coordinates and EOL markers rather than `.join(' ')`, preserving line breaks and paragraph spacing; applied `cleanCrampedResumeText` to both PDF and DOCX extractions; rewired `Auto-Format` button to format existing textarea content (with AI when authenticated and fallback to local clean when offline/unauthenticated) or open document picker if empty.
+  - `services/geminiService.ts`: updated `formatResumeText` to throw descriptive error messages on API failure rather than silently swallowing errors and returning cramped text.
+  - `test/auth.test.ts`, `test/openrouter.test.ts`, `test/urlSecurity.test.ts`: updated helper imports to `../api/_utils/*.ts`.
+  - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.3`.
 
 - **Date**: 2026-11-09
 - **Why**: user instructed that no gate passes or test runs may be performed without explicit user proceed, and after every code update the AI must stop, summarize changes, and ask for permission before committing, pushing, or running gates.

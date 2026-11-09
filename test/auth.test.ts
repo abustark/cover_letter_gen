@@ -5,7 +5,7 @@ import {
   verifyGoogleToken,
   extractBearerToken,
   _resetJwksCache,
-} from '../api/utils/auth';
+} from '../api/_utils/auth.ts';
 
 const TEST_CLIENT_ID = 'test-covercraft-client-id.apps.googleusercontent.com';
 

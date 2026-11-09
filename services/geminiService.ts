@@ -132,30 +132,37 @@ export const formatResumeText = async (rawText: string, token: string): Promise<
   }
 
   if (!token) {
-    // If user is not yet signed in, return raw text gracefully
-    return rawText;
+    throw new Error('Please sign in with Google to use AI Auto-Format.');
   }
 
-  try {
-    const response = await fetch('/api/openrouter', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        type: 'format',
-        rawText,
-      }),
-    });
+  const response = await fetch('/api/openrouter', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      type: 'format',
+      rawText,
+    }),
+  });
 
-    if (!response.ok) {
-      return rawText;
+  const data = (await response.json().catch(() => null)) as OpenRouterApiResponse | null;
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      throw new Error('Your session has expired. Please sign in again with Google.');
     }
-
-    const data = (await response.json().catch(() => null)) as OpenRouterApiResponse | null;
-    return data?.text?.trim() || rawText;
-  } catch {
-    return rawText;
+    if (response.status === 429) {
+      throw new Error(data?.error || 'Rate limit reached. Please wait a moment.');
+    }
+    throw new Error(data?.error || `Resume formatting failed (${response.status}).`);
   }
+
+  const content = data?.text?.trim();
+  if (!content) {
+    throw new Error('The AI formatting service returned an empty response.');
+  }
+
+  return content;
 };

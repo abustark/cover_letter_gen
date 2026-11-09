@@ -10,6 +10,7 @@ import {
 } from './icons';
 import { JobDescriptionInputType, Tone } from '../types';
 import { formatResumeText } from '../services/geminiService';
+import { cleanCrampedResumeText } from '../services/resumeCleaner';
 import { Button, Segmented, Field } from './UI';
 import { GoogleButton } from './GoogleButton';
 import { useAuth } from '../services/auth';
@@ -185,10 +186,58 @@ export const InputSection: React.FC<InputSectionProps> = ({
         for (let i = 1; i <= pdf.numPages; i++) {
           const page = await pdf.getPage(i);
           const textContent = await page.getTextContent();
-          const pageText = textContent.items
-            .map((item) => ('str' in item ? item.str : ''))
-            .join(' ');
-          pageTexts.push(pageText);
+          
+          const lines: string[] = [];
+          let currentLine = '';
+          let lastY: number | null = null;
+
+          for (const rawItem of textContent.items) {
+            if (!('str' in rawItem)) continue;
+            const item = rawItem as { str: string; transform?: number[]; hasEOL?: boolean; height?: number };
+            const str = item.str;
+            if (!str && !item.hasEOL) continue;
+
+            const currentY = item.transform ? item.transform[5] : null;
+
+            if (lastY !== null && currentY !== null) {
+              const deltaY = Math.abs(currentY - lastY);
+              // In PDF coordinates, a vertical position shift indicates a line break
+              if (deltaY > 3 || item.hasEOL) {
+                if (currentLine.trim()) {
+                  lines.push(currentLine.trim());
+                }
+                // Larger vertical spacing indicates a paragraph or section gap
+                if (deltaY > 14) {
+                  lines.push('');
+                }
+                currentLine = str;
+              } else {
+                if (currentLine && !currentLine.endsWith(' ') && !str.startsWith(' ')) {
+                  currentLine += ' ';
+                }
+                currentLine += str;
+              }
+            } else {
+              currentLine += str;
+            }
+
+            if (item.hasEOL) {
+              if (currentLine.trim()) {
+                lines.push(currentLine.trim());
+              }
+              currentLine = '';
+            }
+
+            if (currentY !== null) {
+              lastY = currentY;
+            }
+          }
+
+          if (currentLine.trim()) {
+            lines.push(currentLine.trim());
+          }
+
+          pageTexts.push(lines.join('\n'));
         }
         rawText = pageTexts.join('\n\n').trim();
 
@@ -208,6 +257,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
           throw new Error('No readable text found in this document. Please paste your resume text.');
         }
       }
+
+      // Clean and structure extracted text heuristically (formats headers, bullet points, line breaks)
+      rawText = cleanCrampedResumeText(rawText);
 
       if (rawText.length > MAX_RESUME_TEXT_LENGTH) {
         rawText = rawText.slice(0, MAX_RESUME_TEXT_LENGTH);
@@ -232,16 +284,55 @@ export const InputSection: React.FC<InputSectionProps> = ({
           setResume(formattedText);
         } catch (err) {
           console.error('Resume formatting error:', err);
-          setFileError('Could not format resume text with AI, using raw text.');
+          setFileError(
+            err instanceof Error
+              ? `${err.message} (Using cleanly formatted text)`
+              : 'AI formatting unavailable. Using cleanly formatted text.'
+          );
           setResume(rawText);
         } finally {
           setIsFormatting(false);
         }
       } else {
         setResume(rawText);
+        setFileError('Formatted locally. Sign in with Google for AI-powered structuring.');
       }
     } else {
       setResume(rawText);
+    }
+  };
+
+  const handleAutoFormat = async () => {
+    const textToFormat = resume.trim();
+    if (!textToFormat) {
+      handleFileClick(true);
+      return;
+    }
+
+    const token = getValidToken();
+    if (!token) {
+      const cleaned = cleanCrampedResumeText(textToFormat);
+      setResume(cleaned);
+      setFileError('Formatted locally. Sign in with Google for AI-powered structuring.');
+      return;
+    }
+
+    setIsFormatting(true);
+    setFileError('');
+    try {
+      const formatted = await formatResumeText(textToFormat, token);
+      setResume(formatted);
+    } catch (err) {
+      console.error('Auto-Format error:', err);
+      const cleaned = cleanCrampedResumeText(textToFormat);
+      setResume(cleaned);
+      setFileError(
+        err instanceof Error
+          ? `${err.message} (Applied local formatting)`
+          : 'AI formatting unavailable. Applied local formatting.'
+      );
+    } finally {
+      setIsFormatting(false);
     }
   };
 
@@ -312,8 +403,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
               </button>
               <button
                 type="button"
-                onClick={() => handleFileClick(true)}
+                onClick={handleAutoFormat}
                 disabled={isUploading}
+                title={resume.trim() ? 'Format current resume text' : 'Upload and format document'}
                 className="flex-1 sm:flex-initial flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800/90 hover:bg-stone-50 dark:hover:bg-stone-700/80 active:scale-95 transition-all shadow-xs disabled:opacity-50 min-w-[96px]"
               >
                 <SparklesIcon className="w-4 h-4 text-amber-700 dark:text-amber-400" />

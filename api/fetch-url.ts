@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { extractBearerToken, verifyGoogleToken } from './utils/auth';
-import { checkRateLimit, getClientIp } from './utils/rateLimiter';
-import { safeFetchJobPosting } from './utils/urlSecurity';
+import { extractBearerToken, verifyGoogleToken } from './_utils/auth.ts';
+import { checkRateLimit, getClientIp } from './_utils/rateLimiter.ts';
+import { safeFetchJobPosting } from './_utils/urlSecurity.ts';
 
 // URL fetch quotas: 20 per 10 min per user, 40 per 10 min per IP
 const USER_RATE_LIMIT = { windowSeconds: 600, maxRequests: 20 };
