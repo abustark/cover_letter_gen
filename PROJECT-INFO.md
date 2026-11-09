@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | Name | **CoverCraft — AI Cover Letter Builder & Editorial Studio** |
-| Current Version | **v2.1.1** (Production release, November 2026) |
+| Current Version | **v2.1.6** (Production release, November 2026) |
 | App Type | Full-stack web application (AI document pipeline & career productivity studio) |
 | Author | ABu (`abustark` on GitHub) |
 | Live Site | https://coverltr.vercel.app/ |
@@ -44,16 +44,18 @@
 | **AI Model (Fast & Formatting)**| NVIDIA Nemotron 3 Nano Omni | `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | 256k context, 30B-A3B low-latency drafting and structured resume text formatting |
 | **Auth (Client)** | @react-oauth/google | `^0.13.5` | Google Identity Provider wrapping native button & `useGoogleLogin` popup |
 | **Auth (Server)** | Node `crypto` & JWKS | Built-in | RSA-SHA256 signature verification via Google JWKS + tokeninfo fallback |
-| **Resume Extraction (PDF)**| pdfjs-dist | `^4.4.168` | Lazy-loaded client-side text extractor (max 10 pages; scanned image detection) |
+| **Resume Extraction (PDF)**| pdfjs-dist | `^4.4.168` | Lazy-loaded client-side text extractor with layout-aware Y-coordinate tracking to preserve section breaks |
 | **Resume Extraction (DOCX)**| mammoth | `^1.12.0` | Lazy-loaded client-side raw document text extractor |
+| **Resume Structuring** | Custom cleaner | `services/resumeCleaner.ts` | Heuristic structuring engine (`cleanCrampedResumeText`) formatting headers, bullets, and contact info |
 | **Export (PDF)** | jspdf | `^2.5.2` | Lazy-loaded client-side PDF document generator |
 | **Export (DOCX)** | docx | `^9.7.1` | Lazy-loaded client-side Word document generator (Paragraph/TextRun AST) |
 | **Rate Limiting** | Custom sliding-window | In-memory / Upstash Redis | Per-user `sub` and per-IP sliding-window quota management |
-| **Testing Engine** | Bun Test | `bun test` (native) | 48 automated tests across 5 test suites (`test/*.test.ts`) |
+| **Testing Engine** | Bun Test | `bun test` (native) | 53 automated tests across 6 test suites (`test/*.test.ts`) |
 | **E2E / Visual QA** | Playwright | CLI / headless | Headless browser assertions verifying 0 horizontal overflow on PC & mobile |
 | **CI Automation** | GitHub Actions | `.github/workflows/ci.yml`| Automated workflow with `oven-sh/setup-bun@v2`, typecheck, test, and build |
-| **Hosting (Production)** | Vercel Serverless | `@vercel/node ^5.5.13` | Edge/serverless deployment (`api/openrouter.ts`, `api/fetch-url.ts`) |
-| **Typography** | Google Fonts | Web CDN | `Instrument Sans` (UI), `Source Serif 4` (letter), `Playfair Display` (headings) |
+| **Hosting (Production)** | Vercel Serverless | `@vercel/node ^5.5.13` | Edge/serverless deployment (`api/openrouter.ts`, `api/fetch-url.ts` 100% self-contained) |
+| **Update Notification** | Custom polling toast | `components/UpdateNotification.tsx` | Background version polling (`/version.json`) with interactive "Refresh to Update" toast |
+| **Typography & Monogram** | Google Fonts & SVG | Web CDN / inline SVG | `Playfair Display` (CC monogram & display), `Instrument Sans` (UI), `Source Serif 4` (letter) |
 
 ---
 
@@ -97,12 +99,21 @@ Every major functional quadrant on the page is visually differentiated using ded
 ### 3.3 Typography Stack
 - **UI & Controls:** `Instrument Sans`, `-apple-system`, `BlinkMacSystemFont`, `Segoe UI`, `Roboto`, `sans-serif`. Clean, highly readable, grotesque letterforms.
 - **Manuscript Reading:** `Source Serif 4`, `Georgia`, `Cambria`, `serif`. Editorial document formatting calibrated for long-form reading comfort.
-- **Executive Display:** `Playfair Display`, `serif`. Elegant, high-contrast serif applied to manuscript headings, hero brand accents, and the footer portfolio link.
+- **Executive Display:** `Playfair Display`, `serif`. Elegant, high-contrast serif applied to manuscript headings, hero brand accents, the logo monogram, and the footer portfolio link.
 - **Technical Kickers & Badges:** `JetBrains Mono`, `SF Mono`, `Menlo`, `monospace`. High-density technical metadata tags.
+
+### 3.4 Bespoke CC Serif Monogram & Favicon System
+- **Brand Logo Badge (`components/Header.tsx`):**
+  - Replaces generic iconography with an editorial monogram badge designed in `Playfair Display`.
+  - Obsidian squircle base (`bg-stone-900 dark:bg-stone-950`) with an intentional amber accent hairline ring (`border-amber-500/35`).
+  - Dual-tone typography: primary "C" rendered in warm alabaster (`text-stone-100 dark:text-stone-200`) and secondary "C" rendered in golden amber (`text-amber-500`).
+- **Synchronized Vector Favicon (`public/favicon.svg` & `favicon.svg`):**
+  - Vector SVG rendering the exact same dual-tone "CC" serif letterforms, amber accent ring, and obsidian squircle.
+  - Ensures sharp, professional recognition across browser tabs and OS taskbars in both light and dark display modes.
 
 ---
 
-## 4. Authentication & Navigation Architecture
+## 4. Authentication, Navigation & Live Update Architecture
 
 ### 4.1 Native Google Button (Anti-Displacement & Anti-Leakage)
 Earlier versions relied on Google's default iframe (`<GoogleLogin />`), which automatically injected personalized Gmail account IDs on mobile and created severe layout shifts and header leakage.
@@ -123,6 +134,11 @@ Earlier versions relied on Google's default iframe (`<GoogleLogin />`), which au
   - Tactile light/dark segmented toggle.
   - Outside-click detection and keyboard `Escape` dismissal handlers.
 - **Sticky Account Lock Prevention:** Sign-out calls `google.accounts.id.disableAutoSelect()`, preventing Google from automatically forcing re-login with the same account.
+
+### 4.3 Proactive Live Update Notification Toast (`components/UpdateNotification.tsx`)
+- Lightweight client component that polls `/version.json` periodically (every 2 minutes) and on browser `visibilitychange` / `window.focus`.
+- Compares deployed version against bundle `CURRENT_APP_VERSION`.
+- When a newer build is deployed on Vercel, smoothly renders a floating editorial toast with a "Refresh to Update" button and dismissible option, eliminating stale asset and caching issues without abrupt page reloads.
 
 ---
 
@@ -156,7 +172,7 @@ CoverCraft enforces strict defense-in-depth across every layer of the applicatio
       (Key safe in Vercel Env)                 (HTTPS Port 443 Only)
 ```
 
-### 5.1 Dual-Mode Server Token Verification (`api/utils/auth.ts`)
+### 5.1 Dual-Mode Server Token Verification (`server/auth.ts` & inlined in `api/*.ts`)
 All serverless endpoints (`/api/openrouter` and `/api/fetch-url`) mandate a valid Google Bearer token:
 1. **Primary Route (RS256 JWT ID Token):**
    - Automatically fetches and caches Google's public JWKS keys from `https://www.googleapis.com/oauth2/v3/certs`.
@@ -172,7 +188,7 @@ All serverless endpoints (`/api/openrouter` and `/api/fetch-url`) mandate a vali
    - Confirms audience validity and extracts user subject ID.
    - Fails fast on malformed tokens, rejecting bad formats with HTTP 401.
 
-### 5.2 SSRF Prevention & Safe URL Fetching (`api/utils/urlSecurity.ts`)
+### 5.2 SSRF Prevention & Safe URL Fetching (`server/urlSecurity.ts` & inlined in `api/fetch-url.ts`)
 When candidates supply a job URL instead of raw text, `/api/fetch-url` applies rigorous SSRF protections:
 - **HTTPS Enforcement:** Only the `https:` protocol is permitted; plain HTTP and other schemes are rejected.
 - **Port Restriction:** Only standard TLS port `443` is allowed.
@@ -191,7 +207,7 @@ When candidates supply a job URL instead of raw text, `/api/fetch-url` applies r
 - **Streaming Byte Cap:** Enforces a strict 2 MB maximum transfer ceiling; aborts response stream immediately if exceeded.
 - **Content Cleaning:** Strips `<script>`, `<style>`, HTML comments, and tags; decodes HTML entities; caps extracted plain text at 12,000 characters (`MAX_JOB_URL_TEXT_LENGTH`).
 
-### 5.3 Server-Owned Prompt Architecture & Anti-Hallucination (`api/utils/prompts.ts`)
+### 5.3 Server-Owned Prompt Architecture & Anti-Hallucination (`server/prompts.ts` & inlined in `api/openrouter.ts`)
 - **Zero Client Prompt Injection:** Client cannot supply system prompts or custom messages arrays.
 - **Data Encapsulation:** Untrusted candidate resumes and job postings are isolated inside dedicated XML tags:
   ```xml
@@ -210,7 +226,7 @@ When candidates supply a job URL instead of raw text, `/api/fetch-url` applies r
   - Temperature is pinned at `0.7` for consistency and adherence.
   - Zero placeholders rule: Disallows brackets like `[Your Name]` or `[Company]`.
 
-### 5.4 Sliding-Window Rate Limiting (`api/utils/rateLimiter.ts`)
+### 5.4 Sliding-Window Rate Limiting (`server/rateLimiter.ts` & inlined in `api/*.ts`)
 Protects upstream inference budgets and serverless compute from abuse:
 - `/api/openrouter`: 15 requests per 10 minutes per verified user `sub`; 30 requests per 10 minutes per client IP.
 - `/api/fetch-url`: 20 requests per 10 minutes per verified user `sub`; 40 requests per 10 minutes per client IP.
@@ -220,6 +236,22 @@ Protects upstream inference budgets and serverless compute from abuse:
 - PDF parsing runs in-browser via `pdfjs-dist` (up to 10 pages). Password-protected and scanned image-only PDFs (<50 characters of selectable text) trigger informative alerts.
 - DOCX parsing runs in-browser via `mammoth`.
 - Uploaded candidate documents are **never** transmitted to or stored on any server. Only extracted plain text is sent to the generation proxy.
+
+### 5.6 Layout-Aware PDF Extraction & Heuristic Structuring (`services/resumeCleaner.ts`)
+- **Layout-Aware PDF Extraction (`components/InputSection.tsx`):**
+  - Standard PDF.js `.join(' ')` strips all Y-coordinate geometry and flattens resumes into cramped single-paragraph blocks.
+  - CoverCraft tracks bounding box Y coordinates and line heights across text tokens; when vertical coordinate shifts or `hasEOL` flags are detected, appropriate newlines and paragraph breaks are preserved.
+- **Heuristic Section Structuring (`cleanCrampedResumeText`):**
+  - Evaluates extracted text for standard resume headings (`EXPERIENCE`, `EDUCATION`, `SKILLS`, `SUMMARY`, `PROJECTS`, `CERTIFICATIONS`, etc.) and ensures they are preceded by double newlines.
+  - Identifies inline bullet characters (`•`, `●`, `▪`, `–`, `*`) and forces them onto distinct lines.
+  - Isolates email and phone contact details onto independent lines without corrupting addresses.
+- **In-Place Auto-Format Action:**
+  - The `Auto-Format` button directly formats existing textarea contents (using server-backed AI when authenticated, or client heuristic formatting when offline or unauthenticated) without requiring document re-upload.
+
+### 5.7 Vercel Serverless Function Bundling Invariant
+- Vercel's Node.js runtime builder (`@vercel/node`) treats top-level files in `api/*.ts` as serverless entry points and excludes or breaks subdirectories (e.g. `api/utils/` or `api/_utils/`), causing runtime `FUNCTION_INVOCATION_FAILED` (HTTP 500).
+- `api/openrouter.ts` and `api/fetch-url.ts` are 100% self-contained single-file endpoints with zero relative internal imports.
+- Modular utilities for local and CI automated testing are maintained separately in `server/` with strict TypeScript alignment.
 
 ---
 
@@ -247,46 +279,54 @@ cover_letter_gen/
 ├── .github/
 │   └── workflows/
 │       └── ci.yml                 # CI workflow (Bun setup, typecheck, test, build)
-├── api/                           # Vercel Serverless Functions
-│   ├── fetch-url.ts               # SSRF-safe job posting URL scraper
-│   ├── openrouter.ts              # Authenticated OpenRouter AI generation proxy
-│   └── utils/
-│       ├── auth.ts                # Dual-mode Google token verification (JWKS & tokeninfo)
-│       ├── prompts.ts             # Server-owned prompts, XML isolation, model allowlist
-│       ├── rateLimiter.ts         # Sliding-window rate limiting (User & IP)
-│       └── urlSecurity.ts         # SSRF prevention, DNS check, IP blacklist, HTML stripper
+├── api/                           # Vercel Serverless Functions (100% Self-Contained)
+│   ├── fetch-url.ts               # SSRF-safe URL scraper (inlined auth, SSRF & rate limit)
+│   └── openrouter.ts              # OpenRouter AI proxy (inlined auth, rate limit & prompts)
 ├── components/                    # React UI Components
 │   ├── DraftsSection.tsx          # Local drafts repository with monogram tiles
 │   ├── GoogleButton.tsx           # Custom native Google button (small & large, 4-color SVG)
-│   ├── Header.tsx                 # Detached glass island navbar with avatar circle popover
+│   ├── Header.tsx                 # Detached glass island navbar with CC monogram badge & avatar popover
 │   ├── icons.tsx                  # Minimalist SVG icons (GoogleGIcon, UserIcon, etc.)
-│   ├── InputSection.tsx           # Resume & JD inputs, stacked icon buttons, dropzone
+│   ├── InputSection.tsx           # Resume & JD inputs, layout-aware extraction, auto-format
 │   ├── ModeSelector.tsx           # Synthesis engine model selector with status badges
 │   ├── OutputSection.tsx          # Stationery manuscript, action island, 5-point audit
-│   └── UI.tsx                     # Reusable UI primitives (Segmented, Field, Button)
+│   ├── UI.tsx                     # Reusable UI primitives (Segmented, Field, Button)
+│   └── UpdateNotification.tsx     # Floating update toast with /version.json polling & refresh CTA
 ├── docs/                          # Architecture & Portfolio Documentation
 │   ├── assets/                    # Light & dark mode application previews
 │   ├── bugs-and-fixes/            # Bug logging protocols and templates
 │   ├── sandbox-browser/           # Playwright visual check kit & scripts
 │   └── PORTFOLIO-FRAMING.md       # High-conviction positioning copy for portfolio/resume
+├── public/
+│   ├── favicon.svg                # Vector dual-tone CC monogram browser tab favicon
+│   └── version.json               # Deployed app version metadata for client polling
 ├── scripts/
 │   └── inspect-ui.cjs             # Playwright automated E2E & 0-overflow inspection
+├── server/                        # Dedicated Server & Testing Modules
+│   ├── auth.ts                    # Dual-mode Google token verification (JWKS & tokeninfo)
+│   ├── prompts.ts                 # Server-owned prompts, XML isolation, model allowlist
+│   ├── rateLimiter.ts             # Sliding-window rate limiting (User & IP)
+│   └── urlSecurity.ts             # SSRF prevention, DNS check, IP blacklist, HTML stripper
 ├── services/                      # Client Services
 │   ├── auth.tsx                   # AuthContext, GoogleOAuthProvider, token lifecycle
 │   ├── draftStorage.ts            # Local-first storage (v2 schema, quota recovery, migration)
-│   └── geminiService.ts           # Authenticated API client calling /api/* endpoints
-├── test/                          # Automated Bun Test Suite (48 tests)
+│   ├── geminiService.ts           # Authenticated API client calling /api/* endpoints
+│   └── resumeCleaner.ts           # Heuristic structuring utility (cleanCrampedResumeText)
+├── test/                          # Automated Bun Test Suite (53 tests across 6 suites)
 │   ├── auth.test.ts               # JWKS signature, expiry, audience, access token tests
 │   ├── draftStorage.test.ts       # Storage v2 schema, migration, quota recovery tests
 │   ├── fileValidation.test.ts     # PDF/DOCX file limits and scanned detection tests
 │   ├── openrouter.test.ts         # Model routing, prompt injection, XML tags, rate tests
+│   ├── resumeCleaner.test.ts      # Section breaks, bullet line breaks, contact info tests
 │   └── urlSecurity.test.ts        # SSRF IP blacklists, DNS resolution, redirect tests
 ├── App.tsx                        # Root application component & theme management
 ├── bun.lock                       # Bun dependency lockfile
+├── favicon.svg                    # Root vector favicon
 ├── index.css                      # Tailwind v4 theme, double-bezel, and stationery CSS
 ├── index.html                     # HTML entry point with Google Fonts preload
 ├── index.tsx                      # React root mount
 ├── package.json                   # Project manifest, scripts, and dependencies
+├── tsconfig.json                  # Strict TypeScript configuration
 ├── vite.config.ts                 # Vite config with dev-server API proxy middleware
 ├── AGENTS.md                      # Mandatory AI agent operational rules & versioning
 ├── COMMIT-HISTORY.md              # Exhaustive chronological commit history & version log
@@ -310,7 +350,7 @@ bun run dev
 # 3. Execute strict TypeScript typecheck (0 errors required)
 bun run typecheck
 
-# 4. Run automated test suite (48 tests across 5 test suites)
+# 4. Run automated test suite (53 tests across 6 test suites)
 bun test
 
 # 5. Compile production Vite application bundle
@@ -331,8 +371,9 @@ node scripts/inspect-ui.cjs
 - **Architected a server-enforced security perimeter** (`/api/openrouter`, `/api/fetch-url`) implementing cryptographic Google ID token verification against Google public JWKS (RSA-SHA256) with OAuth access token fallback and sliding-window rate limiting.
 - **Engineered robust SSRF defense mechanisms** for job-posting ingestion: DNS hostname resolution, IP blacklisting of loopback/private/metadata ranges (`169.254.169.254`), manual 3-hop redirect inspection, 8s timeout, and 2 MB streaming byte caps.
 - **Hardened prompt-injection resilience and eliminated hallucinations** by wrapping untrusted inputs in XML delimiters, enforcing single-source-of-truth grounding rules, pinning temperature at 0.7, and providing an interactive 5-point post-generation factuality audit.
-- **Implemented zero-leakage native Google authentication and privacy-conscious parsing**, replacing iframe OAuth with a custom 4-color SVG button and client-side PDF/DOCX extractors (`pdfjs-dist`, `mammoth` up to 10 pages) ensuring user files never touch external storage.
-- **Built an automated Bun test suite (48 tests)** covering cryptographic auth, SSRF network filters, prompt assembly, and storage schema migrations, integrated into GitHub Actions CI.
+- **Designed layout-aware resume extraction and heuristic structuring** (`pdfjs-dist`, `mammoth`, `services/resumeCleaner.ts`) that tracks Y coordinates and preserves section headers, bullet points, and contact lines with 0 server uploads.
+- **Engineered 100% self-contained serverless functions & real-time update notification toast**, eliminating Vercel bundler directory stripping (`FUNCTION_INVOCATION_FAILED`) and proactively alerting users to reload when new versions are deployed.
+- **Built an automated Bun test suite (53 tests across 6 suites)** covering cryptographic auth, SSRF network filters, prompt assembly, heuristic parsing, and storage schema migrations, integrated into GitHub Actions CI.
 
 ### Portfolio Card Copy (~35 words)
 > **CoverCraft — Grounded AI Document Pipeline**

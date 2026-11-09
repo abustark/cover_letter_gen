@@ -31,3 +31,21 @@ These rules are mandatory for any AI agent working in this repository.
 2. Update files / write code / fix bugs as asked.
 3. In the response, ask the user if they want to commit and push, and if they want to run tests/gates.
 4. Stop and wait for the user's explicit proceed/acknowledgment before committing, pushing, or running tests.
+
+## Architectural & Repository Invariants
+
+1. **Self-contained Vercel serverless endpoints**:
+   - Files in `api/` (`api/openrouter.ts`, `api/fetch-url.ts`) are deployed to Vercel serverless runtime and MUST remain 100% self-contained with zero relative imports from internal subdirectories within `api/`.
+   - Never create or import from subdirectories like `api/utils/` or `api/_utils/`, as Vercel bundlers can strip or isolate them, causing runtime `FUNCTION_INVOCATION_FAILED` (HTTP 500).
+   - Dedicated modules for offline unit testing under Bun test runner belong exclusively in `server/` (`server/auth.ts`, `server/prompts.ts`, `server/rateLimiter.ts`, `server/urlSecurity.ts`).
+
+2. **Version metadata synchronization**:
+   - Every version increment consumes one version number across the entire response turn.
+   - Whenever bumping versions, all 4 version locations MUST be kept in sync:
+     1. `App.tsx` footer version badge (`CoverCraft Studio v2.x.x`).
+     2. `components/UpdateNotification.tsx` (`CURRENT_APP_VERSION = '2.x.x'`).
+     3. `public/version.json` (`{ "version": "2.x.x" }`).
+     4. `COMMIT-HISTORY.md` (top `📌 Next version` marker and new entry).
+
+3. **Brand identity & favicon synchronization**:
+   - The brand monogram badge in `components/Header.tsx` (obsidian squircle, warm amber border, Playfair Display dual-tone "CC" text) must stay strictly mirrored in `public/favicon.svg` and `favicon.svg`.

@@ -7,11 +7,23 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.1.6`** (current head is `2.1.5` — see below)
+> - **`main` → `2.1.7`** (current head is `2.1.6` — see below)
 
 ---
 
 ## Commit History
+
+### 2.1.6 - update README, PROJECT-INFO, and AGENTS for CC logo and v2.1.x features
+
+- **Date**: 2026-11-09
+- **Why**: user requested registering all recent updates (bespoke CC monogram badge, synchronized browser tab favicon, self-contained serverless architecture, live update notification toast, heuristic resume cleaner, and 53 Bun tests across 6 suites) in README.md, PROJECT-INFO.md, and AGENTS.md, followed by commit and push.
+- **Changes**:
+  - `README.md`: registered the bespoke CC monogram badge, browser tab favicon synchronization, proactive live update notification toast, self-contained serverless architecture, layout-aware PDF extraction, heuristic resume structuring, and updated automated testing to 53 tests across 6 test suites.
+  - `PROJECT-INFO.md`: updated version to `v2.1.6`; added Subsection 3.4 for the bespoke CC monogram and favicon typography system; added Subsection 4.3 for the live update notification toast; added Subsection 5.6 for layout-aware PDF extraction & heuristic resume structuring (`cleanCrampedResumeText`); added Subsection 5.7 for Vercel serverless bundling invariants; updated the project directory tree and CLI reference to reflect `server/` offline test modules and 53 Bun tests across 6 suites; updated portfolio resume bullets.
+  - `AGENTS.md`: documented architectural invariants for AI agents including self-contained Vercel serverless endpoints in `api/` (no subdirectories), offline test modules in `server/`, 4-file version metadata synchronization (`App.tsx`, `UpdateNotification.tsx`, `public/version.json`, `COMMIT-HISTORY.md`), and brand monogram/favicon parity.
+  - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.6`.
+  - `components/UpdateNotification.tsx`: bumped `CURRENT_APP_VERSION` to `2.1.6`.
+  - `public/version.json`: bumped deployed metadata version to `2.1.6`.
 
 ### 2.1.5 - redesign logo with bespoke CC serif monogram and sync browser tab favicon
 
@@ -23,6 +35,8 @@ This document tracks every commit following the `2.0.x` versioning schema:
   - `components/UpdateNotification.tsx`: bumped `CURRENT_APP_VERSION` to `2.1.5`.
   - `public/version.json`: bumped version metadata to `2.1.5`.
   - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.5`.
+
+### 2.1.4 - make serverless functions self-contained & add update notification toast
 
 - **Date**: 2026-11-09
 - **Why**: Vercel serverless runtime (`@vercel/node`) fails to resolve subdirectories inside `api/` (such as `api/_utils/`), resulting in runtime `FUNCTION_INVOCATION_FAILED` (HTTP 500) before reaching function handlers; add proactive update notification toast so users are prompted to refresh whenever a new deployment is published.
@@ -36,6 +50,8 @@ This document tracks every commit following the `2.0.x` versioning schema:
   - `tsconfig.json`: added `"server"` to `include` array.
   - `App.tsx`: integrated `<UpdateNotification />` and bumped footer version badge to `CoverCraft Studio v2.1.4`.
 
+### 2.1.3 - fix resume auto-format spacing & repair Vercel serverless ESM execution
+
 - **Date**: 2026-11-09
 - **Why**: fix cramped resume text caused by single-space PDF extraction and silent failure in auto-format; repair Vercel serverless 500 invocation crash (`FUNCTION_INVOCATION_FAILED`) that was breaking cover letter generation on production; add heuristic resume structuring.
 - **Changes**:
@@ -47,6 +63,8 @@ This document tracks every commit following the `2.0.x` versioning schema:
   - `services/geminiService.ts`: updated `formatResumeText` to throw descriptive error messages on API failure rather than silently swallowing errors and returning cramped text.
   - `test/auth.test.ts`, `test/openrouter.test.ts`, `test/urlSecurity.test.ts`: updated helper imports to `../api/_utils/*.ts`.
   - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.3`.
+
+### 2.1.2 - update agent rules for commit and gate permissions
 
 - **Date**: 2026-11-09
 - **Why**: user instructed that no gate passes or test runs may be performed without explicit user proceed, and after every code update the AI must stop, summarize changes, and ask for permission before committing, pushing, or running gates.

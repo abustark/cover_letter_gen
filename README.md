@@ -20,17 +20,20 @@ CoverCraft turns two unstructured documents — a resume (PDF or DOCX) and a job
 |---|---|
 | **Four generation modes** | Balanced, Thinking (deep reasoning for senior roles), Low Latency, From URL (reads the posting from a link) |
 | **Four tones** | Professional, Enthusiastic, Confident, Creative — enforced in server-controlled prompts |
+| **Bespoke CC Monogram & Favicon** | High-prestige `Playfair Display` serif dual-tone monogram badge on an obsidian squircle with warm amber border, mirrored in `public/favicon.svg` |
 | **Editorial Accent Hierarchy** | Obsidian & alabaster palette, antique bronze inputs (`Input 01`, `Input 02`), emerald live manuscript (`Output 03`), slate archive (`Archive 04`), and Playfair Display typography |
 | **Clean Auth & Navigation** | Native Google Sign-In button with 4-color SVG (no Gmail ID leakage or layout displacement) and avatar popover menu with light/dark segmented toggle |
+| **Live Update Notification** | Proactive version polling (`/version.json`) with an editorial floating toast inviting users to refresh whenever a new deployment goes live |
 | **Server-side security boundary** | Google tokens verified cryptographically server-side (RS256 JWKS + OAuth access token); API keys never ship to browser |
+| **Self-Contained Serverless Endpoints** | `api/openrouter.ts` and `api/fetch-url.ts` are 100% self-contained for Vercel serverless runtime stability; test suites powered by modular `server/` utilities |
 | **SSRF-hardened URL reader** | HTTPS enforcement, private/cloud-metadata IP blocking, DNS resolution, bounded manual redirects, streaming byte cap |
 | **Strict AI contract** | Model allowlist, input size caps, prompt-injection isolation via XML delimiters, anti-hallucination factual grounding |
-| **Resume intake** | PDF (up to 10 pages) via `pdfjs-dist`, DOCX via `mammoth`, client-side parsing (no file uploads to server), scanned document detection |
+| **Resume Intake & Heuristic Structuring** | Client-side PDF/DOCX parsing (zero server uploads); layout-aware Y-coordinate tracking in `pdfjs-dist`; `cleanCrampedResumeText` heuristic formatter; in-place formatting without re-upload |
 | **User review checklist** | Interactive "Review before sending" checklist to verify role, claims, metrics, and tone before sending |
 | **Rate limiting** | Sliding-window quotas by verified Google user `sub` and client IP address; Upstash Redis / Vercel KV adapter support |
 | **Export suite** | One-click copy, PDF (`jsPDF`), DOCX (`docx`), local draft storage with quota recovery and schema migration |
 | **Dark / light theme** | Persisted preference, View-Transition wave from toggle, CSS ripple fallback |
-| **Automated testing & CI** | 48-test suite in Bun (`bun test`), Playwright zero-overflow inspection, GitHub Actions CI with Bun setup |
+| **Automated testing & CI** | 53-test suite in Bun (`bun test` across 6 test suites), Playwright zero-overflow inspection, GitHub Actions CI with Bun setup |
 
 ---
 
@@ -88,8 +91,8 @@ Browser (React SPA)
 | Auth | Google OAuth 2.0 (`@react-oauth/google`) with server-side cryptographic token verification |
 | Parsing | `pdfjs-dist`, `mammoth` (lazy dynamic imports, client-side only) |
 | Export | `jsPDF`, `docx` (lazy dynamic imports) |
-| Testing | Bun test runner (`bun test`, 48 tests), Playwright UI inspection, GitHub Actions CI |
-| Hosting | Vercel (`api/*.ts` serverless functions) / Vite dev server middleware |
+| Testing | Bun test runner (`bun test`, 53 tests across 6 suites), Playwright UI inspection, GitHub Actions CI |
+| Hosting | Vercel (`api/*.ts` self-contained serverless functions) / Vite dev server middleware |
 
 ---
 
