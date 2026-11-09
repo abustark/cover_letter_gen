@@ -496,7 +496,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const authResult = await verifyGoogleToken(token);
   if (!authResult.ok) {
-    res.status(authResult.status).json({ error: authResult.error });
+    const failure = authResult as { ok: false; status: number; error: string };
+    res.status(failure.status).json({ error: failure.error });
     return;
   }
 
