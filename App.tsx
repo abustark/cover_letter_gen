@@ -9,6 +9,7 @@ import { useAuth } from './services/auth';
 import { loadSavedDrafts, persistDrafts, clearAllDrafts } from './services/draftStorage';
 import { GenerationMode, JobDescriptionInputType, Theme, Draft, Tone } from './types';
 import { SparklesIcon } from './components/icons';
+import { UpdateNotification } from './components/UpdateNotification';
 
 const App: React.FC = () => {
   // Inputs
@@ -225,7 +226,7 @@ const App: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
             <span className="font-semibold text-stone-700 dark:text-stone-300">
-              CoverCraft Studio v2.1.3
+              CoverCraft Studio v2.1.4
             </span>
             <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">·</span>
             <span>Server-Verified Authentication</span>
@@ -249,6 +250,8 @@ const App: React.FC = () => {
           </a>
         </div>
       </footer>
+
+      <UpdateNotification />
     </div>
   );
 };

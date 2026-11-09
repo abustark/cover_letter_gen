@@ -5,7 +5,7 @@ import {
   isPrivateOrBlockedIp,
   extractPageText,
   MAX_JOB_URL_TEXT_LENGTH,
-} from '../api/_utils/urlSecurity.ts';
+} from '../server/urlSecurity';
 
 describe('Job URL Security & SSRF Defense', () => {
   describe('validateUrlSyntax', () => {

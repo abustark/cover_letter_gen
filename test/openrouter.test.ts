@@ -10,7 +10,7 @@ import {
   validateFormatPayload,
   MAX_RESUME_LENGTH,
   MAX_JOB_DESCRIPTION_LENGTH,
-} from '../api/_utils/prompts.ts';
+} from '../server/prompts';
 
 describe('AI API Proxy & Prompt Architecture', () => {
   describe('Validation & Allowlist', () => {

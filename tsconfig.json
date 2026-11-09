@@ -31,6 +31,7 @@
     "*.tsx",
     "components",
     "services",
+    "server",
     "api",
     "test",
     "vite-env.d.ts"

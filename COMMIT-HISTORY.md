@@ -7,13 +7,25 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.1.4`** (current head is `2.1.3` — see below)
+> - **`main` → `2.1.5`** (current head is `2.1.4` — see below)
 
 ---
 
 ## Commit History
 
-### 2.1.3 - fix resume auto-format spacing & repair Vercel serverless ESM execution
+### 2.1.4 - make serverless functions self-contained & add update notification toast
+
+- **Date**: 2026-11-09
+- **Why**: Vercel serverless runtime (`@vercel/node`) fails to resolve subdirectories inside `api/` (such as `api/_utils/`), resulting in runtime `FUNCTION_INVOCATION_FAILED` (HTTP 500) before reaching function handlers; add proactive update notification toast so users are prompted to refresh whenever a new deployment is published.
+- **Changes**:
+  - `api/openrouter.ts`: made 100% self-contained with zero local relative imports. Inlined Google token verification, sliding-window rate limiting, and prompt builders directly into the endpoint file. Eliminates all module resolution, path alias, and bundler stripping failures on Vercel.
+  - `api/fetch-url.ts`: made 100% self-contained with zero local relative imports. Inlined Google token verification, rate limiting, and SSRF security validation.
+  - `server/`: established clean dedicated server helper modules (`auth.ts`, `prompts.ts`, `rateLimiter.ts`, `urlSecurity.ts`) for offline unit testing, completely separated from the serverless deployment directory.
+  - `components/UpdateNotification.tsx`: added lightweight version polling component that checks `/version.json` on interval and window focus/visibility; displays an editorial floating toast with "Refresh to Update" button whenever a newer build is deployed.
+  - `public/version.json`: added deployment version metadata file.
+  - `test/auth.test.ts`, `test/openrouter.test.ts`, `test/urlSecurity.test.ts`: updated imports to reference `../server/*`.
+  - `tsconfig.json`: added `"server"` to `include` array.
+  - `App.tsx`: integrated `<UpdateNotification />` and bumped footer version badge to `CoverCraft Studio v2.1.4`.
 
 - **Date**: 2026-11-09
 - **Why**: fix cramped resume text caused by single-space PDF extraction and silent failure in auto-format; repair Vercel serverless 500 invocation crash (`FUNCTION_INVOCATION_FAILED`) that was breaking cover letter generation on production; add heuristic resume structuring.
