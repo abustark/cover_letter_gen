@@ -10,9 +10,66 @@ import {
 
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
+// Verified free models used as resilient fallbacks if an upstream provider experiences a temporary pool outage
+const FALLBACK_CANDIDATES = [
+  'nvidia/nemotron-3-ultra-550b-a55b:free',
+  'nvidia/nemotron-3.5-super-vl:free',
+  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
+];
+
 // AI generation quotas: 15 per 10 min per user, 30 per 10 min per IP
 const USER_RATE_LIMIT = { windowSeconds: 600, maxRequests: 15 };
 const IP_RATE_LIMIT = { windowSeconds: 600, maxRequests: 30 };
+
+async function callOpenRouter(
+  targetModel: string,
+  apiKey: string,
+  systemPrompt: string,
+  userPrompt: string
+): Promise<{ ok: true; content: string } | { ok: false; status: number; message: string }> {
+  try {
+    const response = await fetch(OPENROUTER_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://covercraft.app',
+        'X-Title': 'CoverCraft',
+      },
+      body: JSON.stringify({
+        model: targetModel,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        temperature: 0.7,
+        max_tokens: 2048,
+      }),
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      let msg = '';
+      try {
+        const errJson = JSON.parse(errText);
+        msg = errJson?.error?.message || errText;
+      } catch {
+        msg = errText;
+      }
+      return { ok: false, status: response.status, message: msg };
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+    if (!content || typeof content !== 'string' || !content.trim()) {
+      return { ok: false, status: 502, message: 'Empty response returned from upstream provider.' };
+    }
+
+    return { ok: true, content: content.trim() };
+  } catch (err) {
+    return { ok: false, status: 500, message: err instanceof Error ? err.message : 'Network error' };
+  }
+}
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
@@ -100,47 +157,39 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return;
   }
 
-  // 6. Call OpenRouter with strictly controlled parameters
-  try {
-    const response = await fetch(OPENROUTER_URL, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://covercraft.app',
-        'X-Title': 'CoverCraft',
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt },
-        ],
-        temperature: 0.7,
-        max_tokens: 2048,
-      }),
-    });
+  // 6. Call OpenRouter with strictly controlled parameters and resilient model fallbacks
+  const modelsToTry = [model, ...FALLBACK_CANDIDATES.filter((m) => m !== model)];
+  let lastStatus = 502;
+  let lastMessage = '';
 
-    if (!response.ok) {
-      console.error('OpenRouter upstream error status:', response.status);
-      if (response.status === 429) {
-        res.status(429).json({ error: 'Upstream AI provider rate limit reached. Please retry in a few seconds.' });
-        return;
-      }
-      res.status(502).json({ error: 'AI generation service is temporarily unavailable. Please try again.' });
+  for (const candidate of modelsToTry) {
+    const result = await callOpenRouter(candidate, apiKey, systemPrompt, userPrompt);
+    if (result.ok) {
+      res.status(200).json({ text: result.content });
       return;
     }
 
-    const data = await response.json();
-    const content = data?.choices?.[0]?.message?.content;
-    if (!content || typeof content !== 'string') {
-      res.status(502).json({ error: 'The AI service returned an empty response. Please try again.' });
+    const failure = result as { ok: false; status: number; message: string };
+    console.warn(`Model ${candidate} failed (${failure.status}): ${failure.message}`);
+    lastStatus = failure.status;
+    lastMessage = failure.message;
+
+    // If client was unauthorized or forbidden, do not cycle through other models
+    if (failure.status === 401 || failure.status === 403) {
+      res.status(500).json({ error: 'AI service authorization error. Please contact the administrator.' });
       return;
     }
-
-    res.status(200).json({ text: content.trim() });
-  } catch (err) {
-    console.error('AI generation proxy error:', err instanceof Error ? err.message : 'Unknown');
-    res.status(500).json({ error: 'Failed to communicate with the AI service.' });
   }
+
+  // If all candidate models in the pool were exhausted
+  if (lastStatus === 429) {
+    res.status(429).json({
+      error: 'Upstream free AI model pools are temporarily busy. Please wait a few seconds and retry.',
+    });
+    return;
+  }
+
+  res.status(502).json({
+    error: 'AI generation service is temporarily unavailable. Please try again in a moment.',
+  });
 }

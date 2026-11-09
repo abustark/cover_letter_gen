@@ -7,11 +7,23 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.1.1`** (current head is `2.1.0` — see below)
+> - **`main` → `2.1.2`** (current head is `2.1.1` — see below)
 
 ---
 
 ## Commit History
+
+### 2.1.1 - update free models & add resilient multi-tier fallback for OpenRouter
+
+- **Date**: 2026-11-09
+- **Why**: user reported generation error; investigation revealed OpenRouter retired `nvidia/nemotron-3-super-120b-a12b:free` (HTTP 404) and `google/gemma-4-26b-a4b-it:free` was experiencing upstream 429 rate limit errors from Google AI Studio's shared pool.
+- **Changes**:
+  - `api/utils/prompts.ts`: updated `ALLOWED_MODELS` and model routing matrix to deploy `nvidia/nemotron-3.5-super-vl:free` (1M context, 12B active MoE) for Thinking Mode and `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` (256k context, 30B-A3B) for Low Latency and resume text formatting. Retained `nemotron-3-ultra-550b-a55b:free` (1M context, 550B frontier model) for Standard and URL modes.
+  - `api/openrouter.ts`: implemented automated multi-tier fallback chain across verified free models (`nemotron-3-ultra-550b-a55b:free` ⇄ `nemotron-3.5-super-vl:free` ⇄ `nemotron-3-nano-omni-30b-a3b-reasoning:free`). If an upstream model pool encounters a temporary 404, 429, 502, or 503 error, the handler automatically routes to the next candidate model, preventing user-facing generation failures.
+  - `components/ModeSelector.tsx`: updated engine metadata and UI labels to display `Nemotron 3.5 Super VL` and `Nemotron 3 Nano Omni`.
+  - `test/openrouter.test.ts`: updated test suite assertions to match new model routing specifications.
+  - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.1`.
+  - `PROJECT-INFO.md` & `README.md`: updated model routing tables, fallback chain documentation, and tech stack references.
 
 ### 2.1.0 - update PROJECT-INFO.md and repo documentation for Bun & v2.1.0 architecture
 

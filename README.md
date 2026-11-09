@@ -62,15 +62,15 @@ Browser (React SPA)
 | `POST` | `/api/openrouter` | Generates cover letters or formats resumes | Requires Google ID token via `Authorization: Bearer` · server verifies signature against Google JWKS · user & IP rate limits · server-owned system prompts with prompt-injection fences · model allowlist · 50 KB resume cap · 25 KB JD cap · pinned temp 0.7 · redacted error logs |
 | `POST` | `/api/fetch-url` | Safely fetches & extracts job posting text | Requires Google ID token · user & IP rate limits · HTTPS-only · port 443 only · blocks localhost, private IPs, link-local, and cloud metadata (`169.254.169.254`) · DNS resolution checks · manual redirects (max 3) · 8s timeout · 2 MB stream cap · HTML text extraction (≤ 12k chars) |
 
-### Model routing (server-enforced allowlist)
+### Model routing (server-enforced allowlist with auto-fallback)
 
 | Mode | Model ID | Purpose |
 |---|---|---|
-| Balanced (Standard) | `nvidia/nemotron-3-ultra-550b-a55b:free` | Frontier quality, 1M context |
-| Deep reasoning (Thinking) | `nvidia/nemotron-3-super-120b-a12b:free` | Reasoning MoE for complex senior roles |
-| Quick draft (Low Latency) | `google/gemma-4-26b-a4b-it:free` | Fast iteration MoE model |
-| From URL | `nvidia/nemotron-3-ultra-550b-a55b:free` | Long context for extracted web pages |
-| Resume formatting | `google/gemma-4-26b-a4b-it:free` | Fast structural cleanup utility |
+| Balanced (Standard) | `nvidia/nemotron-3-ultra-550b-a55b:free` | Frontier quality, 1M context (550B total / 55B active) |
+| Deep reasoning (Thinking) | `nvidia/nemotron-3.5-super-vl:free` | Reasoning MoE (12B active, 1M context) for senior & executive roles |
+| Quick draft (Low Latency) | `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | Ultra-fast drafting model (<1 second response) |
+| From URL | `nvidia/nemotron-3-ultra-550b-a55b:free` | Massive 1M context for extracted web pages |
+| Resume formatting | `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | Structured section cleanup utility |
 
 ---
 

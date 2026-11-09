@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | Name | **CoverCraft — AI Cover Letter Builder & Editorial Studio** |
-| Current Version | **v2.1.0** (Production release, November 2026) |
+| Current Version | **v2.1.1** (Production release, November 2026) |
 | App Type | Full-stack web application (AI document pipeline & career productivity studio) |
 | Author | ABu (`abustark` on GitHub) |
 | Live Site | https://coverltr.vercel.app/ |
@@ -38,10 +38,10 @@
 | **Styling Engine** | Tailwind CSS | `^4.3.3` | Utility styling with CSS theme tokens (`index.css`) |
 | **Tailwind Vite Plugin** | @tailwindcss/vite | `^4.3.3` | Native lightning-fast Tailwind v4 compiler integration |
 | **Type System** | TypeScript | `~5.8.2` | Strict compile-time typing (`node ./node_modules/typescript/bin/tsc --noEmit` gate) |
-| **AI Gateway** | OpenRouter Chat API | REST `/v1/chat/completions` | Proxied through serverless endpoint (`api/openrouter.ts`); keys never leak |
+| **AI Gateway** | OpenRouter Chat API | REST `/v1/chat/completions` | Proxied through serverless endpoint (`api/openrouter.ts`) with multi-tier fallback; keys never leak |
 | **AI Model (Standard & URL)** | NVIDIA Nemotron 3 Ultra 550B | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1M context, frontier reasoning for general and senior roles |
-| **AI Model (Thinking Mode)** | NVIDIA Nemotron 3 Super 120B | `nvidia/nemotron-3-super-120b-a12b:free` | MoE deep reasoning model for executive and principal roles |
-| **AI Model (Fast & Formatting)**| Google Gemma 4 26B | `google/gemma-4-26b-a4b-it:free` | Low-latency drafting and resume text structure cleanup |
+| **AI Model (Thinking Mode)** | NVIDIA Nemotron 3.5 Super VL | `nvidia/nemotron-3.5-super-vl:free` | 1M context, 12B active MoE deep reasoning model for executive and leadership roles |
+| **AI Model (Fast & Formatting)**| NVIDIA Nemotron 3 Nano Omni | `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | 256k context, 30B-A3B low-latency drafting and structured resume text formatting |
 | **Auth (Client)** | @react-oauth/google | `^0.13.5` | Google Identity Provider wrapping native button & `useGoogleLogin` popup |
 | **Auth (Server)** | Node `crypto` & JWKS | Built-in | RSA-SHA256 signature verification via Google JWKS + tokeninfo fallback |
 | **Resume Extraction (PDF)**| pdfjs-dist | `^4.4.168` | Lazy-loaded client-side text extractor (max 10 pages; scanned image detection) |
@@ -227,11 +227,16 @@ Protects upstream inference budgets and serverless compute from abuse:
 
 | Generation Mode | Model ID | Context Window | Architecture Role |
 |---|---|---|---|
-| **Balanced Engine (Standard)** | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1,000,000 tokens | Frontier reasoning; balanced eloquence and factual precision for general & senior roles |
-| **Deep Reasoning Mode (Thinking)** | `nvidia/nemotron-3-super-120b-a12b:free` | 128,000 tokens | MoE deep reasoning architecture for executive, principal, and cross-functional leadership roles |
-| **Quick Draft (Low Latency)** | `google/gemma-4-26b-a4b-it:free` | 32,000 tokens | Ultra-fast drafting model designed for rapid iteration |
-| **URL Reader Engine (Search Grounding)** | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1,000,000 tokens | Massive context model ideal for digesting full scraped job posting web pages |
-| **Resume Formatting Utility** | `google/gemma-4-26b-a4b-it:free` | 32,000 tokens | Organizes messy raw resume text into clean markdown sections |
+| **Balanced Engine (Standard)** | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1,000,000 tokens | Frontier reasoning (550B total / 55B active); balanced eloquence and factual precision for general & senior roles |
+| **Deep Reasoning Mode (Thinking)** | `nvidia/nemotron-3.5-super-vl:free` | 1,000,000 tokens | MoE deep reasoning architecture (12B active) for executive, principal, and cross-functional leadership roles |
+| **Quick Draft (Low Latency)** | `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | 256,000 tokens | Ultra-fast 30B-A3B drafting model designed for rapid iteration in <1 second |
+| **URL Reader Engine (Search Grounding)** | `nvidia/nemotron-3-ultra-550b-a55b:free` | 1,000,000 tokens | Massive 1M context model ideal for digesting full scraped job posting web pages |
+| **Resume Formatting Utility** | `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | 256,000 tokens | Organizes messy raw resume text into clean, structured sections in <0.5 seconds |
+
+### 6.1 Multi-Tier Resilient Fallback Chain
+To protect users from temporary upstream provider rate-limits (HTTP 429) or model retirements (HTTP 404), `api/openrouter.ts` implements an automated fallback mechanism across the verified free model pool:
+- Primary chain: `nvidia/nemotron-3-ultra-550b-a55b:free` ⇄ `nvidia/nemotron-3.5-super-vl:free` ⇄ `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`.
+- If a chosen model is temporarily congested or returns 404/429/502/503, the serverless handler automatically routes the identical payload to the next candidate before returning an error to the user.
 
 ---
 

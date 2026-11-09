@@ -1,7 +1,9 @@
 export const ALLOWED_MODELS = [
   'nvidia/nemotron-3-ultra-550b-a55b:free',
-  'nvidia/nemotron-3-super-120b-a12b:free',
+  'nvidia/nemotron-3.5-super-vl:free',
+  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
   'google/gemma-4-26b-a4b-it:free',
+  'nvidia/nemotron-3-super-120b-a12b:free',
 ] as const;
 
 export type AllowedModel = (typeof ALLOWED_MODELS)[number];
@@ -43,12 +45,13 @@ export interface ValidatedFormatPayload {
 
 const MODE_TO_MODEL: Record<GenerationModeType, AllowedModel> = {
   Standard: 'nvidia/nemotron-3-ultra-550b-a55b:free',
-  'Thinking Mode': 'nvidia/nemotron-3-super-120b-a12b:free',
-  'Low Latency': 'google/gemma-4-26b-a4b-it:free',
+  'Thinking Mode': 'nvidia/nemotron-3.5-super-vl:free',
+  'Low Latency': 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free',
   'Search Grounding': 'nvidia/nemotron-3-ultra-550b-a55b:free',
 };
 
-export const FORMATTING_MODEL: AllowedModel = 'google/gemma-4-26b-a4b-it:free';
+export const FORMATTING_MODEL: AllowedModel =
+  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
 
 export function getModelForMode(mode: GenerationModeType): AllowedModel {
   return MODE_TO_MODEL[mode] || 'nvidia/nemotron-3-ultra-550b-a55b:free';

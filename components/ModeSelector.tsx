@@ -30,13 +30,13 @@ const MODE_META: Record<
     label: 'Deep Reasoning Mode',
     badge: 'High Precision',
     description: 'MoE reasoning model with deeper synthesis. Ideal for executive, principal, and cross-functional leadership roles.',
-    model: 'Nemotron 3 Super 120B',
+    model: 'Nemotron 3.5 Super VL',
   },
   [GenerationMode.LowLatency]: {
     label: 'Quick Draft',
     badge: 'Fastest',
     description: 'High-speed generation designed for rapid iterations and clean starting drafts in seconds.',
-    model: 'Gemma 4 26B',
+    model: 'Nemotron 3 Nano Omni',
   },
   [GenerationMode.SearchGrounding]: {
     label: 'URL Reader Engine',

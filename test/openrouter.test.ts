@@ -142,7 +142,7 @@ describe('AI API Proxy & Prompt Architecture', () => {
 
       // Model must map to allowed model
       assert.ok(ALLOWED_MODELS.includes(model));
-      assert.equal(model, 'nvidia/nemotron-3-super-120b-a12b:free');
+      assert.equal(model, 'nvidia/nemotron-3.5-super-vl:free');
     });
 
     it('maps every allowed mode to a verified allowed model', () => {
