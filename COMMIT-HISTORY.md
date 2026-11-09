@@ -7,11 +7,19 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.1.2`** (current head is `2.1.1` — see below)
+> - **`main` → `2.1.3`** (current head is `2.1.2` — see below)
 
 ---
 
 ## Commit History
+
+### 2.1.2 - update agent instructions for explicit gate and commit approvals
+
+- **Date**: 2026-11-09
+- **Why**: user instructed that no gate passes or test runs may be performed without explicit user proceed, and after every code update the AI must stop, summarize changes, and ask for permission before committing, pushing, or running gates.
+- **Changes**:
+  - `AGENTS.md`: added strict rules prohibiting gate passes, builds, typechecks, and test runs without explicit user proceed; added rule prohibiting automatic git commit and push after code updates; established standard order of operations to implement first, summarize, ask to commit/push, remind about tests, and wait for explicit acknowledgment.
+  - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.2`.
 
 ### 2.1.1 - update free models & add resilient multi-tier fallback for OpenRouter
 
