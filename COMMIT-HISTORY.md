@@ -7,11 +7,22 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.1.7`** (current head is `2.1.6` — see below)
+> - **`main` → `2.1.8`** (current head is `2.1.7` — see below)
 
 ---
 
 ## Commit History
+
+### 2.1.7 - codify user supremacy and immediate commit and push rule in AGENTS.md
+
+- **Date**: 2026-11-09
+- **Why**: user commanded that user instructions are sovereign and final, overriding any agent rule, and instructed that going forward, upon request to update or commit/push, the agent must commit and push immediately upon completing code without waiting for extra confirmation.
+- **Changes**:
+  - `AGENTS.md`: codified Execution Rule 1 (*User Request Supremacy*) establishing that user direct instructions are sovereign and cannot be overridden by static files; updated Execution Rule 2 and Order of Operations to commit and push immediately upon code completion on user request or update prompts without round-trip pause.
+  - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.7`.
+  - `components/UpdateNotification.tsx`: bumped `CURRENT_APP_VERSION` to `2.1.7`.
+  - `public/version.json`: bumped deployed version metadata to `2.1.7`.
+  - `PROJECT-INFO.md`: synced version reference to `v2.1.7`.
 
 ### 2.1.6 - update README, PROJECT-INFO, and AGENTS for CC logo and v2.1.x features
 

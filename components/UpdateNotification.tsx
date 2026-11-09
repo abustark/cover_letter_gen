@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { RegenerateIcon, SparklesIcon } from './icons';
 
-export const CURRENT_APP_VERSION = '2.1.6';
+export const CURRENT_APP_VERSION = '2.1.7';
 
 export const UpdateNotification: React.FC = () => {
   const [newVersion, setNewVersion] = useState<string | null>(null);
