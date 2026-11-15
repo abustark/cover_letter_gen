@@ -7,11 +7,19 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.3.0`** (current head is `2.2.10` — see below)
+> - **`main` → `2.3.1`** (current head is `2.3.0` — see below)
 
 ---
 
 ## Commit History
+
+### 2.3.0 - revert dynamic auto-format button to keep upload and auto-format always visible
+
+- **Date**: 2026-11-15
+- **Why**: reverted commit `2.2.10` per user request to keep both "Upload Doc" and "Auto-Format" buttons consistently visible side-by-side in Input 01.
+- **Changes**:
+  - `components/InputSection.tsx`: restored persistent side-by-side rendering of both "Upload Doc" and "Auto-Format" buttons regardless of textarea text presence.
+  - Synchronized version metadata to `2.3.0` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.2.10 - show auto-format button dynamically only when resume text exists
 

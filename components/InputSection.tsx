@@ -121,11 +121,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [isFormatting, setIsFormatting] = useState(false);
   const [fileName, setFileName] = useState('');
   const [fileError, setFileError] = useState('');
+  const [uploadWithFormatting, setUploadWithFormatting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
   const { isAuthenticated, signInError, getValidToken } = useAuth();
 
-  const handleFileClick = () => {
+  const handleFileClick = (withFormatting: boolean) => {
+    setUploadWithFormatting(withFormatting);
     fileInputRef.current?.click();
   };
 
@@ -274,12 +276,37 @@ export const InputSection: React.FC<InputSectionProps> = ({
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
 
-    setResume(rawText);
+    if (uploadWithFormatting) {
+      const token = getValidToken();
+      if (token) {
+        setIsFormatting(true);
+        try {
+          const formattedText = await formatResumeText(rawText, token);
+          setResume(formattedText);
+        } catch (err) {
+          console.error('Resume formatting error:', err);
+          setFileError(
+            err instanceof Error
+              ? `${err.message} (Using cleanly formatted text)`
+              : 'AI formatting unavailable. Using cleanly formatted text.'
+          );
+          setResume(rawText);
+        } finally {
+          setIsFormatting(false);
+        }
+      } else {
+        setResume(rawText);
+        setFileError('Formatted locally. Sign in with Google for AI-powered structuring.');
+      }
+    } else {
+      setResume(rawText);
+    }
   };
 
   const handleAutoFormat = async () => {
     const textToFormat = resume.trim();
     if (!textToFormat) {
+      handleFileClick(true);
       return;
     }
 
@@ -368,28 +395,23 @@ export const InputSection: React.FC<InputSectionProps> = ({
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
                 type="button"
-                onClick={handleFileClick}
+                onClick={() => handleFileClick(false)}
                 disabled={isUploading}
-                title="Upload resume file (PDF or DOCX)"
                 className="flex-1 sm:flex-initial flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800/90 hover:bg-stone-50 dark:hover:bg-stone-700/80 active:scale-95 transition-all shadow-xs disabled:opacity-50 min-w-[96px]"
               >
                 <UploadIcon className="w-4 h-4 text-amber-700 dark:text-amber-400" />
                 <span className="text-[11.5px] leading-none">Upload Doc</span>
               </button>
-              {Boolean(resume.trim()) && (
-                <button
-                  type="button"
-                  onClick={handleAutoFormat}
-                  disabled={isUploading}
-                  title={isAuthenticated ? 'Structure resume with AI' : 'Clean & format resume structure'}
-                  className="flex-1 sm:flex-initial flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold text-stone-800 dark:text-stone-200 border border-amber-300 dark:border-amber-700/80 bg-amber-50/60 dark:bg-amber-950/30 hover:bg-amber-100/70 dark:hover:bg-amber-900/40 active:scale-95 transition-all shadow-xs disabled:opacity-50 min-w-[96px] animate-in fade-in zoom-in-95 duration-150"
-                >
-                  <SparklesIcon className="w-4 h-4 text-amber-700 dark:text-amber-400" />
-                  <span className="text-[11.5px] leading-none">
-                    {isAuthenticated ? 'AI Format' : 'Auto-Format'}
-                  </span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleAutoFormat}
+                disabled={isUploading}
+                title={resume.trim() ? 'Format current resume text' : 'Upload and format document'}
+                className="flex-1 sm:flex-initial flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl text-xs font-semibold text-stone-800 dark:text-stone-200 border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800/90 hover:bg-stone-50 dark:hover:bg-stone-700/80 active:scale-95 transition-all shadow-xs disabled:opacity-50 min-w-[96px]"
+              >
+                <SparklesIcon className="w-4 h-4 text-amber-700 dark:text-amber-400" />
+                <span className="text-[11.5px] leading-none">Auto-Format</span>
+              </button>
             </div>
           </div>
 
