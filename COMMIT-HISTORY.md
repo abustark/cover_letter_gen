@@ -7,11 +7,21 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.3.3`** (current head is `2.3.2` — see below)
+> - **`main` → `2.3.4`** (current head is `2.3.3` — see below)
 
 ---
 
 ## Commit History
+
+### 2.3.3 - implement active injected lines strip, latex upload and export, and ats resume pdf download
+
+- **Date**: 2026-11-15
+- **Why**: user requested interactive visualization and deletion of injected lines via a dedicated badge strip, full support for uploading and downloading LaTeX (.tex) resumes, and direct export of updated resumes as ATS-compliant vector PDFs.
+- **Changes**:
+  - `services/resumeExportService.ts`: implemented ATS resume PDF generator adhering to strict 1-column linear ATS guidelines (bold headers, clean typography, 0.75" margins), along with LaTeX (.tex) resume generation and injection utilities.
+  - `components/InputSection.tsx`: integrated "Active Injected Lines" strip right below the resume box with per-item remove and remove-all actions; supported .tex file uploads and raw LaTeX state preservation; added responsive "Export ATS PDF" and "Export .tex (LaTeX)" export island.
+  - `components/AtsScoreCard.tsx`: updated `onInjectPhrase` callback signature to forward both keyword and phrase.
+  - Synchronized version metadata to `2.3.3` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.3.2 - add one-click auto-inject for missing ats keywords into resume
 

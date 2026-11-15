@@ -7,10 +7,19 @@ import {
   LightbulbIcon,
   LockIcon,
   CheckIcon,
+  DownloadIcon,
+  CloseIcon,
 } from './icons';
 import { JobDescriptionInputType, Tone } from '../types';
 import { formatResumeText } from '../services/geminiService';
 import { cleanCrampedResumeText, injectPhraseIntoResume } from '../services/resumeCleaner';
+import {
+  downloadAtsResumePdf,
+  downloadLatexResume,
+  generateLatexFromResumeText,
+  injectIntoLatexSource,
+  removePhraseFromLatexSource,
+} from '../services/resumeExportService';
 import { Button, Segmented, Field } from './UI';
 import { GoogleButton } from './GoogleButton';
 import { useAuth } from '../services/auth';
@@ -123,6 +132,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
   const [fileError, setFileError] = useState('');
   const [uploadWithFormatting, setUploadWithFormatting] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [injectedLines, setInjectedLines] = useState<Array<{ id: string; keyword: string; phrase: string }>>([]);
+  const [rawLatexSource, setRawLatexSource] = useState<string | null>(null);
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
 
   const { isAuthenticated, signInError, getValidToken } = useAuth();
 
@@ -146,9 +158,13 @@ export const InputSection: React.FC<InputSectionProps> = ({
     const isDocx =
       lowerName.endsWith('.docx') ||
       file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    const isTex =
+      lowerName.endsWith('.tex') ||
+      file.type === 'text/x-tex' ||
+      file.type === 'application/x-tex';
 
-    if (!isPdf && !isDocx) {
-      setFileError('Unsupported file type. Please upload a PDF (.pdf) or Word document (.docx).');
+    if (!isPdf && !isDocx && !isTex) {
+      setFileError('Unsupported file type. Please upload a PDF (.pdf), Word document (.docx), or LaTeX (.tex).');
       if (fileInputRef.current) fileInputRef.current.value = '';
       return;
     }
@@ -156,12 +172,43 @@ export const InputSection: React.FC<InputSectionProps> = ({
     setFileParsing(true);
     setIsFormatting(false);
     setResume('');
+    setInjectedLines([]);
 
     let rawText = '';
     try {
-      const arrayBuffer = await file.arrayBuffer();
+      if (isTex) {
+        const textContent = await file.text();
+        setRawLatexSource(textContent);
 
-      if (isPdf) {
+        // Convert LaTeX into clean plain text for resume analysis
+        rawText = textContent
+          // Strip comments
+          .replace(/%.*$/gm, '')
+          // Convert section headers
+          .replace(/\\(?:sub)*section\*?\{([^}]+)\}/gi, '\n\n--- $1 ---\n')
+          // Extract text inside standard formatting tags
+          .replace(/\\(?:textbf|textit|emph|underline)\{([^}]+)\}/gi, '$1')
+          // Standardize items to bullets
+          .replace(/\\item\s+/gi, '\n• ')
+          // Remove environment boundaries & standalone macros
+          .replace(/\\begin\{[^}]+\}/gi, '')
+          .replace(/\\end\{[^}]+\}/gi, '')
+          .replace(/\\[a-zA-Z]+(?:\*|\[[^\]]*\])?(?:\{[^}]*\})?/gi, ' ')
+          // Unescape common symbols
+          .replace(/\\([&%$#_{}])/g, '$1')
+          .replace(/\\textbackslash/g, '\\')
+          .replace(/\\~/g, '~')
+          .replace(/\\\^/g, '^')
+          .trim();
+
+        if (rawText.replace(/\s/g, '').length < 30) {
+          throw new Error('No readable text found in this LaTeX document. Please paste your resume text directly.');
+        }
+      } else {
+        setRawLatexSource(null);
+        const arrayBuffer = await file.arrayBuffer();
+
+        if (isPdf) {
         const pdfjs = await loadPdfjs();
         pdfjs.GlobalWorkerOptions.workerSrc = new URL(
           'pdfjs-dist/build/pdf.worker.mjs',
@@ -258,6 +305,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
           throw new Error('No readable text found in this document. Please paste your resume text.');
         }
       }
+    }
 
       // Clean and structure extracted text heuristically (formats headers, bullet points, line breaks)
       rawText = cleanCrampedResumeText(rawText);
@@ -349,9 +397,80 @@ export const InputSection: React.FC<InputSectionProps> = ({
     if (file) processFile(file);
   };
 
-  const handleInjectPhrase = (phrase: string) => {
+  const handleInjectPhrase = (keyword: string, phrase: string) => {
     const updated = injectPhraseIntoResume(resume, phrase);
     setResume(updated);
+
+    if (rawLatexSource) {
+      const updatedLatex = injectIntoLatexSource(rawLatexSource, phrase);
+      setRawLatexSource(updatedLatex);
+    }
+
+    setInjectedLines((prev) => [
+      ...prev.filter((item) => item.keyword.toLowerCase() !== keyword.toLowerCase()),
+      { id: `${Date.now()}-${keyword}`, keyword, phrase },
+    ]);
+  };
+
+  const handleRemoveInjectedLine = (itemToRemove: { id: string; keyword: string; phrase: string }) => {
+    const escaped = itemToRemove.phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const patterns = [
+      new RegExp(`(?:\\r?\\n)?\\s*[-•*]\\s*${escaped}\\s*`, 'g'),
+      new RegExp(`(?:\\r?\\n)?\\s*${escaped}\\s*`, 'g'),
+    ];
+    let updated = resume;
+    for (const p of patterns) {
+      if (p.test(updated)) {
+        updated = updated.replace(p, '\n');
+        break;
+      }
+    }
+    updated = updated.replace(/\n{3,}/g, '\n\n').trim();
+    setResume(updated);
+
+    if (rawLatexSource) {
+      const updatedLatex = removePhraseFromLatexSource(rawLatexSource, itemToRemove.phrase);
+      setRawLatexSource(updatedLatex);
+    }
+
+    setInjectedLines((prev) => prev.filter((item) => item.id !== itemToRemove.id));
+  };
+
+  const handleRemoveAllInjected = () => {
+    let updated = resume;
+    let updatedLatex = rawLatexSource;
+    for (const item of injectedLines) {
+      const escaped = item.phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const p = new RegExp(`(?:\\r?\\n)?\\s*[-•*]?\\s*${escaped}\\s*`, 'g');
+      updated = updated.replace(p, '\n');
+      if (updatedLatex) {
+        updatedLatex = removePhraseFromLatexSource(updatedLatex, item.phrase);
+      }
+    }
+    setResume(updated.replace(/\n{3,}/g, '\n\n').trim());
+    if (updatedLatex) setRawLatexSource(updatedLatex);
+    setInjectedLines([]);
+  };
+
+  const handleExportAtsPdf = async () => {
+    if (!resume.trim()) return;
+    setIsExportingPdf(true);
+    try {
+      await downloadAtsResumePdf(resume, 'ATS_Optimized_Resume.pdf');
+    } catch (err) {
+      console.error('Failed to export ATS PDF:', err);
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
+  const handleExportLatex = () => {
+    if (!resume.trim()) return;
+    const latexContent = rawLatexSource || generateLatexFromResumeText(resume);
+    downloadLatexResume(
+      latexContent,
+      rawLatexSource ? `${fileName.replace(/\.[^.]+$/, '')}_updated.tex` : 'ats_resume.tex'
+    );
   };
 
   const isGenerateDisabled =
@@ -393,7 +512,7 @@ export const InputSection: React.FC<InputSectionProps> = ({
                 Candidate Resume
               </h2>
               <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-                Drop your PDF or DOCX file (up to 10 pages) or paste text directly
+                Drop your PDF, DOCX, or LaTeX (.tex) file (up to 10 pages) or paste text directly
               </p>
             </div>
 
@@ -457,10 +576,89 @@ export const InputSection: React.FC<InputSectionProps> = ({
             </div>
           </div>
 
+          {/* Active Injected Lines Strip */}
+          {injectedLines.length > 0 && (
+            <div className="rounded-xl border border-amber-300/80 dark:border-amber-700/60 bg-amber-50/70 dark:bg-amber-950/30 p-3 sm:p-3.5 space-y-2.5 animate-in fade-in duration-150 shadow-2xs">
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-mono text-[10.5px] uppercase font-bold tracking-wider text-amber-900 dark:text-amber-200 flex items-center gap-1.5">
+                  <SparklesIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 flex-shrink-0" />
+                  Active Injected Lines ({injectedLines.length})
+                </span>
+                <button
+                  type="button"
+                  onClick={handleRemoveAllInjected}
+                  className="text-[10.5px] font-semibold text-amber-800 dark:text-amber-300 hover:text-amber-950 dark:hover:text-amber-100 hover:underline transition-colors cursor-pointer"
+                >
+                  Remove All
+                </button>
+              </div>
+
+              <div className="space-y-1.5 max-h-48 overflow-y-auto pr-0.5">
+                {injectedLines.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-start justify-between gap-2 p-2 sm:p-2.5 rounded-lg bg-white/80 dark:bg-stone-900/70 border border-amber-200/70 dark:border-amber-800/50 text-xs shadow-2xs transition-colors"
+                  >
+                    <div className="flex items-start gap-2 min-w-0">
+                      <span className="font-mono text-[9.5px] font-bold px-1.5 py-0.5 rounded bg-amber-200/80 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 border border-amber-300/60 dark:border-amber-700/60 flex-shrink-0 mt-0.5">
+                        +{item.keyword}
+                      </span>
+                      <p className="text-[11.5px] text-stone-700 dark:text-stone-300 leading-relaxed break-words line-clamp-2 sm:line-clamp-none">
+                        "{item.phrase}"
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveInjectedLine(item)}
+                      title={`Remove "${item.keyword}" from resume`}
+                      className="text-stone-400 hover:text-red-600 dark:hover:text-red-400 p-1 rounded transition-colors flex-shrink-0 cursor-pointer"
+                      aria-label={`Remove injected ${item.keyword}`}
+                    >
+                      <CloseIcon className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Export Options Bar (ATS PDF & LaTeX) */}
+          {Boolean(resume.trim()) && !isUploading && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 pt-2 border-t border-stone-200/70 dark:border-stone-800/70">
+              <span className="text-[11px] font-mono font-medium text-stone-500 dark:text-stone-400 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                Export Updated Resume:
+              </span>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={handleExportAtsPdf}
+                  disabled={isExportingPdf}
+                  title="Download clean, single-column ATS-friendly vector PDF"
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-300/90 dark:border-stone-700 bg-white dark:bg-stone-800/90 text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700/80 active:scale-95 transition-all shadow-xs text-xs font-semibold cursor-pointer"
+                >
+                  <DownloadIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>{isExportingPdf ? 'Generating…' : 'Export ATS PDF'}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleExportLatex}
+                  title={rawLatexSource ? 'Download updated original LaTeX (.tex) resume' : 'Download clean compilable LaTeX (.tex) resume'}
+                  className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-300/90 dark:border-stone-700 bg-white dark:bg-stone-800/90 text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700/80 active:scale-95 transition-all shadow-xs text-xs font-semibold cursor-pointer"
+                >
+                  <FileIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                  <span>Export .tex (LaTeX)</span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <input
             ref={fileInputRef}
             type="file"
-            accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            accept=".pdf,.docx,.tex,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/x-tex,application/x-tex"
             className="hidden"
             onChange={handleFileChange}
           />

@@ -5,7 +5,7 @@ import { SparklesIcon, CopyIcon, CheckIcon, ChevronDownIcon } from './icons';
 interface AtsScoreCardProps {
   resumeText: string;
   jobText: string;
-  onInjectPhrase?: (phrase: string) => void;
+  onInjectPhrase?: (keyword: string, phrase: string) => void;
 }
 
 export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({
@@ -37,7 +37,7 @@ export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({
   const handleInjectPhrase = (kw: string) => {
     if (!onInjectPhrase) return;
     const phrase = getSuggestedPhrasing(kw);
-    onInjectPhrase(phrase);
+    onInjectPhrase(kw, phrase);
     setInjectedKeyword(kw);
     setTimeout(() => {
       setInjectedKeyword(null);
