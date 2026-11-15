@@ -7,11 +7,20 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.2.4`** (current head is `2.2.3` — see below)
+> - **`main` → `2.2.5`** (current head is `2.2.4` — see below)
 
 ---
 
 ## Commit History
+
+### 2.2.4 - elevate avatar icon with bespoke duotone executive styling
+
+- **Date**: 2026-11-15
+- **Why**: user requested a premium, professional icon style for the avatar icon in the header navbar.
+- **Changes**:
+  - `components/icons.tsx`: redesigned `UserIcon` with a bespoke duotone executive silhouette featuring translucent weighted torso geometry, sculpted head curvature, and tailored collar/lapel detailing.
+  - `components/Header.tsx`: upgraded avatar button with subtle warm amber border hover states and refined icon sizing (`w-4.5 h-4.5`) in harmony with the CC monogram brand identity.
+  - Synchronized version metadata to `2.2.4` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.2.3 - document Rust systems & WebAssembly implementations across showcase docs
 

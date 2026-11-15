@@ -99,8 +99,36 @@ export const LightbulbIcon: React.FC<{ className?: string }> = ({ className = 'w
 );
 
 export const UserIcon: React.FC<{ className?: string }> = ({ className = 'w-6 h-6' }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    className={className}
+    aria-hidden="true"
+  >
+    {/* Executive duotone torso silhouette */}
+    <path
+      d="M4.75 19.25C4.75 15.8 7.6 13 12 13s7.25 2.8 7.25 6.25v.25c0 .41-.34.75-.75.75H5.5a.75.75 0 0 1-.75-.75v-.25z"
+      fill="currentColor"
+      fillOpacity="0.2"
+    />
+    {/* Sculpted head with calibrated optical weight */}
+    <circle cx="12" cy="7.25" r="3.75" fill="currentColor" fillOpacity="0.92" />
+    {/* Tailored shoulder perimeter contour */}
+    <path
+      d="M5 19.25c.3-3.25 3.25-5.75 7-5.75s6.7 2.5 7 5.75"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    />
+    {/* Bespoke executive lapel / collar notch */}
+    <path
+      d="M10.25 13.75 12 16.5l1.75-2.75"
+      stroke="currentColor"
+      strokeWidth="1.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 

@@ -138,8 +138,8 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
               aria-label="Account and settings menu"
               title={isAuthenticated && user ? user.name : 'Account and settings'}
               className="relative w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-150 focus-ring active:scale-95 select-none
-                bg-stone-100 dark:bg-stone-800 border-stone-200/90 dark:border-stone-700/90
-                hover:border-stone-400 dark:hover:border-stone-500 hover:shadow-xs"
+                bg-stone-100/90 dark:bg-stone-850 border-stone-200/90 dark:border-stone-700/80
+                hover:border-amber-500/40 dark:hover:border-amber-500/40 hover:shadow-2xs"
             >
               {isInitializing ? (
                 <div className="w-full h-full rounded-full bg-stone-200 dark:bg-stone-700 animate-pulse" />
@@ -160,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
                   <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-stone-900" />
                 </>
               ) : (
-                <UserIcon className="w-4 h-4 text-stone-600 dark:text-stone-300" />
+                <UserIcon className="w-4.5 h-4.5 text-stone-700 dark:text-stone-200 transition-colors" />
               )}
             </button>
 
