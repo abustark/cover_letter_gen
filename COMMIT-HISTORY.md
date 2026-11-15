@@ -7,11 +7,19 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.2.2`** (current head is `2.2.1` — see below)
+> - **`main` → `2.2.3`** (current head is `2.2.2` — see below)
 
 ---
 
 ## Commit History
+
+### 2.2.2 - tweak Rule 5 in AGENTS.md to only remind about gates when not run
+
+- **Date**: 2026-11-15
+- **Why**: user requested refining Rule 5 in AGENTS.md so the reminder to run test suites and verification gates is only appended when gates were skipped during that turn, avoiding redundant noise when tests were just executed.
+- **Changes**:
+  - `AGENTS.md`: refined Execution Rule 5 and Order of Operations item 4 so the gate reminder is only surfaced if gates/tests were not run during that turn.
+  - Synchronized version metadata to `2.2.2` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.2.1 - fix dynamic WASM imports for TypeScript and calibrate ATS test assertions
 

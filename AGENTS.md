@@ -12,7 +12,7 @@ These rules are mandatory for any AI agent working in this repository.
 
 4. **Implement first.** The AI's primary job is to perform updates, write code, fix bugs, and do exactly what the user asks. Do this first, without side quests or extra steps the user did not ask for.
 
-5. **Remind about gates in summary.** In its response after completing and pushing the updates, the AI must summarize the changes made and remind the user that running test runs / gates is available whenever desired.
+5. **Remind about gates in summary (only when not run).** In its response after completing and pushing updates, the AI must summarize the changes made. If test runs, typechecks, or builds were not run during that turn, remind the user that running test runs / gates is available whenever desired. If gates were already executed and verified during that turn upon user request, omit this reminder.
 
 6. **Save images to the project folder.** Any screenshot, crop, capture, or other image produced while working on this project must also be saved to `D:\projects\cover_letter_gen\artifacts\` (in addition to the working temp folder on C:). Keep file names descriptive.
 
@@ -28,7 +28,7 @@ These rules are mandatory for any AI agent working in this repository.
 1. Read the user's request.
 2. Update files / write code / fix bugs as asked.
 3. Commit and push immediately upon completion (following versioning rules) unless the user explicitly stated not to commit.
-4. In the response, summarize the file updates made, report the commit/push status, and remind the user that running tests/gates is available.
+4. In the response, summarize the file updates made, report the commit/push status, and (only if gates were not run during that turn) remind the user that running tests/gates is available.
 
 ## Architectural & Repository Invariants
 
