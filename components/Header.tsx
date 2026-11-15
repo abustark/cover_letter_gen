@@ -138,7 +138,7 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
               aria-label="Account and settings menu"
               title={isAuthenticated && user ? user.name : 'Account and settings'}
               className="relative w-9 h-9 rounded-full flex items-center justify-center border transition-all duration-150 focus-ring active:scale-95 select-none
-                bg-stone-100/90 dark:bg-stone-850 border-stone-200/90 dark:border-stone-700/80
+                bg-stone-100 hover:bg-stone-200/70 dark:bg-stone-800 dark:hover:bg-stone-700 border-stone-200/90 dark:border-stone-700/90
                 hover:border-amber-500/40 dark:hover:border-amber-500/40 hover:shadow-2xs"
             >
               {isInitializing ? (
@@ -160,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
                   <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-stone-900" />
                 </>
               ) : (
-                <UserIcon className="w-4.5 h-4.5 text-stone-700 dark:text-stone-200 transition-colors" />
+                <UserIcon className="w-4.5 h-4.5 text-stone-600 dark:text-stone-300 transition-colors" />
               )}
             </button>
 
@@ -183,7 +183,7 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme }) => {
                           className="w-10 h-10 rounded-full object-cover ring-1 ring-stone-200 dark:ring-stone-700 select-none flex-shrink-0"
                         />
                       ) : (
-                        <div className="w-10 h-10 rounded-full bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-950 flex items-center justify-center font-bold text-sm flex-shrink-0 select-none">
+                        <div className="w-10 h-10 rounded-full bg-stone-900 text-white dark:bg-stone-800 dark:text-stone-100 border border-stone-200/60 dark:border-stone-700/80 flex items-center justify-center font-bold text-sm flex-shrink-0 select-none">
                           {user.name.charAt(0).toUpperCase()}
                         </div>
                       )}
