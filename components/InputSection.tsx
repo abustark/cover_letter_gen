@@ -558,12 +558,12 @@ export const InputSection: React.FC<InputSectionProps> = ({
       </div>
 
       {/* Privacy Callout */}
-      <div className="rounded-xl border border-stone-200/80 dark:border-stone-800/80 bg-stone-50/70 dark:bg-stone-900/40 p-4 text-xs text-stone-500 dark:text-stone-400 leading-relaxed flex items-start gap-3 shadow-xs">
-        <div className="w-7 h-7 rounded-lg bg-stone-100 dark:bg-stone-800 flex items-center justify-center flex-shrink-0 text-stone-600 dark:text-stone-400 border border-stone-200/60 dark:border-stone-700/60">
+      <div className="rounded-xl border border-teal-200/70 dark:border-teal-900/50 bg-teal-50/40 dark:bg-teal-950/25 p-4 text-xs text-stone-600 dark:text-stone-300 leading-relaxed flex items-start gap-3 shadow-xs transition-colors">
+        <div className="w-7 h-7 rounded-lg bg-teal-100/80 dark:bg-teal-900/50 flex items-center justify-center flex-shrink-0 text-teal-700 dark:text-teal-300 border border-teal-200/80 dark:border-teal-800/60 shadow-2xs">
           <LockIcon className="w-3.5 h-3.5" />
         </div>
         <div>
-          <span className="font-semibold text-stone-700 dark:text-stone-200">
+          <span className="font-semibold text-teal-900 dark:text-teal-200 tracking-tight">
             Privacy & Trust Architecture:{' '}
           </span>
           Your resume is parsed in-memory on your device and never uploaded as a document file.

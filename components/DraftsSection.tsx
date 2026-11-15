@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Draft } from '../types';
-import { TrashIcon, FileIcon, SparklesIcon } from './icons';
+import { TrashIcon, FileIcon, SparklesIcon, DownloadIcon, UploadIcon, CheckIcon } from './icons';
 import { SectionTitle, IconButton } from './UI';
+import { exportDraftsBackup, importDraftsBackup } from '../services/draftStorage';
 
 interface DraftsSectionProps {
   drafts: Draft[];
   onLoad: (draft: Draft) => void;
   onDelete: (draftId: string) => void;
   onClearAll: () => void;
+  onImportDrafts?: (drafts: Draft[]) => void;
 }
 
 export const DraftsSection: React.FC<DraftsSectionProps> = ({
@@ -15,20 +17,121 @@ export const DraftsSection: React.FC<DraftsSectionProps> = ({
   onLoad,
   onDelete,
   onClearAll,
+  onImportDrafts,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  if (drafts.length === 0) return null;
+  const showFeedback = (msg: string) => {
+    setFeedback(msg);
+    setTimeout(() => setFeedback(null), 3500);
+  };
 
   const handleClearAll = () => {
     if (window.confirm('Are you sure you want to delete all saved drafts? This cannot be undone.')) {
       onClearAll();
+      showFeedback('All drafts cleared.');
     }
   };
 
+  const handleExport = () => {
+    if (drafts.length === 0) return;
+    exportDraftsBackup(drafts);
+    showFeedback(`Exported ${drafts.length} drafts as JSON backup.`);
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result;
+      if (typeof content !== 'string') return;
+
+      const result = importDraftsBackup(content, drafts);
+      if (result.success) {
+        if (onImportDrafts) {
+          onImportDrafts(result.merged);
+        }
+        showFeedback(`✓ Successfully imported ${result.addedCount} new drafts!`);
+      } else {
+        showFeedback(`Import error: ${result.error || 'Invalid file format.'}`);
+      }
+    };
+    reader.readAsText(file);
+    // Reset file input so re-selecting the same file fires onChange
+    e.target.value = '';
+  };
+
+  if (drafts.length === 0) {
+    return (
+      <div className="mt-16 space-y-4">
+        <input
+          type="file"
+          ref={fileInputRef}
+          accept=".json,application/json"
+          onChange={handleFileChange}
+          className="hidden"
+          aria-hidden="true"
+        />
+
+        <div className="flex items-center justify-between pb-3 border-b border-stone-200/80 dark:border-stone-800/80">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 dark:text-stone-400 font-bold">
+                Archive 04 · Local Repository
+              </span>
+            </div>
+            <h2 className="text-sm sm:text-base font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-stone-700 dark:bg-stone-300" />
+              Saved Drafts Library
+            </h2>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleImportClick}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-200 bg-stone-100 hover:bg-stone-200/80 dark:bg-stone-800 dark:hover:bg-stone-700 border border-stone-200/80 dark:border-stone-700/80 transition-colors shadow-2xs"
+          >
+            <UploadIcon className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400" />
+            <span>Import Backup</span>
+          </button>
+        </div>
+
+        {feedback && (
+          <div className="p-2.5 rounded-xl border border-amber-300/80 dark:border-amber-700/80 bg-amber-50/80 dark:bg-amber-950/40 text-xs text-amber-900 dark:text-amber-200 font-medium animate-in fade-in">
+            {feedback}
+          </div>
+        )}
+
+        <div className="rounded-2xl border border-dashed border-stone-200 dark:border-stone-800 p-8 text-center bg-stone-50/40 dark:bg-stone-900/20">
+          <FileIcon className="w-8 h-8 text-stone-400 mx-auto mb-2 opacity-50" />
+          <p className="text-xs text-stone-500 dark:text-stone-400">
+            No local drafts saved yet. Letters you save or import will appear here.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="mt-16 space-y-4">
-      <div className="flex items-center justify-between pb-3 border-b border-stone-200/80 dark:border-stone-800/80">
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept=".json,application/json"
+        onChange={handleFileChange}
+        className="hidden"
+        aria-hidden="true"
+      />
+
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200/80 dark:border-stone-800/80">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="font-mono text-[10px] tracking-widest uppercase text-stone-500 dark:text-stone-400 font-bold">
@@ -47,23 +150,50 @@ export const DraftsSection: React.FC<DraftsSectionProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+          <button
+            type="button"
+            onClick={handleExport}
+            title="Download JSON archive of all saved drafts"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-200 bg-stone-100 hover:bg-stone-200/80 dark:bg-stone-800 dark:hover:bg-stone-700 border border-stone-200/80 dark:border-stone-700/80 transition-colors shadow-2xs"
+          >
+            <DownloadIcon className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400" />
+            <span>Export Backup</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleImportClick}
+            title="Restore drafts from a JSON backup file"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-stone-700 dark:text-stone-200 bg-stone-100 hover:bg-stone-200/80 dark:bg-stone-800 dark:hover:bg-stone-700 border border-stone-200/80 dark:border-stone-700/80 transition-colors shadow-2xs"
+          >
+            <UploadIcon className="w-3.5 h-3.5 text-stone-600 dark:text-stone-400" />
+            <span>Import Backup</span>
+          </button>
+
           <button
             type="button"
             onClick={handleClearAll}
-            className="text-xs font-semibold text-stone-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+            className="text-xs font-semibold text-stone-400 hover:text-red-600 dark:hover:text-red-400 transition-colors px-1.5 py-1"
           >
             Clear all
           </button>
+
           <button
             type="button"
             onClick={() => setIsCollapsed((o) => !o)}
-            className="text-xs font-semibold text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors"
+            className="text-xs font-semibold text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 transition-colors px-1.5 py-1"
           >
             {isCollapsed ? 'Expand library' : 'Collapse'}
           </button>
         </div>
       </div>
+
+      {feedback && (
+        <div className="p-2.5 rounded-xl border border-amber-300/80 dark:border-amber-700/80 bg-amber-50/80 dark:bg-amber-950/40 text-xs text-amber-900 dark:text-amber-200 font-medium animate-in fade-in">
+          {feedback}
+        </div>
+      )}
 
       {!isCollapsed && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">

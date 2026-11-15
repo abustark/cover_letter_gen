@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   SpinnerIcon,
   CopyIcon,
@@ -11,6 +11,7 @@ import {
 } from './icons';
 import { IconButton } from './UI';
 import { downloadEditorialPdf } from '../services/pdfExportService';
+import { generateInterviewQuestions } from '../services/interviewPrepService';
 
 interface OutputSectionProps {
   coverLetter: string;
@@ -19,6 +20,8 @@ interface OutputSectionProps {
   onRegenerate: () => void;
   onSave: () => void;
   companyName: string;
+  resumeText?: string;
+  jobText?: string;
 }
 
 const CHECKLIST_ITEMS = [
@@ -58,11 +61,34 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
   companyName,
   isLoading,
   error,
+  resumeText,
+  jobText,
 }) => {
   const [copied, setCopied] = useState(false);
   const [saved, setSaved] = useState(false);
   const [checkedItems, setCheckedItems] = useState<Record<string, boolean>>({});
   const [isChecklistOpen, setIsChecklistOpen] = useState(true);
+  const [isInterviewPrepOpen, setIsInterviewPrepOpen] = useState(false);
+  const [activeQuestionId, setActiveQuestionId] = useState<string>('q1');
+  const [copiedAllPrep, setCopiedAllPrep] = useState(false);
+
+  const interviewQuestions = useMemo(() => {
+    if (!resumeText?.trim() && !jobText?.trim()) return [];
+    return generateInterviewQuestions(resumeText || '', jobText || '', companyName);
+  }, [resumeText, jobText, companyName]);
+
+  const handleCopyAllPrep = () => {
+    if (interviewQuestions.length === 0) return;
+    const text = interviewQuestions
+      .map(
+        (q, idx) =>
+          `Question ${idx + 1} (${q.competency}):\n"${q.question}"\n\nSTAR Talking Points:\n- Situation: ${q.star.situation}\n- Action: ${q.star.action}\n- Result: ${q.star.result}\n`
+      )
+      .join('\n---\n\n');
+    navigator.clipboard.writeText(text);
+    setCopiedAllPrep(true);
+    setTimeout(() => setCopiedAllPrep(false), 2000);
+  };
 
   const toggleCheck = (id: string) => {
     setCheckedItems((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -184,6 +210,22 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
               <span>{copied ? 'Copied' : 'Copy'}</span>
             </button>
 
+            {interviewQuestions.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setIsInterviewPrepOpen((v) => !v)}
+                title="Toggle interview talking points and question prep"
+                className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors select-none ${
+                  isInterviewPrepOpen
+                    ? 'bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200'
+                    : 'text-stone-700 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800'
+                }`}
+              >
+                <SparklesIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                <span>{isInterviewPrepOpen ? 'Hide Prep' : 'Interview Prep'}</span>
+              </button>
+            )}
+
             <div className="h-4 w-px bg-stone-200 dark:bg-stone-800 mx-0.5" />
 
             <IconButton label="Download PDF" onClick={handleDownloadPdf}>
@@ -261,6 +303,118 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Match-Grounded Interview Readiness & Talking Points */}
+      {coverLetter && !isLoading && isInterviewPrepOpen && interviewQuestions.length > 0 && (
+        <div className="rounded-2xl border border-amber-300/80 dark:border-amber-800/80 bg-amber-50/70 dark:bg-amber-950/30 p-4 sm:p-5 shadow-xs space-y-4 animate-in fade-in duration-150">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-200/80 dark:border-amber-800/60">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="font-mono text-[10px] tracking-widest uppercase text-amber-800 dark:text-amber-400 font-bold">
+                  Preparation · Interview Readiness
+                </span>
+                <span className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-amber-200/60 dark:bg-amber-900/60 text-amber-900 dark:text-amber-200 border border-amber-300/80 dark:border-amber-700/80 font-semibold">
+                  5 STAR Question Profiles
+                </span>
+              </div>
+              <h3 className="text-sm sm:text-base font-bold tracking-tight text-stone-900 dark:text-stone-100 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-amber-600 dark:bg-amber-400" />
+                Targeted Interview Questions & STAR Responses
+              </h3>
+              <p className="text-xs text-stone-600 dark:text-stone-400 mt-0.5">
+                Derived directly from your verified resume accomplishments and target role requirements
+              </p>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleCopyAllPrep}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-950 dark:text-amber-100 bg-amber-200/90 dark:bg-amber-850 hover:bg-amber-300 dark:hover:bg-amber-750 border border-amber-300 dark:border-amber-700 transition-colors shadow-2xs self-start sm:self-auto"
+            >
+              {copiedAllPrep ? (
+                <>
+                  <CheckIcon className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />
+                  <span>Copied All Questions!</span>
+                </>
+              ) : (
+                <>
+                  <CopyIcon className="w-3.5 h-3.5 text-amber-800 dark:text-amber-300" />
+                  <span>Copy All Q&A</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="space-y-3">
+            {interviewQuestions.map((q, idx) => {
+              const isOpen = activeQuestionId === q.id;
+              return (
+                <div
+                  key={q.id}
+                  className="rounded-xl border border-amber-200/90 dark:border-amber-900/60 bg-white/85 dark:bg-stone-900/80 p-3.5 transition-all shadow-2xs"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setActiveQuestionId(isOpen ? '' : q.id)}
+                    className="w-full flex items-start justify-between text-left gap-3 select-none cursor-pointer"
+                  >
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
+                          Q{idx + 1} · {q.category}
+                        </span>
+                        <span className="text-[10px] font-mono px-2 py-0.2 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700 font-medium">
+                          {q.competency}
+                        </span>
+                      </div>
+                      <h4 className="text-xs sm:text-[13px] font-bold text-stone-900 dark:text-stone-100 leading-snug">
+                        "{q.question}"
+                      </h4>
+                    </div>
+
+                    <span className="text-xs font-mono text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 px-1.5 py-0.5 rounded bg-stone-100 dark:bg-stone-800">
+                      {isOpen ? 'Collapse' : 'Expand'}
+                    </span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="mt-3 pt-3 border-t border-amber-200/60 dark:border-amber-900/50 space-y-2 text-xs leading-relaxed animate-in fade-in duration-100">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                        <div className="p-2.5 rounded-lg bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/40">
+                          <span className="font-mono text-[10px] uppercase font-bold text-amber-800 dark:text-amber-300 block mb-1">
+                            Situation & Context
+                          </span>
+                          <p className="text-stone-700 dark:text-stone-300 text-[11.5px]">
+                            {q.star.situation}
+                          </p>
+                        </div>
+
+                        <div className="p-2.5 rounded-lg bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/40">
+                          <span className="font-mono text-[10px] uppercase font-bold text-amber-800 dark:text-amber-300 block mb-1">
+                            Action & Execution
+                          </span>
+                          <p className="text-stone-700 dark:text-stone-300 text-[11.5px]">
+                            {q.star.action}
+                          </p>
+                        </div>
+
+                        <div className="p-2.5 rounded-lg bg-amber-50/50 dark:bg-amber-950/30 border border-amber-200/50 dark:border-amber-900/40">
+                          <span className="font-mono text-[10px] uppercase font-bold text-emerald-800 dark:text-emerald-400 block mb-1">
+                            Verified Result & Impact
+                          </span>
+                          <p className="text-stone-700 dark:text-stone-300 text-[11.5px]">
+                            {q.star.result}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
       )}
 

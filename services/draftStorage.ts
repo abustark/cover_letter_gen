@@ -117,3 +117,81 @@ export function clearAllDrafts(): void {
     // Ignore storage errors
   }
 }
+
+export interface DraftsBackupPayload {
+  version: '2.0';
+  exportedAt: string;
+  totalCount: number;
+  drafts: Draft[];
+}
+
+/**
+ * Triggers an instant JSON download of all saved drafts.
+ */
+export function exportDraftsBackup(drafts: Draft[]): void {
+  const validDrafts = drafts.filter(isValidDraft);
+  const payload: DraftsBackupPayload = {
+    version: '2.0',
+    exportedAt: new Date().toISOString(),
+    totalCount: validDrafts.length,
+    drafts: validDrafts,
+  };
+
+  const jsonStr = JSON.stringify(payload, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const dateStr = new Date().toISOString().split('T')[0];
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `covercraft-drafts-backup-${dateStr}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Parses and merges imported JSON drafts with the current drafts library.
+ */
+export function importDraftsBackup(
+  rawJson: string,
+  currentDrafts: Draft[]
+): { success: boolean; merged: Draft[]; addedCount: number; error?: string } {
+  try {
+    const parsed = JSON.parse(rawJson);
+    let incomingDrafts: unknown[] = [];
+
+    if (Array.isArray(parsed)) {
+      incomingDrafts = parsed;
+    } else if (parsed && typeof parsed === 'object' && Array.isArray((parsed as { drafts?: unknown[] }).drafts)) {
+      incomingDrafts = (parsed as { drafts: unknown[] }).drafts;
+    } else {
+      return { success: false, merged: currentDrafts, addedCount: 0, error: 'Unrecognized backup format.' };
+    }
+
+    const validIncoming = incomingDrafts.filter(isValidDraft);
+    if (validIncoming.length === 0) {
+      return { success: false, merged: currentDrafts, addedCount: 0, error: 'No valid drafts found in backup file.' };
+    }
+
+    // Merge by id (incoming take precedence or new added)
+    const existingIds = new Set(currentDrafts.map((d) => d.id));
+    const newItems = validIncoming.filter((d) => !existingIds.has(d.id));
+
+    const merged = [...newItems, ...currentDrafts].slice(0, MAX_DRAFTS_COUNT);
+    persistDrafts(merged);
+
+    return {
+      success: true,
+      merged,
+      addedCount: newItems.length,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      merged: currentDrafts,
+      addedCount: 0,
+      error: err instanceof Error ? err.message : 'Invalid JSON file.',
+    };
+  }
+}

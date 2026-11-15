@@ -7,11 +7,23 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.2.7`** (current head is `2.2.6` — see below)
+> - **`main` → `2.2.8`** (current head is `2.2.7` — see below)
 
 ---
 
 ## Commit History
+
+### 2.2.7 - implement interactive ATS keyword injector, interview prep generator, archive backup, and privacy styling
+
+- **Date**: 2026-11-15
+- **Why**: user requested features 1 (interactive ATS keyword injector), 3 (interview talking points generator), and 5 (local drafts archive JSON export/import), along with distinct color differentiation for the privacy and trust statement card.
+- **Changes**:
+  - `components/InputSection.tsx`: updated the Privacy & Trust Architecture card with a distinct sea-glass/teal architectural border (`border-teal-200/70 dark:border-teal-900/50`), lock icon badge (`bg-teal-100/80 text-teal-700`), and heading (`text-teal-900 dark:text-teal-200`).
+  - `components/AtsScoreCard.tsx`: transformed missing keyword chips into interactive buttons triggering an inline Alignment Injector card with contextual STAR phrasing and instant copy feedback.
+  - `services/interviewPrepService.ts` & `components/OutputSection.tsx`: built match-grounded interview prep generator producing 5 targeted interview questions with structured STAR talking points (Situation, Action, Result) derived from verified candidate accomplishments; added expandable accordion UI and "Copy All Q&A" action.
+  - `services/draftStorage.ts` & `components/DraftsSection.tsx`: implemented `exportDraftsBackup` and `importDraftsBackup` supporting timestamped JSON backup download, schema validation, deduplication, and file restore; added empty-state archive recovery.
+  - `App.tsx`: wired `onImportDrafts` to state and forwarded resume/job context to `OutputSection`.
+  - Synchronized version metadata to `2.2.7` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.2.6 - fix avatar circle dark mode contrast and background styling
 
