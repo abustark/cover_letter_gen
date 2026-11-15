@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | Name | **CoverCraft — AI Cover Letter Builder & Editorial Studio** |
-| Current Version | **v2.3.7** (Production release, November 2026) |
+| Current Version | **v2.3.8** (Production release, November 2026) |
 | App Type | Full-stack web application (AI document pipeline & career productivity studio) |
 | Author | ABu (`abustark` on GitHub) |
 | Live Site | https://coverltr.vercel.app/ |
@@ -48,7 +48,11 @@
 | **Resume Extraction (DOCX)**| mammoth | `^1.12.0` | Lazy-loaded client-side raw document text extractor |
 | **Resume Structuring** | Custom cleaner | `services/resumeCleaner.ts` | Heuristic structuring engine (`cleanCrampedResumeText`) formatting headers, bullets, and contact info |
 | **ATS & Keyword Matcher (Rust WASM)** | Rust & WebAssembly | `crates/ats_engine` | Client-side Rust WASM tokenizer & keyword gap analyzer with TS fallback (`services/atsEngine.ts`) |
+| **ATS Keyword Auto-Injection & AST Mutation (Rust/TS)** | Rust & TS Engine | `components/AtsScoreCard.tsx` & `services/resumeCleaner.ts` | Real-time AST injection of missing requirement keywords into experience bullets with instant checkmark state and score recalibration |
 | **Typographic PDF Engine (Rust WASM)** | Rust & WebAssembly | `crates/pdf_engine` | Standalone vector PDF layout & pagination engine compiled to WASM with jsPDF fallback (`services/pdfExportService.ts`) |
+| **Overleaf Single-Page ATS PDF Typesetter** | Vector PDF Engine | `services/resumeExportService.ts` | 32pt Overleaf margins, 11.5pt proportional leading, centered contact row, two-column subheadings, hanging-indent bullets, and calibrated single-page budgeting |
+| **Bi-directional LaTeX (.tex) Pipeline** | LaTeX AST Engine | `services/resumeExportService.ts` | Client-side ingestion, preamble sanitization, macro unwrapping (`\resumeSubheading`, `\resumeProjectHeading`), and `.tex` source export |
+| **Interview Prep & Technical Q&A Synthesis** | STAR Q&A Engine | `services/interviewPrepService.ts` | Generates verified behavioral & technical interview prep questions with STAR responses directly from candidate resume and target role |
 | **SSRF Web Scraper (Rust Native)** | Rust, Tokio & Rustls | `crates/fetch_url` | High-performance systems scraper with DNS verification, private IP blocking, streaming caps, and HTML stripping |
 | **Export (DOCX)** | docx | `^9.7.1` | Lazy-loaded client-side Word document generator (Paragraph/TextRun AST) |
 | **Rate Limiting** | Custom sliding-window | In-memory / Upstash Redis | Per-user `sub` and per-IP sliding-window quota management |
@@ -273,6 +277,39 @@ Protects upstream inference budgets and serverless compute from abuse:
 - Implements manual redirect following up to 3 hops with re-verification at each hop, streaming byte caps (2 MB max download buffer), 8-second execution timeouts, and heuristic HTML text stripping producing ≤12,000 characters of clean posting text.
 - Provides a fast, standalone binary with link-time optimization (LTO) and binary stripping (`opt-level = 3`, `strip = true`).
 
+### 5.11 Rust AST Resume Keyword Auto-Injection & AST Recalibration Pipeline (`crates/ats_engine` & `components/AtsScoreCard.tsx`)
+- High-efficiency reactive loop that bridges the Rust/WASM ATS keyword engine directly to the resume editor without requiring manual text editing.
+- Generates tailored STAR achievement bullets targeting missing employer requirements (e.g. `• Spearheaded cloud automation initiatives with Docker, Git, GitHub, CI/CD to enhance system reliability and deployment velocity.`).
+- Employs deterministic bullet positioning: inserts the newly generated achievement bullet directly into the candidate's primary job role under `PROFESSIONAL EXPERIENCE` using standardized dot bullet notation (`• `) and trailing periods (`.`).
+- Triggers instant sub-millisecond AST re-tokenization via `crates/ats_engine` upon injection or removal, dynamically recalibrating the ATS match score, progress ring, and grade badge (e.g. raising a 72% grade to an 88% Strong Match).
+- Includes an interactive "Active Injected Lines" badge strip (`components/InputSection.tsx`) displaying each injected keyword with an amber border, keyword tag, individual removal button (`✕`), and a global "Remove All Injected" reset action.
+
+### 5.12 Bi-Directional LaTeX (.tex) Ingestion, Sanitization & Export Architecture (`services/resumeExportService.ts`)
+- Client-side ingestion and export pipeline designed specifically for developers and engineers who author their resumes in LaTeX (Overleaf, Jake's Resume, ModernCV, AwesomeCV).
+- **Sanitized Text Extraction (`extractCleanTextFromLatex`):**
+  - Isolates document body after `\begin{document}`, discarding all styling and geometry preambles.
+  - Strips LaTeX comments using negative lookbehinds (`(?<!\\)%.*$`) so escaped percentages (`98\%`) are never truncated.
+  - Preserves escaped special characters (`\&`, `\%`, `\$`, `\_`, `\#`) using unique sentinel tokens (`___AMP___`), preventing literal ampersands from being corrupted into backslashes by tabular separators.
+  - Converts math-mode bullet delimiters (`$\vert$`, `$|$`, `$\cdot$`, `$\bullet$`) into clean middle dots (` · `).
+  - Performs multi-pass recursive unwrapping of font and sizing macros (`\textnormal`, `\textbf`, `\emph`), ensuring complex nested macros like `\resumeSubheading` and `\resumeProjectHeading` match and extract their 4-argument tuples flawlessly without title loss.
+  - Consolidates candidate contact metadata before the first section into a single, clean centered line.
+- **In-Memory LaTeX Source Preservation & AST Injection:**
+  - Maintains the unadulterated raw `.tex` source in client state (`rawLatexSource`).
+  - Injects new bullet points directly into the LaTeX AST (`\resumeItem{...}` under `\resumeItemListStart` or `\item` under `\begin{itemize}`).
+  - Provides direct one-click `.tex` download (`downloadLatexResume`), allowing candidates to compile their modified resume directly in Overleaf without manual LaTeX formatting.
+
+### 5.13 Overleaf-Calibrated Single-Page ATS PDF Typesetter (`services/resumeExportService.ts`)
+- Client-side vector PDF rendering engine calibrated to match authentic Overleaf / Jake's Resume layouts with publication-grade fidelity.
+- **Calibrated Geometry:** 32pt (0.45 in) side and top margins, 10.5pt bold section headers, and full-width 0.65pt divider rules.
+- **Dual-Column Subheadings:** Dynamically aligns role/company on the left and date/location on the right with collision-preventing text wrapping.
+- **Hanging-Indent Category Bullets:** Formats technical skills with category prefixes in bold (`Data Analysis & Reporting:`) and wrapped items aligned neatly past the bullet indent.
+- **Single-Page Vertical Budgeting:** Proportional 11.5pt line leading and tight paragraph metrics that guarantee a comprehensive 3-year multi-project resume fits onto exactly 1 single page without spilling onto page 2.
+
+### 5.14 Interview Prep & Factual STAR Alignment Engine (`services/interviewPrepService.ts`)
+- Synthesizes tailored behavioral and technical interview prep questions directly from verified resume accomplishments and target role requirements.
+- Structures every response in high-impact STAR format (Situation, Task, Action, Result) with 0 hallucinations or unverified employer claims.
+- Features a dedicated "Copy All Q&A" action with instant clipboard feedback.
+
 ---
 
 ## 6. Model Pipeline & Routing Matrix
@@ -347,8 +384,10 @@ cover_letter_gen/
 │   ├── auth.tsx                   # AuthContext, GoogleOAuthProvider, token lifecycle
 │   ├── draftStorage.ts            # Local-first storage (v2 schema, quota recovery, migration)
 │   ├── geminiService.ts           # Authenticated API client calling /api/* endpoints
+│   ├── interviewPrepService.ts    # Factual STAR behavioral & technical interview Q&A generator
 │   ├── pdfExportService.ts        # Typographic editorial PDF export (Rust WASM + jsPDF fallback)
-│   └── resumeCleaner.ts           # Heuristic structuring utility (cleanCrampedResumeText)
+│   ├── resumeCleaner.ts           # Heuristic structuring utility (cleanCrampedResumeText)
+│   └── resumeExportService.ts     # LaTeX (.tex) upload/export & Overleaf single-page vector ATS PDF
 ├── test/                          # Automated Bun Test Suite (60 tests across 8 suites)
 │   ├── atsEngine.test.ts          # ATS keywords, scoring, and metrics detection tests
 │   ├── auth.test.ts               # JWKS signature, expiry, audience, access token tests
@@ -469,7 +508,11 @@ Links: Live Demo (https://coverltr.vercel.app/) · GitHub (https://github.com/ab
 | Cover letter generator | document-to-letter pipeline with server-enforced XML prompt isolation |
 | Upload resume | client-side PDF/DOCX binary extraction (`pdfjs-dist`, `mammoth`), lazy-loaded in-memory |
 | ATS intelligence | client-side Rust WebAssembly AST tokenizer (`crates/ats_engine`) matching keywords and metric density in <1 ms |
+| Keyword Auto-Injection | real-time AST mutation loop injecting missing requirements into experience bullets with live Rust WASM re-tokenization |
 | PDF typesetting | client-side Rust WebAssembly vector PDF layout engine (`crates/pdf_engine`) with 0.75" letterpress margins |
+| Overleaf ATS PDF Export | single-page vector layout typesetter with 32pt margins, dual-column subheadings, and hanging-indent bullets |
+| LaTeX (.tex) Support | sanitized AST text extraction, macro unwrapping (`\resumeSubheading`), and in-memory `.tex` source preservation |
+| Interview Q&A | factual STAR behavioral and technical interview questions grounded exclusively in candidate achievements |
 | Paste job URL | server-side fetch with SSRF defense (mirrored in native Rust `crates/fetch_url`), capped at 12k chars |
 | 4 modes / 4 tones | routing matrix — 16 prompt profiles, each mode mapped to one of three free models |
 | API key is safe | key boundary — production key lives only in Vercel function env, 0 secrets bundled |
@@ -488,7 +531,8 @@ I built CoverCraft to show what a privacy-first, defensible AI document pipeline
 
 Instead of another toy wrapper, CoverCraft is an editorial document studio designed with real security boundaries and native systems engineering:
 
-🦀 Rust & WebAssembly Intelligence: Client-side ATS resume tokenizer (crates/ats_engine) and typographic vector PDF layout engine (crates/pdf_engine) compiled to WASM for sub-millisecond execution with zero data egress.
+🦀 Rust & WebAssembly Systems: Client-side ATS resume tokenizer (crates/ats_engine), live keyword auto-injection loop, and typographic vector PDF layout engine (crates/pdf_engine) compiled to WASM for sub-millisecond execution with zero data egress.
+📄 Overleaf & LaTeX Precision: Native .tex resume ingestion with preamble sanitization and direct Overleaf-calibrated single-page vector ATS PDF generation.
 🛡️ Hardened SSRF Defense: When pasting job links, our scraper verifies DNS and enforces strict IP blacklists—blocking private networks, link-local addresses, and cloud metadata endpoints (169.254.169.254), mirrored in a native Tokio/Rustls systems engine (crates/fetch_url).
 🔒 Zero-Upload Privacy: Candidate resumes (PDF/DOCX) are parsed entirely in-browser using pdfjs-dist and mammoth. Original documents never touch any server or cloud database.
 🎯 Anti-Hallucination Prompts: Server-owned XML prompt boundaries enforce strict single-source-of-truth grounding against the candidate's actual credentials, backed by an interactive post-generation factuality audit.

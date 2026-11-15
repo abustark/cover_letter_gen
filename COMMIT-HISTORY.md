@@ -7,11 +7,20 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.3.8`** (current head is `2.3.7` — see below)
+> - **`main` → `2.3.9`** (current head is `2.3.8` — see below)
 
 ---
 
 ## Commit History
+
+### 2.3.8 - document rust systems and latex vector pdf architectures across project sheets
+
+- **Date**: 2026-11-15
+- **Why**: user requested a complete documentation audit to post the project as completed, adding dedicated separate lines and sections for all three Rust implementations, the interactive AST keyword auto-injection loop, LaTeX (.tex) ingestion/export, and the single-page Overleaf vector ATS PDF typesetter in `PROJECT-INFO.md` and `README.md`.
+- **Changes**:
+  - `PROJECT-INFO.md`: added dedicated separate entries in tech stack table and directory map for `interviewPrepService.ts` and `resumeExportService.ts`; authored dedicated architectural subsections 5.11 (Rust AST Resume Keyword Auto-Injection & Recalibration), 5.12 (Bi-Directional LaTeX Ingestion, Sanitization & Export), 5.13 (Overleaf-Calibrated Single-Page ATS PDF Typesetter), and 5.14 (STAR Interview Alignment Engine); updated feature-to-mechanism translations and social post blueprints.
+  - `README.md`: added distinct feature cards and architectural specifications for the Rust AST keyword auto-injection loop, Overleaf single-page ATS PDF generation, LaTeX bi-directional pipeline, and interview prep engine.
+  - Synchronized version metadata to `2.3.8` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.3.7 - sanitize latex text extraction and calibrate single-page overleaf ats pdf layout
 

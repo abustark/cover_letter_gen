@@ -29,7 +29,11 @@ CoverCraft turns two unstructured documents — a resume (PDF or DOCX) and a job
 | **SSRF-hardened URL reader** | HTTPS enforcement, private/cloud-metadata IP blocking, DNS resolution, bounded manual redirects, streaming byte cap; mirrored in native Rust crate (`crates/fetch_url`) |
 | **Strict AI contract** | Model allowlist, input size caps, prompt-injection isolation via XML delimiters, anti-hallucination factual grounding |
 | **Rust WASM ATS & Keyword Intelligence** | Sub-millisecond resume tokenizer, keyword alignment scoring, missing requirement flags, and metric density detection via `crates/ats_engine` (WebAssembly) |
+| **Rust Keyword Auto-Injection & Live Recalculation** | One-click injection of missing requirements into resume experience with real-time Rust AST re-scoring and an interactive "Active Injected Lines" badge strip with one-click removal |
 | **Rust WASM Typographic PDF Engine** | Publication-grade vector PDF typesetting and pagination compiled to WebAssembly via `crates/pdf_engine` (`services/pdfExportService.ts`) |
+| **Overleaf Single-Page ATS PDF Typesetter** | Standalone 100% vector ATS resume PDF generator matching authentic Overleaf LaTeX layouts with 32pt margins, centered contact header, two-column subheadings, hanging-indent bullets, and divider lines calibrated to fit cleanly on 1 page |
+| **Bi-Directional LaTeX (.tex) Pipeline** | Ingestion of raw `.tex` files with comment sanitization (preserving `\%`), font macro unwrapping (`\resumeSubheading`), math-mode delimiter translation, and raw LaTeX source export |
+| **Interview Prep & STAR Q&A Engine** | Generates verified behavioral and technical interview questions with STAR answers grounded exclusively in verified resume achievements (`services/interviewPrepService.ts`) |
 | **Rust Systems SSRF Scraper Engine** | Asynchronous native systems engine with Tokio & Rustls enforcing DNS checks, RFC 1918 & metadata blacklists, and byte-capped streaming via `crates/fetch_url` |
 | **Resume Intake & Heuristic Structuring** | Client-side PDF/DOCX parsing (zero server uploads); layout-aware Y-coordinate tracking in `pdfjs-dist`; `cleanCrampedResumeText` heuristic formatter; in-place formatting without re-upload |
 | **User review checklist** | Interactive "Review before sending" checklist to verify role, claims, metrics, and tone before sending |
@@ -128,6 +132,12 @@ crates/
    - Standalone vector PDF 1.4 layout engine compiling to WebAssembly.
    - Formats editorial letters with optical letterpress margins (0.75-inch / 54 pt), font metric calculation, line wrapping, and multi-page page-tree pagination.
    - Generates vector PDF buffers in <10 ms without server round-trips or heavy headless browser binaries.
+
+4. **Rust AST Keyword Auto-Injection & Live Recalculation**:
+   - Integrates `crates/ats_engine` with a real-time reactive pipeline in `components/AtsScoreCard.tsx` and `components/InputSection.tsx`.
+   - Generates contextual STAR achievement bullets containing missing high-priority keywords and injects them directly under the primary job role in `PROFESSIONAL EXPERIENCE`.
+   - Real-time WebAssembly re-tokenization instantly updates the ATS score and match grade upon injection or removal.
+   - Features an interactive "Active Injected Lines" badge strip with one-click remove (`✕`) and "Remove All Injected" controls.
 
 ---
 
