@@ -1,0 +1,23 @@
+[package]
+name = "fetch_url"
+version = "0.1.0"
+edition = "2021"
+description = "High-performance, SSRF-hardened job posting scraper written in Rust"
+authors = ["ABu <abustark>"]
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+tokio = { version = "1.38", features = ["rt-multi-thread", "macros", "time"] }
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "stream"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+url = "2.5"
+regex = "1.10"
+futures-util = "0.3"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

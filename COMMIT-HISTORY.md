@@ -7,11 +7,26 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.1.10`** (current head is `2.1.9` — see below)
+> - **`main` → `2.2.0`** (current head is `2.1.10` — see below)
 
 ---
 
 ## Commit History
+
+### 2.1.10 - implement Option 2 Rust high-performance SSRF scraper engine
+
+- **Date**: 2026-11-15
+- **Why**: user instructed proceeding to Option 2 (high-performance Rust scraper with low-level socket inspection, SSRF defense, streaming byte caps, and clean HTML text extraction).
+- **Changes**:
+  - `crates/fetch_url/`: built high-performance, memory-safe Rust SSRF scraper crate (`Cargo.toml`, `README.md`, `src/lib.rs`, `src/main.rs`) utilizing Tokio and Rustls.
+  - Implemented strict SSRF protocol and socket verification: HTTPS enforcement, non-standard port blocking, credential stripping, DNS resolution, and comprehensive IP blacklisting across loopback (`127.0.0.0/8`), RFC 1918 private subnets (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`), and AWS/GCP cloud metadata endpoints (`169.254.169.254`).
+  - Added bounded manual redirect inspection (max 3 hops with host/IP re-verification at each hop) and streaming 2 MB byte cap with 8-second hard timeout.
+  - Implemented fast HTML sanitization and entity decoding, extracting plain text capped at 12,000 characters.
+  - Added native Rust unit tests validating URL syntax rules, IPv4/IPv6 private ranges, and HTML text stripping.
+  - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.10`.
+  - `components/UpdateNotification.tsx`: bumped `CURRENT_APP_VERSION` to `2.1.10`.
+  - `public/version.json`: bumped deployed metadata version to `2.1.10`.
+  - `PROJECT-INFO.md` & `README.md`: updated file directory maps, architecture docs, and tech stack references.
 
 ### 2.1.9 - implement Option 1 Rust WASM ATS & keyword intelligence engine
 

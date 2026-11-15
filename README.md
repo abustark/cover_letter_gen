@@ -26,7 +26,7 @@ CoverCraft turns two unstructured documents — a resume (PDF or DOCX) and a job
 | **Live Update Notification** | Proactive version polling (`/version.json`) with an editorial floating toast inviting users to refresh whenever a new deployment goes live |
 | **Server-side security boundary** | Google tokens verified cryptographically server-side (RS256 JWKS + OAuth access token); API keys never ship to browser |
 | **Self-Contained Serverless Endpoints** | `api/openrouter.ts` and `api/fetch-url.ts` are 100% self-contained for Vercel serverless runtime stability; test suites powered by modular `server/` utilities |
-| **SSRF-hardened URL reader** | HTTPS enforcement, private/cloud-metadata IP blocking, DNS resolution, bounded manual redirects, streaming byte cap |
+| **SSRF-hardened URL reader** | HTTPS enforcement, private/cloud-metadata IP blocking, DNS resolution, bounded manual redirects, streaming byte cap; mirrored in native Rust crate (`crates/fetch_url`) |
 | **Strict AI contract** | Model allowlist, input size caps, prompt-injection isolation via XML delimiters, anti-hallucination factual grounding |
 | **Rust WASM ATS & Keyword Intelligence** | Sub-millisecond resume tokenizer, keyword alignment scoring, missing requirement flags, and metric density detection via `crates/ats_engine` (WebAssembly) |
 | **Resume Intake & Heuristic Structuring** | Client-side PDF/DOCX parsing (zero server uploads); layout-aware Y-coordinate tracking in `pdfjs-dist`; `cleanCrampedResumeText` heuristic formatter; in-place formatting without re-upload |

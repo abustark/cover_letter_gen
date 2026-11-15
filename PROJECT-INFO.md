@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | Name | **CoverCraft — AI Cover Letter Builder & Editorial Studio** |
-| Current Version | **v2.1.9** (Production release, November 2026) |
+| Current Version | **v2.1.10** (Production release, November 2026) |
 | App Type | Full-stack web application (AI document pipeline & career productivity studio) |
 | Author | ABu (`abustark` on GitHub) |
 | Live Site | https://coverltr.vercel.app/ |
@@ -300,11 +300,17 @@ cover_letter_gen/
 │   ├── OutputSection.tsx          # Stationery manuscript, action island, 5-point audit
 │   ├── UI.tsx                     # Reusable UI primitives (Segmented, Field, Button)
 │   └── UpdateNotification.tsx     # Floating update toast with /version.json polling & refresh CTA
-├── crates/                        # Native Rust Crates (WebAssembly Engines)
-│   └── ats_engine/                # Rust AST tokenizer, keyword gap & metric density engine
-│       ├── Cargo.toml             # Rust package manifest (wasm-bindgen, serde)
-│       ├── README.md              # WASM compilation & testing instructions
-│       └── src/lib.rs             # Core Rust tokenizer & WebAssembly export functions
+├── crates/                        # Native Rust Crates (WebAssembly & Systems Engines)
+│   ├── ats_engine/                # Rust AST tokenizer, keyword gap & metric density engine
+│   │   ├── Cargo.toml             # Rust package manifest (wasm-bindgen, serde)
+│   │   ├── README.md              # WASM compilation & testing instructions
+│   │   └── src/lib.rs             # Core Rust tokenizer & WebAssembly export functions
+│   └── fetch_url/                 # High-performance SSRF-hardened scraper engine
+│       ├── Cargo.toml             # Rust package manifest (tokio, reqwest, rustls)
+│       ├── README.md              # Systems security & SSRF defense documentation
+│       └── src/
+│           ├── lib.rs             # Core IP verification, redirect follower & text stripper
+│           └── main.rs            # Native serverless/CLI executable entry point
 ├── docs/                          # Architecture & Portfolio Documentation
 │   ├── assets/                    # Light & dark mode application previews
 │   ├── bugs-and-fixes/            # Bug logging protocols and templates
@@ -386,7 +392,7 @@ node scripts/inspect-ui.cjs
 - **Engineered a full-stack AI document generation studio** (React 19, Bun 1.4, Vite 6, Tailwind v4, TypeScript) deployed on Vercel with free-tier OpenRouter LLM routing across 3 models (Nemotron 3 Ultra/Super, Gemma 4).
 - **Architected a client-side WebAssembly (WASM) ATS keyword matching & metric density engine in Rust** (`crates/ats_engine`), analyzing resume credentials against job specifications in <1 ms with 100% in-browser privacy and zero cloud uploads.
 - **Architected a server-enforced security perimeter** (`/api/openrouter`, `/api/fetch-url`) implementing cryptographic Google ID token verification against Google public JWKS (RSA-SHA256) with OAuth access token fallback and sliding-window rate limiting.
-- **Engineered robust SSRF defense mechanisms** for job-posting ingestion: DNS hostname resolution, IP blacklisting of loopback/private/metadata ranges (`169.254.169.254`), manual 3-hop redirect inspection, 8s timeout, and 2 MB streaming byte caps.
+- **Engineered robust SSRF defense mechanisms** for job-posting ingestion: DNS hostname resolution, IP blacklisting of loopback/private/metadata ranges (`169.254.169.254`), manual 3-hop redirect inspection, 8s timeout, and 2 MB streaming byte caps, mirrored in a high-performance native Rust engine (`crates/fetch_url`).
 - **Hardened prompt-injection resilience and eliminated hallucinations** by wrapping untrusted inputs in XML delimiters, enforcing single-source-of-truth grounding rules, pinning temperature at 0.7, and providing an interactive 5-point post-generation factuality audit.
 - **Designed layout-aware resume extraction and heuristic structuring** (`pdfjs-dist`, `mammoth`, `services/resumeCleaner.ts`) that tracks Y coordinates and preserves section headers, bullet points, and contact lines with 0 server uploads.
 - **Engineered 100% self-contained serverless functions & real-time update notification toast**, eliminating Vercel bundler directory stripping (`FUNCTION_INVOCATION_FAILED`) and proactively alerting users to reload when new versions are deployed.
