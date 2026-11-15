@@ -10,6 +10,7 @@ import {
   SparklesIcon,
 } from './icons';
 import { IconButton } from './UI';
+import { downloadEditorialPdf } from '../services/pdfExportService';
 
 interface OutputSectionProps {
   coverLetter: string;
@@ -85,16 +86,7 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
 
   const handleDownloadPdf = async () => {
     if (!coverLetter) return;
-    const { jsPDF } = await import('jspdf');
-    const doc = new jsPDF();
-    const margin = 20;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const textLines = doc.splitTextToSize(coverLetter, pageWidth - margin * 2);
-    doc.setFont('times', 'normal');
-    doc.setFontSize(11);
-    doc.text(textLines, margin, margin);
-    const sanitized = companyName.replace(/[^a-zA-Z0-9]/g, '_');
-    doc.save(sanitized ? `Cover_Letter_${sanitized}.pdf` : 'Cover_Letter.pdf');
+    await downloadEditorialPdf(coverLetter, companyName);
   };
 
   const handleDownloadDocx = async () => {

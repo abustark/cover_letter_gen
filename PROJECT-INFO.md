@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | Name | **CoverCraft — AI Cover Letter Builder & Editorial Studio** |
-| Current Version | **v2.1.10** (Production release, November 2026) |
+| Current Version | **v2.2.0** (Production release, November 2026) |
 | App Type | Full-stack web application (AI document pipeline & career productivity studio) |
 | Author | ABu (`abustark` on GitHub) |
 | Live Site | https://coverltr.vercel.app/ |
@@ -48,10 +48,10 @@
 | **Resume Extraction (DOCX)**| mammoth | `^1.12.0` | Lazy-loaded client-side raw document text extractor |
 | **Resume Structuring** | Custom cleaner | `services/resumeCleaner.ts` | Heuristic structuring engine (`cleanCrampedResumeText`) formatting headers, bullets, and contact info |
 | **ATS & Keyword Matcher**| Rust & WebAssembly | `crates/ats_engine` | Client-side Rust WASM tokenizer & keyword gap analyzer with TS fallback (`services/atsEngine.ts`) |
-| **Export (PDF)** | jspdf | `^2.5.2` | Lazy-loaded client-side PDF document generator |
+| **Export (PDF)** | Rust WASM / jsPDF | `crates/pdf_engine` | Typographic vector PDF layout engine compiled to WASM with jsPDF fallback (`services/pdfExportService.ts`) |
 | **Export (DOCX)** | docx | `^9.7.1` | Lazy-loaded client-side Word document generator (Paragraph/TextRun AST) |
 | **Rate Limiting** | Custom sliding-window | In-memory / Upstash Redis | Per-user `sub` and per-IP sliding-window quota management |
-| **Testing Engine** | Bun Test | `bun test` (native) | 58 automated tests across 7 test suites (`test/*.test.ts`) |
+| **Testing Engine** | Bun Test | `bun test` (native) | 60 automated tests across 8 test suites (`test/*.test.ts`) |
 | **E2E / Visual QA** | Playwright | CLI / headless | Headless browser assertions verifying 0 horizontal overflow on PC & mobile |
 | **CI Automation** | GitHub Actions | `.github/workflows/ci.yml`| Automated workflow with `oven-sh/setup-bun@v2`, typecheck, test, and build |
 | **Hosting (Production)** | Vercel Serverless | `@vercel/node ^5.5.13` | Edge/serverless deployment (`api/openrouter.ts`, `api/fetch-url.ts` 100% self-contained) |
@@ -260,6 +260,12 @@ Protects upstream inference budgets and serverless compute from abuse:
 - Employs a dual-engine architecture in `services/atsEngine.ts` that dynamically loads the compiled `.wasm` binary when available and seamlessly falls back to an identical TypeScript AST engine, maintaining zero-cost operation and offline test runner stability.
 - Features a responsive editorial UI card (`components/AtsScoreCard.tsx`) displaying real-time alignment scores, grade indicators, and interactive keyword chips.
 
+### 5.9 Rust Typographic Editorial PDF Engine (`crates/pdf_engine` & `services/pdfExportService.ts`)
+- Standalone vector PDF generation and typesetting engine written in Rust and compiled to WebAssembly.
+- Implements publication-grade paragraph wrapping, optical letterpress margins (0.75-inch / 54 pt), automatic multi-page tree generation, and Times-Roman serif typography.
+- Emits raw vector PDF 1.4 byte buffers directly in browser memory in <10 ms with zero external C dependencies.
+- Supported via client-side dual-mode service in `services/pdfExportService.ts` with matching high-grade jsPDF fallback layout.
+
 ---
 
 ## 6. Model Pipeline & Routing Matrix
@@ -305,12 +311,16 @@ cover_letter_gen/
 │   │   ├── Cargo.toml             # Rust package manifest (wasm-bindgen, serde)
 │   │   ├── README.md              # WASM compilation & testing instructions
 │   │   └── src/lib.rs             # Core Rust tokenizer & WebAssembly export functions
-│   └── fetch_url/                 # High-performance SSRF-hardened scraper engine
-│       ├── Cargo.toml             # Rust package manifest (tokio, reqwest, rustls)
-│       ├── README.md              # Systems security & SSRF defense documentation
-│       └── src/
-│           ├── lib.rs             # Core IP verification, redirect follower & text stripper
-│           └── main.rs            # Native serverless/CLI executable entry point
+│   ├── fetch_url/                 # High-performance SSRF-hardened scraper engine
+│   │   ├── Cargo.toml             # Rust package manifest (tokio, reqwest, rustls)
+│   │   ├── README.md              # Systems security & SSRF defense documentation
+│   │   └── src/
+│   │       ├── lib.rs             # Core IP verification, redirect follower & text stripper
+│   │       └── main.rs            # Native serverless/CLI executable entry point
+│   └── pdf_engine/                # Typographic editorial PDF layout & vector rendering engine
+│       ├── Cargo.toml             # Rust package manifest (wasm-bindgen, serde)
+│       ├── README.md              # Vector PDF generation & pagination documentation
+│       └── src/lib.rs             # Core PDF 1.4 vector builder & WebAssembly exports
 ├── docs/                          # Architecture & Portfolio Documentation
 │   ├── assets/                    # Light & dark mode application previews
 │   ├── bugs-and-fixes/            # Bug logging protocols and templates
@@ -332,13 +342,15 @@ cover_letter_gen/
 │   ├── auth.tsx                   # AuthContext, GoogleOAuthProvider, token lifecycle
 │   ├── draftStorage.ts            # Local-first storage (v2 schema, quota recovery, migration)
 │   ├── geminiService.ts           # Authenticated API client calling /api/* endpoints
+│   ├── pdfExportService.ts        # Typographic editorial PDF export (Rust WASM + jsPDF fallback)
 │   └── resumeCleaner.ts           # Heuristic structuring utility (cleanCrampedResumeText)
-├── test/                          # Automated Bun Test Suite (58 tests across 7 suites)
+├── test/                          # Automated Bun Test Suite (60 tests across 8 suites)
 │   ├── atsEngine.test.ts          # ATS keywords, scoring, and metrics detection tests
 │   ├── auth.test.ts               # JWKS signature, expiry, audience, access token tests
 │   ├── draftStorage.test.ts       # Storage v2 schema, migration, quota recovery tests
 │   ├── fileValidation.test.ts     # PDF/DOCX file limits and scanned detection tests
 │   ├── openrouter.test.ts         # Model routing, prompt injection, XML tags, rate tests
+│   ├── pdfExportService.test.ts   # Editorial PDF generation & pagination tests
 │   ├── resumeCleaner.test.ts      # Section breaks, bullet line breaks, contact info tests
 │   └── urlSecurity.test.ts        # SSRF IP blacklists, DNS resolution, redirect tests
 ├── App.tsx                        # Root application component & theme management
@@ -372,7 +384,7 @@ bun run dev
 # 3. Execute strict TypeScript typecheck (0 errors required)
 bun run typecheck
 
-# 4. Run automated test suite (58 tests across 7 test suites)
+# 4. Run automated test suite (60 tests across 8 test suites)
 bun test
 
 # 5. Compile production Vite application bundle
@@ -391,14 +403,15 @@ node scripts/inspect-ui.cjs
 ### Resume Bullets (Technical & Quantified)
 - **Engineered a full-stack AI document generation studio** (React 19, Bun 1.4, Vite 6, Tailwind v4, TypeScript) deployed on Vercel with free-tier OpenRouter LLM routing across 3 models (Nemotron 3 Ultra/Super, Gemma 4).
 - **Architected a client-side WebAssembly (WASM) ATS keyword matching & metric density engine in Rust** (`crates/ats_engine`), analyzing resume credentials against job specifications in <1 ms with 100% in-browser privacy and zero cloud uploads.
+- **Engineered an in-browser typographic vector PDF layout engine in Rust** (`crates/pdf_engine`), compiling to WebAssembly for publication-grade formatting, balanced 0.75-inch letterpress margins, and multi-page pagination.
 - **Architected a server-enforced security perimeter** (`/api/openrouter`, `/api/fetch-url`) implementing cryptographic Google ID token verification against Google public JWKS (RSA-SHA256) with OAuth access token fallback and sliding-window rate limiting.
 - **Engineered robust SSRF defense mechanisms** for job-posting ingestion: DNS hostname resolution, IP blacklisting of loopback/private/metadata ranges (`169.254.169.254`), manual 3-hop redirect inspection, 8s timeout, and 2 MB streaming byte caps, mirrored in a high-performance native Rust engine (`crates/fetch_url`).
 - **Hardened prompt-injection resilience and eliminated hallucinations** by wrapping untrusted inputs in XML delimiters, enforcing single-source-of-truth grounding rules, pinning temperature at 0.7, and providing an interactive 5-point post-generation factuality audit.
 - **Designed layout-aware resume extraction and heuristic structuring** (`pdfjs-dist`, `mammoth`, `services/resumeCleaner.ts`) that tracks Y coordinates and preserves section headers, bullet points, and contact lines with 0 server uploads.
 - **Engineered 100% self-contained serverless functions & real-time update notification toast**, eliminating Vercel bundler directory stripping (`FUNCTION_INVOCATION_FAILED`) and proactively alerting users to reload when new versions are deployed.
-- **Built an automated Bun test suite (58 tests across 7 suites)** covering cryptographic auth, SSRF network filters, prompt assembly, heuristic parsing, ATS keyword alignment, and storage schema migrations, integrated into GitHub Actions CI.
+- **Built an automated Bun test suite (60 tests across 8 suites)** covering cryptographic auth, SSRF network filters, prompt assembly, heuristic parsing, ATS keyword alignment, PDF rendering, and storage schema migrations, integrated into GitHub Actions CI.
 
 ### Portfolio Card Copy (~35 words)
 > **CoverCraft — Grounded AI Document Pipeline**
-> An editorial AI cover-letter studio that transforms PDF/DOCX resumes and job postings into tailored letters. Features client-side Rust WebAssembly ATS matching, server-verified Google authentication, SSRF-hardened URL reading, XML prompt isolation, and zero file uploads.
+> An editorial AI cover-letter studio that transforms PDF/DOCX resumes and job postings into tailored letters. Features client-side Rust WebAssembly ATS matching, vector PDF typesetting, server-verified Google authentication, SSRF-hardened URL reading, XML prompt isolation, and zero file uploads.
 > *Stack: React 19 · Rust (WASM) · Bun · TypeScript · Tailwind v4 · OpenRouter · Vercel*

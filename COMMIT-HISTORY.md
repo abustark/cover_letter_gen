@@ -7,11 +7,25 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.2.0`** (current head is `2.1.10` — see below)
+> - **`main` → `2.2.1`** (current head is `2.2.0` — see below)
 
 ---
 
 ## Commit History
+
+### 2.2.0 - implement Option 3 Rust typographic editorial PDF engine
+
+- **Date**: 2026-11-15
+- **Why**: user instructed implementing Option 3 (typographic editorial vector PDF layout engine in Rust compiled to WebAssembly with balanced margins, multi-page pagination, and client fallback).
+- **Changes**:
+  - `crates/pdf_engine/`: created standalone Rust crate with `Cargo.toml`, `README.md`, and `src/lib.rs` implementing native, zero-dependency PDF 1.4 vector generation, Times-Roman serif typography, word-boundary paragraph wrapping, balanced 0.75-inch letterpress margins, automatic multi-page tree calculation, and `wasm-bindgen` WebAssembly exports.
+  - `services/pdfExportService.ts`: implemented client-side dual-engine PDF export service that dynamically leverages the Rust WebAssembly vector engine (`/wasm/pdf_engine_bg.wasm`) when available, with an identical high-fidelity jsPDF fallback layout.
+  - `components/OutputSection.tsx`: integrated `downloadEditorialPdf` into the floating action island PDF download button.
+  - `test/pdfExportService.test.ts`: added automated unit test suite covering PDF blob generation, MIME type verification, and multi-paragraph pagination (expanding test suite to 60 tests across 8 suites).
+  - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.2.0`.
+  - `components/UpdateNotification.tsx`: bumped `CURRENT_APP_VERSION` to `2.2.0`.
+  - `public/version.json`: bumped deployed metadata version to `2.2.0`.
+  - `PROJECT-INFO.md` & `README.md`: updated file trees, stack matrices, architecture docs, and test suite counts.
 
 ### 2.1.10 - implement Option 2 Rust high-performance SSRF scraper engine
 
