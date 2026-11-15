@@ -8,6 +8,7 @@ import {
   DownloadIcon,
   FileIcon,
   SparklesIcon,
+  CloseIcon,
 } from './icons';
 import { IconButton } from './UI';
 import { downloadEditorialPdf } from '../services/pdfExportService';
@@ -19,6 +20,7 @@ interface OutputSectionProps {
   error: string | null;
   onRegenerate: () => void;
   onSave: () => void;
+  onClose?: () => void;
   companyName: string;
   resumeText?: string;
   jobText?: string;
@@ -58,6 +60,7 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
   coverLetter,
   onRegenerate,
   onSave,
+  onClose,
   companyName,
   isLoading,
   error,
@@ -239,6 +242,21 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
             <IconButton label="Regenerate" onClick={onRegenerate}>
               <RegenerateIcon className="w-4 h-4 text-stone-600 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100" />
             </IconButton>
+
+            {onClose && (
+              <>
+                <div className="h-4 w-px bg-stone-200 dark:bg-stone-800 mx-0.5" />
+                <button
+                  type="button"
+                  onClick={onClose}
+                  title="Close and unload this draft"
+                  className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold text-stone-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors select-none"
+                >
+                  <CloseIcon className="w-3.5 h-3.5" />
+                  <span>Close draft</span>
+                </button>
+              </>
+            )}
           </div>
         )}
       </div>

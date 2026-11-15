@@ -7,11 +7,21 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.2.8`** (current head is `2.2.7` — see below)
+> - **`main` → `2.2.9`** (current head is `2.2.8` — see below)
 
 ---
 
 ## Commit History
+
+### 2.2.8 - add close draft action to unload active letters
+
+- **Date**: 2026-11-15
+- **Why**: user noted there was no option to close or unload a locally loaded draft from the studio preview.
+- **Changes**:
+  - `components/icons.tsx`: added `CloseIcon` SVG component.
+  - `components/OutputSection.tsx`: added `onClose` prop and an editorial "Close draft" button in the action island, cleanly resetting the studio back to the empty Document Studio state.
+  - `App.tsx`: added `handleCloseDraft` callback and passed to `OutputSection`.
+  - Synchronized version metadata to `2.2.8` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.2.7 - implement interactive ATS keyword injector, interview prep generator, archive backup, and privacy styling
 

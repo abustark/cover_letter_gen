@@ -140,3 +140,9 @@ export const GoogleGIcon: React.FC<{ className?: string }> = ({ className = 'w-4
     <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.99,35.59,44,29.89,44,24C44,22.659,43.862,21.35,43.611,20.083z" />
   </svg>
 );
+
+export const CloseIcon: React.FC<{ className?: string }> = ({ className = 'w-6 h-6' }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className} aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+  </svg>
+);
