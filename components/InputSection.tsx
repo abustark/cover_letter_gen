@@ -19,6 +19,7 @@ import {
   generateLatexFromResumeText,
   injectIntoLatexSource,
   removePhraseFromLatexSource,
+  extractCleanTextFromLatex,
 } from '../services/resumeExportService';
 import { Button, Segmented, Field } from './UI';
 import { GoogleButton } from './GoogleButton';
@@ -180,26 +181,8 @@ export const InputSection: React.FC<InputSectionProps> = ({
         const textContent = await file.text();
         setRawLatexSource(textContent);
 
-        // Convert LaTeX into clean plain text for resume analysis
-        rawText = textContent
-          // Strip comments
-          .replace(/%.*$/gm, '')
-          // Convert section headers
-          .replace(/\\(?:sub)*section\*?\{([^}]+)\}/gi, '\n\n--- $1 ---\n')
-          // Extract text inside standard formatting tags
-          .replace(/\\(?:textbf|textit|emph|underline)\{([^}]+)\}/gi, '$1')
-          // Standardize items to bullets
-          .replace(/\\item\s+/gi, '\n• ')
-          // Remove environment boundaries & standalone macros
-          .replace(/\\begin\{[^}]+\}/gi, '')
-          .replace(/\\end\{[^}]+\}/gi, '')
-          .replace(/\\[a-zA-Z]+(?:\*|\[[^\]]*\])?(?:\{[^}]*\})?/gi, ' ')
-          // Unescape common symbols
-          .replace(/\\([&%$#_{}])/g, '$1')
-          .replace(/\\textbackslash/g, '\\')
-          .replace(/\\~/g, '~')
-          .replace(/\\\^/g, '^')
-          .trim();
+        // Convert LaTeX into clean plain text for resume analysis (strips preambles, \definecolor, rgb, and macros)
+        rawText = extractCleanTextFromLatex(textContent);
 
         if (rawText.replace(/\s/g, '').length < 30) {
           throw new Error('No readable text found in this LaTeX document. Please paste your resume text directly.');

@@ -7,11 +7,20 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.3.4`** (current head is `2.3.3` — see below)
+> - **`main` → `2.3.5`** (current head is `2.3.4` — see below)
 
 ---
 
 ## Commit History
+
+### 2.3.4 - sanitize latex resume text extraction to eliminate preamble macros and rgb definitions
+
+- **Date**: 2026-11-15
+- **Why**: user reported that uploaded LaTeX (.tex) files leaked raw preamble markup, color numbers, and `rgb` definitions into the resume text box instead of presenting clean readable text like PDF uploads.
+- **Changes**:
+  - `services/resumeExportService.ts`: implemented `extractCleanTextFromLatex` with document body isolation (stripping all preamble macros before `\begin{document}`), color command removal (`\definecolor`, `\color[rgb]`), multi-argument CV macro unwrapping (`\resumeSubheading`, `\cventry`), and clean bullet point extraction while preserving the unadulterated raw `.tex` source in memory.
+  - `components/InputSection.tsx`: integrated `extractCleanTextFromLatex` into the `.tex` upload parser for human-readable plain text display.
+  - Synchronized version metadata to `2.3.4` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.3.3 - implement active injected lines strip, latex upload and export, and ats resume pdf download
 

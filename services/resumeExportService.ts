@@ -8,6 +8,8 @@
  * 4. High-Contrast Vector Text: 100% selectable, machine-parseable text streams with zero graphical noise.
  */
 
+import { cleanCrampedResumeText } from './resumeCleaner';
+
 export interface AtsResumePdfOptions {
   resumeText: string;
   candidateName?: string;
@@ -266,6 +268,113 @@ ${bodyTex}
 
 \\end{document}
 `;
+}
+
+/**
+ * Cleanly extracts readable text from LaTeX resume source while stripping
+ * preambles, color definitions (\definecolor, rgb), TikZ, and macro markup.
+ */
+export function extractCleanTextFromLatex(textContent: string): string {
+  if (!textContent || typeof textContent !== 'string') return '';
+
+  let body = textContent;
+
+  // 1. Isolate the document body if \begin{document} is present
+  const beginDocIdx = body.indexOf('\\begin{document}');
+  if (beginDocIdx !== -1) {
+    body = body.slice(beginDocIdx + '\\begin{document}'.length);
+  } else {
+    // If no \begin{document}, strip typical preamble commands
+    body = body
+      .replace(/\\documentclass(?:\[[^\]]*\])?\{[^}]*\}/gi, '')
+      .replace(/\\usepackage(?:\[[^\]]*\])?\{[^}]*\}/gi, '')
+      .replace(/\\definecolor\{[^}]*\}\{[^}]*\}\{[^}]*\}/gi, '')
+      .replace(/\\definecolor\{[^}]*\}\[[^\]]*\]\{[^}]*\}/gi, '')
+      .replace(/\\colorlet\{[^}]*\}\{[^}]*\}/gi, '')
+      .replace(/\\geometry\{[^}]*\}/gi, '')
+      .replace(/\\hypersetup\{[^}]*\}/gi, '');
+  }
+
+  const endDocIdx = body.indexOf('\\end{document}');
+  if (endDocIdx !== -1) {
+    body = body.slice(0, endDocIdx);
+  }
+
+  // 2. Remove all LaTeX comments
+  body = body.replace(/%.*$/gm, '');
+
+  // 3. Remove color and font preamble macros that might be in body
+  body = body
+    .replace(/\\definecolor\{[^}]*\}\{[^}]*\}\{[^}]*\}/gi, '')
+    .replace(/\\definecolor\{[^}]*\}\[[^\]]*\]\{[^}]*\}/gi, '')
+    .replace(/\\colorlet\{[^}]*\}\{[^}]*\}/gi, '')
+    .replace(/\\color(?:\[[^\]]*\])?\{[^}]*\}/gi, '')
+    .replace(/\\textcolor\{[^}]*\}\{([^}]*)\}/gi, '$1')
+    .replace(/\\pagecolor\{[^}]*\}/gi, '')
+    .replace(/\\fontsize\{[^}]*\}\{[^}]*\}/gi, '')
+    .replace(/\\selectfont/gi, '');
+
+  // 4. Section headings
+  body = body
+    .replace(/\\(?:cv)?section\*?(?:\[[^\]]*\])?\{([^}]+)\}/gi, '\n\n--- $1 ---\n')
+    .replace(/\\(?:cv)?subsection\*?(?:\[[^\]]*\])?\{([^}]+)\}/gi, '\n$1\n');
+
+  // 5. Common multi-argument resume macros (Jake's Resume, ModernCV, AwesomeCV)
+  body = body
+    // \resumeSubheading{Role/Company}{Dates}{Company/Role}{Location}
+    .replace(/\\resumeSubheading\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}/gi, '\n$1 | $2\n$3 | $4\n')
+    // \cventry{Dates}{Degree/Role}{Institution/Company}{City}{Grade}{Description}
+    .replace(/\\cventry\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}/gi, '\n$2 | $3 | $1 | $4\n$6\n')
+    // \resumeProjectHeading{Title & tech}{Dates}
+    .replace(/\\resumeProjectHeading\s*\{([^}]*)\}\s*\{([^}]*)\}/gi, '\n$1 | $2\n')
+    // \resumeItem{Content}
+    .replace(/\\resumeItem\s*\{([^}]*)\}/gi, '\n• $1\n');
+
+  // 6. Hyperlinks: \href{url}{text} -> text
+  body = body.replace(/\\href\{[^}]*\}\{([^}]*)\}/gi, '$1');
+  body = body.replace(/\\url\{([^}]*)\}/gi, '$1');
+
+  // 7. Bullet items
+  body = body.replace(/\\item(?:\s*\[[^\]]*\])?\s*/gi, '\n• ');
+
+  // 8. Text formatting macros (nested passes for \textbf{\textit{...}})
+  for (let pass = 0; pass < 3; pass++) {
+    body = body.replace(/\\(?:textbf|textit|emph|underline|textsc|textmd|textsf|textrm|texttt|mbox)\{([^}]*)\}/gi, '$1');
+    body = body.replace(/\{\\(?:bfseries|itshape|em|scshape|sf|rm|tt)\s+([^}]*)\}/gi, '$1');
+  }
+
+  // 9. Environments (remove begin/end, table markup)
+  body = body
+    .replace(/\\begin\{[^}]+\}(?:\[[^\]]*\])?/gi, '')
+    .replace(/\\end\{[^}]+\}/gi, '')
+    .replace(/\\hline/gi, '')
+    .replace(/\\hrulefill/gi, '')
+    .replace(/\\hrule/gi, '')
+    .replace(/\\vspace\*?\{[^}]*\}/gi, '\n')
+    .replace(/\\hspace\*?\{[^}]*\}/gi, ' ');
+
+  // 10. Strip all remaining backslash commands with or without arguments
+  body = body.replace(/\\[a-zA-Z]+(?:\*|\[[^\]]*\])?(?:\{[^}]*\})?/gi, ' ');
+
+  // 11. Tabular separators and line breaks
+  body = body
+    .replace(/\\\\(?:\s*\[[^\]]*\])?/g, '\n')
+    .replace(/&/g, ' ')
+    .replace(/\|/g, ' | ');
+
+  // 12. Unescape common LaTeX symbols and ligatures
+  body = body
+    .replace(/\\([&%$#_{}])/g, '$1')
+    .replace(/---/g, '—')
+    .replace(/--/g, '–')
+    .replace(/``|''/g, '"')
+    .replace(/`|'/g, "'")
+    .replace(/~/g, ' ')
+    .replace(/\\textbackslash/g, '\\')
+    .replace(/[\{\}]/g, ''); // strip any orphan curly braces
+
+  // 13. Pass through cleanCrampedResumeText to normalize headers, bullets, spacing
+  return cleanCrampedResumeText(body);
 }
 
 /**
