@@ -42,11 +42,13 @@ Do not spend a sentence on UI polish until the mechanism is on the page.
 |---|---|
 | Cover letter generator | document-to-letter pipeline |
 | Upload resume | client-side PDF/DOCX text extraction (`pdfjs-dist`, `mammoth`), lazy-loaded |
-| Paste job URL | server-side fetch + HTML strip capped at 12,000 chars, defeating browser CORS |
+| ATS intelligence | client-side Rust WebAssembly AST tokenizer (`crates/ats_engine`) matching keywords and metric density in <1 ms |
+| PDF typesetting | client-side Rust WebAssembly vector PDF layout engine (`crates/pdf_engine`) with 0.75" letterpress margins |
+| Paste job URL | server-side fetch + HTML strip capped at 12,000 chars (SSRF-hardened, mirrored in native Rust `crates/fetch_url`) |
 | 4 modes / 4 tones | routing matrix — 16 prompt profiles, each mode mapped to one of three free models |
 | API key is safe | key boundary — dev-only bundle injection, production key lives only in the Vercel function env |
 | Drafts | local-first persistence — UUID keys, ISO timestamps, no database |
-| Export to PDF/DOCX | client-side document generation, heavy libs dynamically imported |
+| Export to PDF/DOCX | client-side document generation, heavy libs and WASM modules dynamically imported |
 | Google sign-in | server-verified OAuth boundary (RS256 JWKS signature + access token fallback), custom native button (no Gmail ID leakage) |
 | Dark mode / responsiveness | **omit from the card.** It is table stakes, not a differentiator |
 
@@ -57,32 +59,33 @@ Do not spend a sentence on UI polish until the mechanism is on the page.
 Matches the existing card schema — eyebrow, title, body, tags, links.
 
 ```
-eyebrow: Applied AI · Document Pipeline · Nov 2025 – Oct 2026
+eyebrow: Applied AI · Document Pipeline · Nov 2025 – Nov 2026
 title:   CoverCraft — Resume-to-Cover-Letter Pipeline
 body:    Turns two unstructured documents — a PDF/DOCX resume and a job posting —
-         into a tailored letter. Parsing runs client-side; the posting is fetched
-         and stripped server-side to escape browser CORS; a second Vercel function
-         proxies three OpenRouter free models so the key never reaches the bundle.
+         into a tailored letter. Parsing and ATS keyword intelligence run client-side
+         via Rust WebAssembly; the posting is fetched server-side to defeat CORS;
+         a Vercel function proxies OpenRouter free models keeping keys isolated.
          Four modes × four tones, temperature pinned at 0.7.
-tags:    React 19 · TypeScript · Bun · Vercel Functions · OpenRouter · Google OAuth
+tags:    React 19 · Rust (WASM) · TypeScript · Bun · Vercel · OpenRouter · Google OAuth
 links:   Live site (coverltr.vercel.app) · GitHub repo
 ```
 
 **Short variant** (~28 words, for filtered/mobile views):
 
-> Document-to-letter pipeline: client-side PDF/DOCX parsing, server-side posting
-> fetch to beat CORS, and a serverless OpenRouter proxy that keeps zero secrets in
+> Document-to-letter pipeline: client-side Rust WebAssembly ATS matching & PDF layout,
+> server-side posting fetch to beat CORS, and a serverless proxy keeping zero secrets in
 > the bundle.
 
 **Do not** mark it "Private" — the GitHub repo is public (`private: false`).
 
 ---
 
-## 5. Resume bullets (3, dense)
+## 5. Resume bullets (4, dense & technical)
 
-- Built a document-to-letter pipeline (React 19, TypeScript, Vercel Functions) that parses PDF/DOCX resumes and job-posting URLs, then routes the combined context through **4 modes × 4 tones = 16 prompt profiles**, mapping each mode to one of three OpenRouter free models at a pinned temperature of 0.7.
-- Kept the LLM key out of the production bundle by proxying OpenRouter through a serverless function, and moved posting retrieval server-side (HTML stripped, capped at 12,000 chars) to defeat browser CORS on LinkedIn-style pages.
-- Kept the initial bundle lean by dynamically importing `pdfjs-dist`, `mammoth`, `jsPDF` and `docx` on first use; persisted drafts, theme and session locally with UUID keys and server-verified Google tokens (RS256 JWKS) instead of adding a database.
+- Built a document-to-letter pipeline (React 19, TypeScript, Vercel Functions) that parses PDF/DOCX resumes and job-posting URLs, routing context through **4 modes × 4 tones = 16 prompt profiles** across OpenRouter free models at pinned temperature 0.7.
+- **Architected client-side Rust WebAssembly engines** (`crates/ats_engine`, `crates/pdf_engine`) executing sub-millisecond resume AST keyword tokenization and publication-grade vector PDF typesetting with 0.75-inch letterpress margins and zero server uploads.
+- Kept the LLM key out of the production bundle by proxying OpenRouter through a serverless function, and engineered an SSRF-hardened scraper (mirrored in native Rust `crates/fetch_url`) blocking private IPs and cloud metadata (`169.254.169.254`).
+- Kept the initial bundle lean by dynamically importing `pdfjs-dist`, `mammoth`, and WASM binaries on first use; persisted drafts, theme, and session locally with UUID keys and server-verified Google tokens (RS256 JWKS) instead of adding a database.
 
 ---
 

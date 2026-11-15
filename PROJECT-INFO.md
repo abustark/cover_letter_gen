@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | Name | **CoverCraft — AI Cover Letter Builder & Editorial Studio** |
-| Current Version | **v2.2.2** (Production release, November 2026) |
+| Current Version | **v2.2.3** (Production release, November 2026) |
 | App Type | Full-stack web application (AI document pipeline & career productivity studio) |
 | Author | ABu (`abustark` on GitHub) |
 | Live Site | https://coverltr.vercel.app/ |
@@ -47,8 +47,9 @@
 | **Resume Extraction (PDF)**| pdfjs-dist | `^4.4.168` | Lazy-loaded client-side text extractor with layout-aware Y-coordinate tracking to preserve section breaks |
 | **Resume Extraction (DOCX)**| mammoth | `^1.12.0` | Lazy-loaded client-side raw document text extractor |
 | **Resume Structuring** | Custom cleaner | `services/resumeCleaner.ts` | Heuristic structuring engine (`cleanCrampedResumeText`) formatting headers, bullets, and contact info |
-| **ATS & Keyword Matcher**| Rust & WebAssembly | `crates/ats_engine` | Client-side Rust WASM tokenizer & keyword gap analyzer with TS fallback (`services/atsEngine.ts`) |
-| **Export (PDF)** | Rust WASM / jsPDF | `crates/pdf_engine` | Typographic vector PDF layout engine compiled to WASM with jsPDF fallback (`services/pdfExportService.ts`) |
+| **ATS & Keyword Matcher (Rust WASM)** | Rust & WebAssembly | `crates/ats_engine` | Client-side Rust WASM tokenizer & keyword gap analyzer with TS fallback (`services/atsEngine.ts`) |
+| **Typographic PDF Engine (Rust WASM)** | Rust & WebAssembly | `crates/pdf_engine` | Standalone vector PDF layout & pagination engine compiled to WASM with jsPDF fallback (`services/pdfExportService.ts`) |
+| **SSRF Web Scraper (Rust Native)** | Rust, Tokio & Rustls | `crates/fetch_url` | High-performance systems scraper with DNS verification, private IP blocking, streaming caps, and HTML stripping |
 | **Export (DOCX)** | docx | `^9.7.1` | Lazy-loaded client-side Word document generator (Paragraph/TextRun AST) |
 | **Rate Limiting** | Custom sliding-window | In-memory / Upstash Redis | Per-user `sub` and per-IP sliding-window quota management |
 | **Testing Engine** | Bun Test | `bun test` (native) | 60 automated tests across 8 test suites (`test/*.test.ts`) |
@@ -266,6 +267,12 @@ Protects upstream inference budgets and serverless compute from abuse:
 - Emits raw vector PDF 1.4 byte buffers directly in browser memory in <10 ms with zero external C dependencies.
 - Supported via client-side dual-mode service in `services/pdfExportService.ts` with matching high-grade jsPDF fallback layout.
 
+### 5.10 Rust High-Performance SSRF Scraper Engine (`crates/fetch_url`)
+- Standalone native systems executable and reusable library engineered in Rust using `tokio` (multi-threaded asynchronous runtime), `reqwest` with pure-Rust `rustls-tls`, and zero C dependencies.
+- Enforces strict network-level security: validates HTTPS scheme, port 443 constraints, hostname DNS resolution, and rejects IPv4/IPv6 private ranges, carrier-grade NAT, loopback, and cloud metadata endpoints (`169.254.169.254`).
+- Implements manual redirect following up to 3 hops with re-verification at each hop, streaming byte caps (2 MB max download buffer), 8-second execution timeouts, and heuristic HTML text stripping producing ≤12,000 characters of clean posting text.
+- Provides a fast, standalone binary with link-time optimization (LTO) and binary stripping (`opt-level = 3`, `strip = true`).
+
 ---
 
 ## 6. Model Pipeline & Routing Matrix
@@ -370,12 +377,39 @@ cover_letter_gen/
 
 ---
 
-## 8. CLI & Developer Reference (Bun First)
+## 8. Rust Systems & WebAssembly Engineering Suite (Deep Dive)
 
-All development, testing, and compilation tasks run through **Bun**:
+CoverCraft implements a multi-crate Rust workspace under `crates/` to deliver native systems performance, verifiable memory safety, and client-side privacy without external service overhead:
+
+### 8.1 Engine 1 — WebAssembly ATS Intelligence Engine (`crates/ats_engine`)
+- **Role:** High-speed client-side resume-to-job matching, keyword alignment, and metric density detection.
+- **Tech Stack:** Rust 2021, `wasm-bindgen`, `serde`, `serde_json`, compiled to `.wasm` targeting WebAssembly.
+- **Mechanism:** Tokenizes resumes and job descriptions using custom regex-free character classification, extracts multi-word technical compounds, calculates normalized keyword match densities, and scores quantifiable achievement metrics (`%`, `$`, multiplier patterns).
+- **Performance & Privacy:** Executes in <1 ms inside the browser; zero candidate data leaves the user's device.
+- **Architecture:** Dual-mode service in `services/atsEngine.ts` dynamically loads the compiled WASM binary with automatic zero-latency fallback to an identical TypeScript tokenizer for test runners and non-WASM environments.
+
+### 8.2 Engine 2 — Native High-Performance SSRF Scraper (`crates/fetch_url`)
+- **Role:** Hardened, isolated network engine for fetching and sanitizing remote job postings.
+- **Tech Stack:** Rust 2021, `tokio` asynchronous runtime, `reqwest` with `rustls-tls` (no OpenSSL dependency), `url`, `regex`.
+- **Mechanism:** Enforces HTTPS/port 443, resolves hostnames against DNS, validates IP addresses against CIDR blocklists (loopback, RFC 1918 private, link-local, cloud metadata `169.254.169.254`), follows bounded manual redirects (max 3), and enforces streaming byte limits (2 MB).
+- **Stripping & Output:** Cleans messy web HTML into bounded plain-text job postings (≤12,000 chars) for prompt ingestion.
+- **Distribution:** Standalone CLI executable and embeddable Rust crate.
+
+### 8.3 Engine 3 — WebAssembly Typographic Vector PDF Engine (`crates/pdf_engine`)
+- **Role:** Standalone client-side vector PDF document generator and editorial typesetter.
+- **Tech Stack:** Rust 2021, `wasm-bindgen`, `serde`, custom PDF 1.4 low-level serializer.
+- **Mechanism:** Builds pure vector PDF 1.4 objects directly in memory without heavy headless browsers or external C libraries. Calculates exact font metrics, handles optical letterpress margins (0.75 in / 54 pt), manages paragraph line wrapping, and handles dynamic multi-page pagination.
+- **Performance:** Generates publication-ready PDFs in <10 ms in-browser, delivering crisp, searchable vector typography.
+- **Architecture:** Seamlessly integrated via `services/pdfExportService.ts` with matching jsPDF fallback layout.
+
+---
+
+## 9. CLI & Developer Reference (Bun First & Cargo)
+
+All development, testing, and compilation tasks run through **Bun** and **Cargo**:
 
 ```bash
-# 1. Install dependencies
+# 1. Install frontend & test dependencies
 bun install
 
 # 2. Start local development server with API parity middleware (:3000)
@@ -392,20 +426,25 @@ bun run build
 
 # 6. Run headless Playwright UI & 0-overflow inspection
 node scripts/inspect-ui.cjs
+
+# 7. Build Rust Crates (Native Scraper & WASM Engines)
+cd crates/fetch_url && cargo build --release
+cd crates/ats_engine && wasm-pack build --target web --release
+cd crates/pdf_engine && wasm-pack build --target web --release
 ```
 
 *(npm commands like `npm run dev`, `npm test`, and `npm run build` remain fully compatible).*
 
 ---
 
-## 9. Ready-Made Portfolio & Resume Bullets (Strictly Verified Facts)
+## 10. Ready-Made Portfolio & Resume Bullets (Strictly Verified Facts)
 
 ### Resume Bullets (Technical & Quantified)
 - **Engineered a full-stack AI document generation studio** (React 19, Bun 1.4, Vite 6, Tailwind v4, TypeScript) deployed on Vercel with free-tier OpenRouter LLM routing across 3 models (Nemotron 3 Ultra/Super, Gemma 4).
 - **Architected a client-side WebAssembly (WASM) ATS keyword matching & metric density engine in Rust** (`crates/ats_engine`), analyzing resume credentials against job specifications in <1 ms with 100% in-browser privacy and zero cloud uploads.
 - **Engineered an in-browser typographic vector PDF layout engine in Rust** (`crates/pdf_engine`), compiling to WebAssembly for publication-grade formatting, balanced 0.75-inch letterpress margins, and multi-page pagination.
+- **Engineered a high-performance native Rust SSRF scraper engine** (`crates/fetch_url`) utilizing `tokio` and pure-Rust `rustls` to safely fetch remote job postings with DNS verification, RFC 1918 / cloud-metadata IP blocking, bounded 3-hop redirects, and 2 MB streaming byte caps.
 - **Architected a server-enforced security perimeter** (`/api/openrouter`, `/api/fetch-url`) implementing cryptographic Google ID token verification against Google public JWKS (RSA-SHA256) with OAuth access token fallback and sliding-window rate limiting.
-- **Engineered robust SSRF defense mechanisms** for job-posting ingestion: DNS hostname resolution, IP blacklisting of loopback/private/metadata ranges (`169.254.169.254`), manual 3-hop redirect inspection, 8s timeout, and 2 MB streaming byte caps, mirrored in a high-performance native Rust engine (`crates/fetch_url`).
 - **Hardened prompt-injection resilience and eliminated hallucinations** by wrapping untrusted inputs in XML delimiters, enforcing single-source-of-truth grounding rules, pinning temperature at 0.7, and providing an interactive 5-point post-generation factuality audit.
 - **Designed layout-aware resume extraction and heuristic structuring** (`pdfjs-dist`, `mammoth`, `services/resumeCleaner.ts`) that tracks Y coordinates and preserves section headers, bullet points, and contact lines with 0 server uploads.
 - **Engineered 100% self-contained serverless functions & real-time update notification toast**, eliminating Vercel bundler directory stripping (`FUNCTION_INVOCATION_FAILED`) and proactively alerting users to reload when new versions are deployed.

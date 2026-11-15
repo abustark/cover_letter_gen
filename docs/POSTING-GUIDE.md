@@ -14,10 +14,11 @@
 > *"Most LLM wrappers leak API keys or suffer from SSRF vulnerabilities and hallucinated credentials. I built CoverCraft to show what a privacy-first, defensible AI document pipeline looks like."*
 
 #### Key Talking Points
+- **Rust WebAssembly Intelligence:** Sub-millisecond client-side ATS resume tokenizer (`crates/ats_engine`) and standalone typographic vector PDF layout engine (`crates/pdf_engine`) compiled to WASM with 100% in-browser privacy.
+- **Native Systems SSRF Defense:** High-performance asynchronous Rust scraper (`crates/fetch_url`) with Tokio and Rustls enforcing DNS checks, RFC 1918 / cloud-metadata blacklisting, and byte-capped streaming.
 - **Zero-Upload Privacy:** Client-side binary extraction (`pdfjs-dist`, `mammoth`) so candidate resumes never touch an external database.
-- **SSRF Mitigation:** A dedicated scraper blocking internal networks, link-local IPs, and AWS/GCP cloud metadata endpoints (`169.254.169.254`).
 - **Anti-Hallucination Guardrails:** XML prompt fences instructing the model to treat the resume as the sole source of truth, backed by an interactive 5-point factuality audit.
-- **Modern Toolchain:** Built with React 19, Bun 1.4, Vite 6, Tailwind v4, 53 automated unit tests, and GitHub Actions CI.
+- **Modern Toolchain:** Built with React 19, Rust (WASM), Bun 1.4, Vite 6, Tailwind v4, 60 automated unit tests across 8 suites, and GitHub Actions CI.
 - **Live Demo Link:** https://coverltr.vercel.app/
 
 #### Ready-to-Publish LinkedIn Post Template
@@ -26,12 +27,13 @@ Most LLM wrappers leak API keys or suffer from SSRF vulnerabilities and hallucin
 
 I built CoverCraft to show what a privacy-first, defensible AI document pipeline looks like.
 
-Instead of another toy wrapper, CoverCraft is an editorial document studio designed with real security boundaries:
+Instead of another toy wrapper, CoverCraft is an editorial document studio designed with real security boundaries and native systems engineering:
 
+🦀 Rust & WebAssembly Intelligence: Client-side ATS resume tokenizer (crates/ats_engine) and typographic vector PDF layout engine (crates/pdf_engine) compiled to WASM for sub-millisecond execution with zero data egress.
+🛡️ Hardened SSRF Defense: When pasting job links, our scraper verifies DNS and enforces strict IP blacklists—blocking private networks, link-local addresses, and cloud metadata endpoints (169.254.169.254), mirrored in a native Tokio/Rustls systems engine (crates/fetch_url).
 🔒 Zero-Upload Privacy: Candidate resumes (PDF/DOCX) are parsed entirely in-browser using pdfjs-dist and mammoth. Original documents never touch any server or cloud database.
-🛡️ Hardened SSRF Defense: When pasting job links, a serverless scraper verifies DNS and enforces strict IP blacklists—blocking private networks, link-local addresses, and cloud metadata endpoints (169.254.169.254) with bounded redirects.
 🎯 Anti-Hallucination Prompts: Server-owned XML prompt boundaries enforce strict single-source-of-truth grounding against the candidate's actual credentials, backed by an interactive post-generation factuality audit.
-⚡ Modern Toolchain: Powered by React 19, Bun 1.4, Vite 6, and Tailwind v4, backed by 53 automated unit tests in Bun and GitHub Actions CI.
+⚡ Modern Toolchain: Powered by React 19, Rust WASM, Bun 1.4, Vite 6, and Tailwind v4, backed by 60 automated unit tests in Bun and GitHub Actions CI.
 🎨 Editorial Aesthetics: High-prestige Playfair Display typography, custom CC monogram, and a tactile stationery interface—zero neon AI slop.
 
 Live site: https://coverltr.vercel.app/
@@ -39,7 +41,7 @@ Source: https://github.com/abustark/cover_letter_gen
 
 I’d love to hear your thoughts on the architecture and security approach!
 
-#WebDevelopment #React #TypeScript #Bun #SoftwareEngineering #AppliedAI #FullStack #SystemDesign
+#Rust #WebAssembly #React #TypeScript #Bun #SoftwareEngineering #AppliedAI #FullStack #SystemDesign
 ```
 
 ---
@@ -59,9 +61,9 @@ I’d love to hear your thoughts on the architecture and security approach!
 
 #### Ready-to-Publish Tweet Template
 ```text
-No neon AI slop — just high-end editorial typesetting and defensible security under the hood.
+No neon AI slop — just high-end editorial typesetting and defensible systems engineering under the hood.
 
-Built CoverCraft: a privacy-first AI cover letter studio with server-verified Google auth, SSRF defense, client-side PDF parsing (zero server uploads), and 53 automated tests in Bun.
+Built CoverCraft: a privacy-first AI cover letter studio featuring Rust WebAssembly ATS analysis & vector PDF layout, SSRF defense, client-side document parsing, and 60 automated tests in Bun.
 
 Try it: https://coverltr.vercel.app/
 Code: https://github.com/abustark/cover_letter_gen
@@ -76,9 +78,9 @@ Code: https://github.com/abustark/cover_letter_gen
 #### Portfolio Card Block
 ```text
 Title: CoverCraft — Grounded AI Document Pipeline
-Subtitle: Full-Stack Web Application (React 19, Bun 1.4, Vite 6, Tailwind v4, OpenRouter, Vercel)
-Description: An editorial AI cover-letter studio that transforms PDF/DOCX resumes and job postings into tailored letters. Features server-verified Google authentication, SSRF-hardened URL reading, XML prompt isolation, and client-side parsing with zero file uploads.
-Tags: React 19 · Bun · TypeScript · Tailwind v4 · OpenRouter · Vercel
+Subtitle: Full-Stack Web Application (React 19, Rust WASM, Bun 1.4, Vite 6, Tailwind v4, OpenRouter, Vercel)
+Description: An editorial AI cover-letter studio that transforms PDF/DOCX resumes and job postings into tailored letters. Features client-side Rust WebAssembly ATS matching, vector PDF typesetting, server-verified Google authentication, SSRF-hardened URL reading, XML prompt isolation, and zero file uploads.
+Tags: React 19 · Rust (WASM) · Bun · TypeScript · Tailwind v4 · OpenRouter · Vercel
 Links: Live Demo (https://coverltr.vercel.app/) · GitHub (https://github.com/abustark/cover_letter_gen)
 ```
 
@@ -91,12 +93,16 @@ Whenever future AI agents or assistants draft social media copy, resume bullets,
 1. **Lead with mechanism, not marketing buzzwords:**
    - *Say:* "Client-side binary AST extraction with layout-aware Y-coordinate tracking"
    - *Avoid:* "Magical seamless resume parsing"
-2. **Emphasize security invariants:**
+2. **Highlight Rust Systems & WebAssembly Engineering:**
+   - Sub-millisecond client-side resume keyword & metric density analysis compiled to WebAssembly (`crates/ats_engine`).
+   - In-browser vector PDF typesetting with 0.75-inch letterpress margins compiled to WebAssembly (`crates/pdf_engine`).
+   - High-performance asynchronous systems job scraper with Tokio & pure-Rust TLS (`crates/fetch_url`).
+3. **Emphasize security invariants:**
    - Cryptographic RS256 JWKS token validation on the server.
    - Cloud metadata blocking (`169.254.169.254`) on job URL scraper.
    - Untrusted inputs fenced in `<candidate_resume>` and `<target_job_description>` XML tags.
-3. **Highlight Bun + testing discipline:**
-   - 53 unit tests running under native Bun (`bun test`).
-   - GitHub Actions CI executing on every push.
-4. **Highlight bespoke brand identity:**
+4. **Highlight Bun + testing discipline:**
+   - 60 unit tests running under native Bun (`bun test` across 8 suites).
+   - GitHub Actions CI executing and passing on every push.
+5. **Highlight bespoke brand identity:**
    - High-contrast Playfair Display serif "CC" monogram badge and synchronized vector favicon (`public/favicon.svg`).

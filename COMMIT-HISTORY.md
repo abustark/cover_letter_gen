@@ -7,11 +7,22 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.2.3`** (current head is `2.2.2` — see below)
+> - **`main` → `2.2.4`** (current head is `2.2.3` — see below)
 
 ---
 
 ## Commit History
+
+### 2.2.3 - document Rust systems & WebAssembly implementations across showcase docs
+
+- **Date**: 2026-11-15
+- **Why**: user requested updating all necessary files and documentation to showcase CoverCraft as a completed project, with distinct lines and dedicated sections for all three Rust implementations (`crates/ats_engine`, `crates/fetch_url`, and `crates/pdf_engine`).
+- **Changes**:
+  - `PROJECT-INFO.md`: added separate dedicated rows in tech stack for all 3 Rust engines; added section `5.10 Rust High-Performance SSRF Scraper Engine`; added section `8. Rust Systems & WebAssembly Engineering Suite (Deep Dive)` detailing ATS WASM, PDF WASM, and Tokio SSRF engines; added Cargo compilation commands; added dedicated Rust resume bullets.
+  - `README.md`: added distinct feature bullets for all 3 Rust crates; updated Stack table to include native Scraper Engine; added section `## Rust Systems & WebAssembly Architecture`.
+  - `docs/POSTING-GUIDE.md`: updated LinkedIn and Twitter/X launch templates with dedicated lines for Rust WebAssembly & native systems engineering; updated test counts to 60 tests across 8 suites.
+  - `docs/PORTFOLIO-FRAMING.md`: added distinct mechanism entries and resume bullets highlighting client-side Rust WASM AST tokenization and typographic vector PDF layout.
+  - Synchronized version metadata to `2.2.3` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.2.2 - tweak Rule 5 in AGENTS.md to only remind about gates when not run
 

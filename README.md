@@ -29,6 +29,8 @@ CoverCraft turns two unstructured documents — a resume (PDF or DOCX) and a job
 | **SSRF-hardened URL reader** | HTTPS enforcement, private/cloud-metadata IP blocking, DNS resolution, bounded manual redirects, streaming byte cap; mirrored in native Rust crate (`crates/fetch_url`) |
 | **Strict AI contract** | Model allowlist, input size caps, prompt-injection isolation via XML delimiters, anti-hallucination factual grounding |
 | **Rust WASM ATS & Keyword Intelligence** | Sub-millisecond resume tokenizer, keyword alignment scoring, missing requirement flags, and metric density detection via `crates/ats_engine` (WebAssembly) |
+| **Rust WASM Typographic PDF Engine** | Publication-grade vector PDF typesetting and pagination compiled to WebAssembly via `crates/pdf_engine` (`services/pdfExportService.ts`) |
+| **Rust Systems SSRF Scraper Engine** | Asynchronous native systems engine with Tokio & Rustls enforcing DNS checks, RFC 1918 & metadata blacklists, and byte-capped streaming via `crates/fetch_url` |
 | **Resume Intake & Heuristic Structuring** | Client-side PDF/DOCX parsing (zero server uploads); layout-aware Y-coordinate tracking in `pdfjs-dist`; `cleanCrampedResumeText` heuristic formatter; in-place formatting without re-upload |
 | **User review checklist** | Interactive "Review before sending" checklist to verify role, claims, metrics, and tone before sending |
 | **Rate limiting** | Sliding-window quotas by verified Google user `sub` and client IP address; Upstash Redis / Vercel KV adapter support |
@@ -92,9 +94,40 @@ Browser (React SPA)
 | Auth | Google OAuth 2.0 (`@react-oauth/google`) with server-side cryptographic token verification |
 | Parsing | `pdfjs-dist`, `mammoth` (lazy dynamic imports, client-side only) |
 | ATS Engine | Rust WebAssembly (`crates/ats_engine`) with TypeScript dual-mode fallback (`services/atsEngine.ts`) |
-| Export | Rust WebAssembly vector PDF layout engine (`crates/pdf_engine`, `services/pdfExportService.ts`), `docx` (lazy dynamic imports) |
+| PDF Engine | Rust WebAssembly vector PDF layout engine (`crates/pdf_engine`, `services/pdfExportService.ts`) |
+| Scraper Engine | Native Rust systems engine (`crates/fetch_url`) with Tokio and Rustls SSRF defense |
+| Export Suite | Rust WASM vector PDF, `docx` Word AST generator, local draft storage |
 | Testing | Bun test runner (`bun test`, 60 tests across 8 suites), Playwright UI inspection, GitHub Actions CI |
 | Hosting | Vercel (`api/*.ts` self-contained serverless functions) / Vite dev server middleware |
+
+---
+
+## Rust Systems & WebAssembly Architecture
+
+CoverCraft features three specialized Rust engines to guarantee deterministic performance, memory safety, and client-side privacy:
+
+```
+crates/
+  ├── ats_engine/    [WebAssembly]  Sub-millisecond resume tokenizer, keyword alignment & metric density
+  ├── fetch_url/     [Native Tokio] SSRF-hardened web posting ingestion with pure-Rust TLS & IP blacklisting
+  └── pdf_engine/    [WebAssembly]  Standalone vector PDF 1.4 typesetting & pagination engine
+```
+
+1. **`crates/ats_engine` (Client-Side WASM ATS Matcher)**:
+   - Compiles to WebAssembly via `wasm-bindgen`.
+   - Tokenizes candidate credentials against job requirements in <1 ms directly in browser memory.
+   - Computes weighted keyword alignment ratios, flags missing critical requirements, and identifies quantifiable metrics (`%`, `$`, multiplier counts).
+   - Paired with a zero-cost TypeScript fallback in `services/atsEngine.ts` for offline test suites and non-WASM runtimes.
+
+2. **`crates/fetch_url` (Native High-Performance SSRF Scraper)**:
+   - Built on Rust 2021, `tokio` multi-threaded runtime, and `reqwest` with pure-Rust `rustls-tls` (zero OpenSSL C vulnerabilities).
+   - Validates HTTPS scheme and port 443; resolves hostnames and strictly drops loopback, private RFC 1918, link-local, and cloud metadata (`169.254.169.254`) traffic.
+   - Features manual 3-hop redirect inspection and 2 MB streaming byte caps, outputting clean, stripped job posting text (≤12k chars).
+
+3. **`crates/pdf_engine` (In-Browser WASM Vector PDF Typesetter)**:
+   - Standalone vector PDF 1.4 layout engine compiling to WebAssembly.
+   - Formats editorial letters with optical letterpress margins (0.75-inch / 54 pt), font metric calculation, line wrapping, and multi-page page-tree pagination.
+   - Generates vector PDF buffers in <10 ms without server round-trips or heavy headless browser binaries.
 
 ---
 
