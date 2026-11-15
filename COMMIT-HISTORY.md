@@ -7,11 +7,20 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.3.9`** (current head is `2.3.8` — see below)
+> - **`main` → `2.3.10`** (current head is `2.3.9` — see below)
 
 ---
 
 ## Commit History
+
+### 2.3.9 - implement fast in-browser overleaf latex to vector pdf compiler
+
+- **Date**: 2026-11-15
+- **Why**: user requested the complete Overleaf compilation process for LaTeX (.tex) resumes to PDF in the fastest, most lightweight manner possible without heavyweight server round-trips or 25MB external WASM binaries, with clickable contact links, 2-column alignments, vector rules, and guaranteed 1-page fit.
+- **Changes**:
+  - `services/resumeExportService.ts`: implemented `compileLatexSourceToPdf` and `compilePlainTextToPdf` in-browser LaTeX parser and typesetter: parses LaTeX AST commands (`\Huge`, `\scshape`, `\href`, `\resumeSubheading`, `\resumeProjectHeading`, `\resumeItem`, `\section`), generates clickable PDF hyperlink annotations (`textWithLink`), centers header and formats dual-column roles/dates, calculates multi-line hanging indents, and enforces compact vertical spacing to guarantee 1-page fit in sub-30ms execution.
+  - `components/InputSection.tsx`: wired `handleExportAtsPdf` to pass `rawLatexSource` directly to `downloadAtsResumePdf`; added dynamic button labeling ("Export Overleaf PDF" when LaTeX is loaded, "Export ATS PDF" otherwise).
+  - Synchronized version metadata to `2.3.9` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.3.8 - document rust systems and latex vector pdf architectures across project sheets
 

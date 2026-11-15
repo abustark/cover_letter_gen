@@ -439,7 +439,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
     if (!resume.trim()) return;
     setIsExportingPdf(true);
     try {
-      await downloadAtsResumePdf(resume, 'ATS_Optimized_Resume.pdf');
+      await downloadAtsResumePdf(
+        resume,
+        rawLatexSource ? `${fileName.replace(/\.[^.]+$/, '') || 'ATS_Resume'}_overleaf.pdf` : 'ATS_Optimized_Resume.pdf',
+        rawLatexSource
+      );
     } catch (err) {
       console.error('Failed to export ATS PDF:', err);
     } finally {
@@ -618,11 +622,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
                   type="button"
                   onClick={handleExportAtsPdf}
                   disabled={isExportingPdf}
-                  title="Download clean, single-column ATS-friendly vector PDF"
+                  title={rawLatexSource ? 'Compile LaTeX to authentic Overleaf vector PDF' : 'Download clean, single-column ATS-friendly vector PDF'}
                   className="flex-1 sm:flex-initial inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl border border-stone-300/90 dark:border-stone-700 bg-white dark:bg-stone-800/90 text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700/80 active:scale-95 transition-all shadow-xs text-xs font-semibold cursor-pointer"
                 >
                   <DownloadIcon className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-                  <span>{isExportingPdf ? 'Generating…' : 'Export ATS PDF'}</span>
+                  <span>{isExportingPdf ? 'Compiling…' : rawLatexSource ? 'Export Overleaf PDF' : 'Export ATS PDF'}</span>
                 </button>
 
                 <button
