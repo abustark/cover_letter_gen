@@ -7,11 +7,21 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.3.7`** (current head is `2.3.6` — see below)
+> - **`main` → `2.3.8`** (current head is `2.3.7` — see below)
 
 ---
 
 ## Commit History
+
+### 2.3.7 - sanitize latex text extraction and calibrate single-page overleaf ats pdf layout
+
+- **Date**: 2026-11-15
+- **Why**: user reported LaTeX upload text issues (orphan `$ $`, missing roles, truncated `98\` percentage from comment stripping, `\ ` in place of `&`, and `—` dividers) and requested that the generated ATS PDF match their authentic Overleaf LaTeX resume on a single page.
+- **Changes**:
+  - `services/resumeExportService.ts`: overhauled `extractCleanTextFromLatex` with multi-pass font macro unwrapping to prevent broken nested braces in `\resumeSubheading` and `\resumeProjectHeading`, negative lookbehind comment removal to preserve literal `\%`, sentinel token protection for `\&` against tabular ampersands, math-mode symbol transformation (`$|$`, `$\vert$`, `$\cdot$`) into clean ` · ` bullets, and automatic top contact block consolidation into a single clean line.
+  - `services/resumeExportService.ts`: calibrated `generateAtsResumePdfBlob` with 32pt margins, 9.5pt/11.5pt proportional leading, single-line centered contact row, dynamic width left/right subheading clipping, hanging-indent bold skill category bullets, and compact vertical budgeting so comprehensive resumes fit cleanly on a single page matching Overleaf.
+  - `services/resumeCleaner.ts`: restricted section header detection to start-of-line boundaries (`(^|\n)\s*`) to prevent splitting inside phrases like "Programming Languages", protected contact separator bullets in email/link line breakers, and stripped orphan divider dashes.
+  - Synchronized version metadata to `2.3.7` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.3.6 - fix google sign-in button hover contrast and invalid color classes in dark mode
 

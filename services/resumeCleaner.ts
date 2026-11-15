@@ -11,7 +11,7 @@ export function cleanCrampedResumeText(raw: string): string {
     .replace(/[\u00A0\u1680\u2000-\u200B\u202F\u205F\u3000]/g, ' ');
 
   // 1. Separate common resume section headers (case-insensitive, whole word)
-  // Ensure we don't match email prefixes like contact@example.com by asserting (?![@.])
+  // Match only at start of line or after newline to prevent splitting phrases like "Programming Languages"
   const sectionHeaders = [
     'PROFESSIONAL SUMMARY',
     'EXECUTIVE SUMMARY',
@@ -39,7 +39,6 @@ export function cleanCrampedResumeText(raw: string): string {
     'PUBLICATIONS',
     'VOLUNTEER EXPERIENCE',
     'COMMUNITY INVOLVEMENT',
-    'LANGUAGES',
     'CONTACT INFORMATION',
     'CONTACT',
     'REFERENCES',
@@ -50,13 +49,17 @@ export function cleanCrampedResumeText(raw: string): string {
     .join('|');
 
   const headerRegex = new RegExp(
-    `(^|[\\n\\s])(${headerPattern})\\b(?![@.])[:\\s]*`,
+    `(^|\\n)\\s*(${headerPattern})\\b(?![@.:&])[:\\s]*`,
     'gi'
   );
 
   text = text.replace(headerRegex, (_match, _prefix, header) => {
     return `\n\n${header.trim().toUpperCase()}\n`;
   });
+
+  // Strip standalone divider lines like "—" or "---" on their own lines
+  text = text.replace(/^[—–\-·•\s]{2,}$/gm, '');
+  text = text.replace(/^[—–]$/gm, '');
 
   // 2. Put bullet points on new lines if cramped together
   // Matches bullets: •, ●, ▪, ▫, ◦, ■, ‣
@@ -65,13 +68,13 @@ export function cleanCrampedResumeText(raw: string): string {
   // 3. Numbered lists at sentence boundaries or after periods/colons: ' 1. '
   text = text.replace(/([.:;]|\n)\s*(\d{1,2}\.)\s+([A-Z])/g, '$1\n$2 $3');
 
-  // 4. Ensure email addresses and profile links have line breaks if mashed into text
+  // 4. Ensure email addresses and profile links have line breaks if mashed into prose (protecting header rows separated by · or |)
   text = text.replace(
-    /([^\n])\s+(\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b)/g,
+    /([^\n|·•,])\s+(\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b)/g,
     '$1\n$2'
   );
   text = text.replace(
-    /([^\n])\s+(\b(?:https?:\/\/)?(?:www\.)?(?:linkedin\.com\/in\/|github\.com\/)[A-Za-z0-9_.-]+)/gi,
+    /([^\n|·•,])\s+(\b(?:https?:\/\/)?(?:www\.)?(?:linkedin\.com\/in\/|github\.com\/)[A-Za-z0-9_.-]+)/gi,
     '$1\n$2'
   );
 

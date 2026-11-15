@@ -37,13 +37,13 @@ export async function generateAtsResumePdfBlob(options: AtsResumePdfOptions): Pr
     format: 'a4',
   });
 
-  const margin = 40; // 0.55 in - matches modern LaTeX resumes (Overleaf standard)
+  const margin = 32; // Overleaf / Jake's resume compact 0.45 in margin
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const printableWidth = pageWidth - margin * 2;
   const bottomLimit = pageHeight - margin;
 
-  let y = margin + 5;
+  let y = margin + 2;
 
   const checkPageBreak = (neededHeight: number) => {
     if (y + neededHeight > bottomLimit) {
@@ -58,35 +58,6 @@ export async function generateAtsResumePdfBlob(options: AtsResumePdfOptions): Pr
   }
 
   let lineIdx = 0;
-
-  // 1. Name & Contact Header Detection
-  const firstLine = rawLines[0];
-  const isFirstLineHeader = /^(?:---?\s*)?(?:SUMMARY|EXPERIENCE|EDUCATION|SKILLS|PROJECTS)/i.test(firstLine);
-
-  if (!isFirstLineHeader) {
-    // Render Candidate Name: Large Bold Centered Serif
-    doc.setFont('times', 'bold');
-    doc.setFontSize(20);
-    doc.setTextColor(17, 17, 17);
-    doc.text(firstLine, pageWidth / 2, y, { align: 'center' });
-    y += 17;
-    lineIdx = 1;
-
-    // Check if next line is Contact Information (email, phone, dots, pipes, or links)
-    if (lineIdx < rawLines.length) {
-      const secondLine = rawLines[lineIdx];
-      const isContact = /[@\+\|·•]|(?:github|linkedin)\.com/i.test(secondLine);
-      if (isContact) {
-        doc.setFont('times', 'normal');
-        doc.setFontSize(9.5);
-        doc.setTextColor(40, 40, 40);
-        doc.text(secondLine, pageWidth / 2, y, { align: 'center' });
-        y += 18;
-        lineIdx = 2;
-      }
-    }
-    y += 4;
-  }
 
   const standardSections = [
     'PROFESSIONAL SUMMARY',
@@ -104,10 +75,46 @@ export async function generateAtsResumePdfBlob(options: AtsResumePdfOptions): Pr
     'PUBLICATIONS',
   ];
 
+  // 1. Name & Contact Header Detection
+  const firstLine = rawLines[0];
+  const isFirstLineHeader = standardSections.some((s) => firstLine.toUpperCase().startsWith(s));
+
+  if (!isFirstLineHeader) {
+    // Render Candidate Name: Large Bold Centered Serif
+    doc.setFont('times', 'bold');
+    doc.setFontSize(18);
+    doc.setTextColor(17, 17, 17);
+    doc.text(firstLine, pageWidth / 2, y, { align: 'center' });
+    y += 13.5;
+    lineIdx = 1;
+
+    // Collect all contact lines before the first section header
+    const contactParts: string[] = [];
+    while (lineIdx < rawLines.length) {
+      const nextLine = rawLines[lineIdx];
+      const isNextSection = standardSections.some((s) => nextLine.toUpperCase().startsWith(s));
+      if (isNextSection) break;
+
+      // Extract parts separated by · or | or dots
+      const parts = nextLine.split(/[|·•]/).map((p) => p.trim()).filter(Boolean);
+      contactParts.push(...parts);
+      lineIdx++;
+    }
+
+    if (contactParts.length > 0) {
+      const contactRow = contactParts.join(' · ');
+      doc.setFont('times', 'normal');
+      doc.setFontSize(8.8);
+      doc.setTextColor(40, 40, 40);
+      doc.text(contactRow, pageWidth / 2, y, { align: 'center' });
+      y += 12;
+    }
+  }
+
   for (; lineIdx < rawLines.length; lineIdx++) {
     const line = rawLines[lineIdx];
 
-    // 2. Check for Section Header (e.g. "PROFESSIONAL SUMMARY", "--- TECHNICAL SKILLS ---", "PROJECTS | github.com/...")
+    // 2. Check for Section Header (e.g. "PROFESSIONAL SUMMARY", "TECHNICAL SKILLS", "PROJECTS | github.com/...")
     let cleanHeaderTitle: string | null = null;
     let rightHeaderText: string | null = null;
 
@@ -126,29 +133,29 @@ export async function generateAtsResumePdfBlob(options: AtsResumePdfOptions): Pr
     }
 
     if (cleanHeaderTitle) {
-      checkPageBreak(38);
-      y += 8;
+      checkPageBreak(28);
+      y += 6;
 
-      // Section Title (Bold Uppercase 11.5pt)
+      // Section Title (Bold Uppercase 10.5pt)
       doc.setFont('times', 'bold');
-      doc.setFontSize(11.5);
+      doc.setFontSize(10.5);
       doc.setTextColor(17, 17, 17);
       doc.text(cleanHeaderTitle, margin, y);
 
       // Right-side text if present (e.g. github.com/abustark)
       if (rightHeaderText) {
         doc.setFont('times', 'normal');
-        doc.setFontSize(9.5);
-        doc.setTextColor(70, 70, 70);
+        doc.setFontSize(8.8);
+        doc.setTextColor(60, 60, 60);
         doc.text(rightHeaderText, pageWidth - margin, y, { align: 'right' });
       }
 
       // Crisp Full-Width Divider Rule
-      y += 3;
-      doc.setDrawColor(20, 20, 20);
-      doc.setLineWidth(0.75);
+      y += 2.5;
+      doc.setDrawColor(30, 30, 30);
+      doc.setLineWidth(0.65);
       doc.line(margin, y, pageWidth - margin, y);
-      y += 12;
+      y += 8.5;
       continue;
     }
 
@@ -156,7 +163,7 @@ export async function generateAtsResumePdfBlob(options: AtsResumePdfOptions): Pr
     if (line.includes('|') && !line.startsWith('•') && !line.startsWith('-')) {
       const parts = line.split('|').map((p) => p.trim());
       if (parts.length >= 2) {
-        checkPageBreak(22);
+        checkPageBreak(18);
         const leftText = parts[0];
         const rightText = parts.slice(1).join(' | ');
 
@@ -166,13 +173,24 @@ export async function generateAtsResumePdfBlob(options: AtsResumePdfOptions): Pr
           /(?:India|CA|USA|NY|Remote|Chennai|Madurai)\b/i.test(rightText);
 
         doc.setFont('times', isItalicSubheading ? 'italic' : 'bold');
-        doc.setFontSize(10);
+        doc.setFontSize(9.5);
         doc.setTextColor(20, 20, 20);
-        doc.text(leftText, margin, y);
 
-        doc.setFont('times', isItalicSubheading ? 'italic' : 'bold');
+        const rightWidth = doc.getTextWidth(rightText);
+        const maxLeftWidth = printableWidth - rightWidth - 10;
+        const leftLines = doc.splitTextToSize(leftText, maxLeftWidth);
+
+        doc.text(leftLines[0], margin, y);
         doc.text(rightText, pageWidth - margin, y, { align: 'right' });
-        y += 13.5;
+
+        if (leftLines.length > 1) {
+          for (let l = 1; l < leftLines.length; l++) {
+            y += 11.5;
+            doc.text(leftLines[l], margin, y);
+          }
+        }
+
+        y += 11.5;
         continue;
       }
     }
@@ -191,7 +209,7 @@ export async function generateAtsResumePdfBlob(options: AtsResumePdfOptions): Pr
         const isTechPrefix = /^Technologies:/i.test(categoryPrefix);
 
         doc.setFont('times', isTechPrefix ? 'italic' : 'bold');
-        doc.setFontSize(10);
+        doc.setFontSize(9.5);
         doc.setTextColor(20, 20, 20);
 
         const bulletSymbol = '•';
@@ -200,53 +218,53 @@ export async function generateAtsResumePdfBlob(options: AtsResumePdfOptions): Pr
         const textWidth = printableWidth - prefixWidth;
         const bodyLines = doc.splitTextToSize(categoryBody, textWidth);
 
-        checkPageBreak(Math.max(1, bodyLines.length) * 13.5 + 4);
+        checkPageBreak(Math.max(1, bodyLines.length) * 11.5 + 2);
 
         doc.text(bulletSymbol, margin, y);
-        doc.text(categoryPrefix, margin + 10, y);
+        doc.text(categoryPrefix, margin + 9, y);
 
         doc.setFont('times', 'normal');
-        doc.setFontSize(10);
+        doc.setFontSize(9.5);
         doc.setTextColor(30, 30, 30);
 
         if (bodyLines.length > 0) {
           doc.text(bodyLines[0], margin + prefixWidth, y);
 
           for (let bIdx = 1; bIdx < bodyLines.length; bIdx++) {
-            y += 13.5;
-            doc.text(bodyLines[bIdx], margin + 10, y);
+            y += 11.5;
+            doc.text(bodyLines[bIdx], margin + 9, y);
           }
         }
-        y += 14;
+        y += 11.8;
         continue;
       } else {
         // Standard achievement bullet
         doc.setFont('times', 'normal');
-        doc.setFontSize(10);
+        doc.setFontSize(9.5);
         doc.setTextColor(30, 30, 30);
 
-        const indent = 12;
+        const indent = 9;
         const textWidth = printableWidth - indent;
         const wrapped = doc.splitTextToSize(bulletContent, textWidth);
 
-        checkPageBreak(wrapped.length * 13.5 + 3);
+        checkPageBreak(wrapped.length * 11.5 + 2);
 
         doc.text('•', margin, y);
         doc.text(wrapped, margin + indent, y);
-        y += wrapped.length * 13.5 + 2.5;
+        y += wrapped.length * 11.5 + 1.2;
         continue;
       }
     }
 
     // 5. Standard Body Paragraphs (e.g. Summary text)
     doc.setFont('times', 'normal');
-    doc.setFontSize(10);
+    doc.setFontSize(9.5);
     doc.setTextColor(30, 30, 30);
 
     const wrapped = doc.splitTextToSize(line, printableWidth);
-    checkPageBreak(wrapped.length * 13.5 + 4);
+    checkPageBreak(wrapped.length * 11.5 + 3);
     doc.text(wrapped, margin, y);
-    y += wrapped.length * 13.5 + 4;
+    y += wrapped.length * 11.5 + 3;
   }
 
   return doc.output('blob');
@@ -443,10 +461,20 @@ export function extractCleanTextFromLatex(textContent: string): string {
     body = body.slice(0, endDocIdx);
   }
 
-  // 2. Remove all LaTeX comments
-  body = body.replace(/%.*$/gm, '');
+  // 2. Remove all LaTeX comments while preserving escaped \% (negative lookbehind)
+  body = body.replace(/(?<!\\)%.*$/gm, '');
 
-  // 3. Remove color and font preamble macros that might be in body
+  // 3. Protect literal escaped symbols with unique sentinels so & in \& is never treated as a tabular delimiter
+  body = body
+    .replace(/\\&/g, '___AMP___')
+    .replace(/\\%/g, '___PCT___')
+    .replace(/\\\$/g, '___DLR___')
+    .replace(/\\#/g, '___HSH___')
+    .replace(/\\_/g, '___UND___')
+    .replace(/\\\{/g, '___LBR___')
+    .replace(/\\\}/g, '___RBR___');
+
+  // 4. Remove color, geometry, and font preamble macros that might be in body
   body = body
     .replace(/\\definecolor\{[^}]*\}\{[^}]*\}\{[^}]*\}/gi, '')
     .replace(/\\definecolor\{[^}]*\}\[[^\]]*\]\{[^}]*\}/gi, '')
@@ -457,36 +485,47 @@ export function extractCleanTextFromLatex(textContent: string): string {
     .replace(/\\fontsize\{[^}]*\}\{[^}]*\}/gi, '')
     .replace(/\\selectfont/gi, '');
 
-  // 4. Section headings
+  // 5. Clean math-mode delimiters ($|$, $\vert$, $\cdot$, $\bullet$) to clean dots
   body = body
-    .replace(/\\(?:cv)?section\*?(?:\[[^\]]*\])?\{([^}]+)\}/gi, '\n\n--- $1 ---\n')
-    .replace(/\\(?:cv)?subsection\*?(?:\[[^\]]*\])?\{([^}]+)\}/gi, '\n$1\n');
+    .replace(/\$\s*(?:\\vert|\||\\mid|\\cdot|\\bullet)\s*\$/g, ' · ')
+    .replace(/\\(?:vert|cdot|bullet)\b/g, ' · ')
+    .replace(/\$\s*\|\s*\$/g, ' · ')
+    .replace(/\$\s*\$/g, ' · ')
+    .replace(/(?<!\d)\$(?!\d)/g, ' '); // remove orphan math delimiters while protecting actual money like $100
 
-  // 5. Common multi-argument resume macros (Jake's Resume, ModernCV, AwesomeCV)
-  body = body
-    // \resumeSubheading{Role/Company}{Dates}{Company/Role}{Location}
-    .replace(/\\resumeSubheading\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}/gi, '\n$1 | $2\n$3 | $4\n')
-    // \cventry{Dates}{Degree/Role}{Institution/Company}{City}{Grade}{Description}
-    .replace(/\\cventry\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}/gi, '\n$2 | $3 | $1 | $4\n$6\n')
-    // \resumeProjectHeading{Title & tech}{Dates}
-    .replace(/\\resumeProjectHeading\s*\{([^}]*)\}\s*\{([^}]*)\}/gi, '\n$1 | $2\n')
-    // \resumeItem{Content}
-    .replace(/\\resumeItem\s*\{([^}]*)\}/gi, '\n• $1\n');
-
-  // 6. Hyperlinks: \href{url}{text} -> text
+  // 6. Hyperlinks: \href{url}{text} -> text, \url{url} -> url
   body = body.replace(/\\href\{[^}]*\}\{([^}]*)\}/gi, '$1');
   body = body.replace(/\\url\{([^}]*)\}/gi, '$1');
 
-  // 7. Bullet items
-  body = body.replace(/\\item(?:\s*\[[^\]]*\])?\s*/gi, '\n• ');
-
-  // 8. Text formatting macros (nested passes for \textbf{\textit{...}})
-  for (let pass = 0; pass < 3; pass++) {
-    body = body.replace(/\\(?:textbf|textit|emph|underline|textsc|textmd|textsf|textrm|texttt|mbox)\{([^}]*)\}/gi, '$1');
-    body = body.replace(/\{\\(?:bfseries|itshape|em|scshape|sf|rm|tt)\s+([^}]*)\}/gi, '$1');
+  // 7. Multi-pass unwrap of font and text formatting macros to eliminate nested braces
+  // This allows macros like \resumeSubheading and \resumeProjectHeading to match cleanly
+  for (let pass = 0; pass < 5; pass++) {
+    body = body
+      .replace(/\\(?:textbf|textit|textnormal|emph|underline|textsc|textmd|textsf|textrm|texttt|mbox|small|footnotesize|tiny|large|Large|Huge)\{([^{}]*)\}/gi, '$1')
+      .replace(/\{\\(?:bfseries|itshape|em|scshape|sf|rm|tt|small|footnotesize|tiny|large|Large|Huge)\s+([^{}]*)\}/gi, '$1');
   }
 
-  // 9. Environments (remove begin/end, table markup)
+  // 8. Section headings: extract cleanly without inserting artificial --- or —
+  body = body.replace(/\\(?:cv)?section\*?(?:\[[^\]]*\])?\{([^}]+)\}/gi, (_match, inner) => {
+    if (inner.includes('\\hfill')) {
+      const parts = inner.split(/\\hfill/i).map((p: string) => p.trim());
+      return `\n\n${parts[0]} | ${parts[1]}\n`;
+    }
+    return `\n\n${inner.trim()}\n`;
+  });
+  body = body.replace(/\\(?:cv)?subsection\*?(?:\[[^\]]*\])?\{([^}]+)\}/gi, '\n$1\n');
+
+  // 9. Multi-argument resume macros (Jake's Resume, Overleaf, ModernCV)
+  body = body.replace(/\\resumeSubheading\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}/gi, '\n$1 | $2\n$3 | $4\n');
+  body = body.replace(/\\resumeProjectHeading\s*\{([^}]*)\}\s*\{([^}]*)\}/gi, '\n$1 | $2\n');
+  body = body.replace(/\\cventry\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}\s*\{([^}]*)\}/gi, '\n$2 | $3 | $1 | $4\n$6\n');
+  body = body.replace(/\\resumeItem\s*\{([^}]*)\}/gi, '\n• $1\n');
+
+  // 10. Items and Technical skills list format: \item \textbf{Category}{: items}
+  body = body.replace(/\{:\s*([^\}]*)\}/g, ': $1');
+  body = body.replace(/\\item(?:\s*\[[^\]]*\])?\s*/gi, '\n• ');
+
+  // 11. Environments and spacing commands
   body = body
     .replace(/\\begin\{[^}]+\}(?:\[[^\]]*\])?/gi, '')
     .replace(/\\end\{[^}]+\}/gi, '')
@@ -496,28 +535,80 @@ export function extractCleanTextFromLatex(textContent: string): string {
     .replace(/\\vspace\*?\{[^}]*\}/gi, '\n')
     .replace(/\\hspace\*?\{[^}]*\}/gi, ' ');
 
-  // 10. Strip all remaining backslash commands with or without arguments
-  body = body.replace(/\\[a-zA-Z]+(?:\*|\[[^\]]*\])?(?:\{[^}]*\})?/gi, ' ');
+  // 12. Strip remaining backslash command names without eating braces
+  body = body.replace(/\\[a-zA-Z]+(?:\*|\[[^\]]*\])?/g, ' ');
 
-  // 11. Tabular separators and line breaks
+  // 13. Tabular line breaks and separators
   body = body
     .replace(/\\\\(?:\s*\[[^\]]*\])?/g, '\n')
     .replace(/&/g, ' ')
     .replace(/\|/g, ' | ');
 
-  // 12. Unescape common LaTeX symbols and ligatures
+  // 14. Restore protected literal characters and ligatures
   body = body
-    .replace(/\\([&%$#_{}])/g, '$1')
+    .replace(/___AMP___/g, '&')
+    .replace(/___PCT___/g, '%')
+    .replace(/___DLR___/g, '$')
+    .replace(/___HSH___/g, '#')
+    .replace(/___UND___/g, '_')
+    .replace(/___LBR___/g, '{')
+    .replace(/___RBR___/g, '}')
     .replace(/---/g, '—')
     .replace(/--/g, '–')
     .replace(/``|''/g, '"')
     .replace(/`|'/g, "'")
     .replace(/~/g, ' ')
     .replace(/\\textbackslash/g, '\\')
-    .replace(/[\{\}]/g, ''); // strip any orphan curly braces
+    .replace(/[\{\}]/g, ''); // strip orphan curly braces
 
-  // 13. Pass through cleanCrampedResumeText to normalize headers, bullets, spacing
-  return cleanCrampedResumeText(body);
+  // 15. Standardize bullet characters to •
+  body = body.replace(/^[ \t]*[·●▪▫◦■‣\-*]\s+/gm, '• ');
+
+  // 16. Pass through cleanCrampedResumeText to normalize whitespace and headers
+  const cleaned = cleanCrampedResumeText(body);
+
+  // 17. Clean up top contact header: ensure all details (location, phone, email, links)
+  // before the first section header are joined into a single clean line with ' · '
+  const lines = cleaned.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (lines.length <= 1) return cleaned;
+
+  const standardSections = [
+    'PROFESSIONAL SUMMARY',
+    'SUMMARY',
+    'TECHNICAL SKILLS',
+    'SKILLS',
+    'PROFESSIONAL EXPERIENCE',
+    'EXPERIENCE',
+    'WORK EXPERIENCE',
+    'PROJECTS',
+    'KEY PROJECTS',
+    'EDUCATION',
+    'CERTIFICATIONS',
+  ];
+
+  const firstLine = lines[0];
+  const isFirstLineHeader = standardSections.some((s) => firstLine.toUpperCase().startsWith(s));
+  if (isFirstLineHeader) return cleaned;
+
+  let firstSectionIdx = -1;
+  for (let i = 1; i < lines.length; i++) {
+    if (standardSections.some((s) => lines[i].toUpperCase().startsWith(s))) {
+      firstSectionIdx = i;
+      break;
+    }
+  }
+
+  if (firstSectionIdx > 1) {
+    const contactParts: string[] = [];
+    for (let i = 1; i < firstSectionIdx; i++) {
+      const parts = lines[i].split(/[|·•]/).map((p) => p.trim()).filter(Boolean);
+      contactParts.push(...parts);
+    }
+    const singleContactLine = contactParts.join(' · ');
+    return [firstLine, singleContactLine, ...lines.slice(firstSectionIdx)].join('\n\n');
+  }
+
+  return cleaned;
 }
 
 /**
