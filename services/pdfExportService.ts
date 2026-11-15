@@ -22,7 +22,8 @@ async function getPdfWasmModule(): Promise<any> {
       try {
         const response = await fetch('/wasm/pdf_engine_bg.wasm', { method: 'HEAD' });
         if (response.ok) {
-          const wasm = await import(/* @vite-ignore */ '/wasm/pdf_engine.js');
+          const loadDynamic = new Function('specifier', 'return import(specifier)');
+          const wasm = await loadDynamic('/wasm/pdf_engine.js');
           await wasm.default();
           return wasm;
         }

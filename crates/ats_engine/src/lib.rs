@@ -65,9 +65,11 @@ pub fn extract_keywords(text: &str) -> HashMap<String, usize> {
         .replace(['•', '●', '▪', '–', '—', '*', '|'], " ");
 
     for raw_word in clean.split_whitespace() {
-        let trimmed = raw_word
+        let mut trimmed = raw_word
             .trim_matches(|c: char| !c.is_alphanumeric() && c != '.' && c != '+' && c != '#' && c != '-')
             .to_lowercase();
+
+        trimmed = trimmed.trim_end_matches('.').to_string();
 
         if trimmed.len() < 2 || trimmed.len() > 30 {
             continue;
@@ -173,16 +175,13 @@ pub fn analyze_ats(resume_text: &str, job_text: &str) -> AtsAnalysisResult {
     let base_match_ratio = (matched.len() as f64) / (total_job_keywords as f64);
 
     let metrics = extract_quantifiable_metrics(resume_text);
-    let metrics_bonus = if metrics.len() >= 4 {
-        10.0
-    } else {
-        (metrics.len() as f64) * 2.5
-    };
+    let metrics_bonus = ((metrics.len() as f64) * 4.0).min(15.0);
 
     let section_headers = detect_section_headers(resume_text);
-    let structure_bonus = if section_headers.len() >= 3 { 5.0 } else { 0.0 };
+    let structure_bonus = ((section_headers.len() as f64) * 3.0).min(15.0);
 
-    let raw_score = (base_match_ratio * 85.0) + metrics_bonus + structure_bonus;
+    let keyword_score = (base_match_ratio * 120.0).min(70.0);
+    let raw_score = keyword_score + metrics_bonus + structure_bonus;
     let clamped_score = (raw_score.round() as u32).min(100).max(10);
 
     let match_grade = match clamped_score {

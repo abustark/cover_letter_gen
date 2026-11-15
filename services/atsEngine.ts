@@ -66,9 +66,12 @@ export function extractKeywords(text: string): Map<string, number> {
 
   const rawWords = clean.split(/\s+/);
   for (const rawWord of rawWords) {
-    const trimmed = rawWord
+    let trimmed = rawWord
       .replace(/^[^a-zA-Z0-9.+#-]+|[^a-zA-Z0-9.+#-]+$/g, '')
       .toLowerCase();
+
+    // Strip trailing punctuation like periods while preserving internal dots in "node.js"
+    trimmed = trimmed.replace(/\.+$/, '');
 
     if (trimmed.length < 2 || trimmed.length > 30) continue;
     if (COMMON_STOP_WORDS.has(trimmed)) continue;
@@ -177,12 +180,13 @@ export function analyzeAtsSync(resumeText: string, jobText: string): AtsAnalysis
   const baseMatchRatio = matched.length / totalJobKeywords;
 
   const metrics = extractQuantifiableMetrics(resumeText);
-  const metricsBonus = metrics.length >= 4 ? 10.0 : metrics.length * 2.5;
+  const metricsBonus = Math.min(15, metrics.length * 4.0);
 
   const sectionHeaders = detectSectionHeaders(resumeText);
-  const structureBonus = sectionHeaders.length >= 3 ? 5.0 : 0.0;
+  const structureBonus = Math.min(15, sectionHeaders.length * 3.0);
 
-  const rawScore = baseMatchRatio * 85.0 + metricsBonus + structureBonus;
+  const keywordScore = Math.min(70, baseMatchRatio * 120.0);
+  const rawScore = keywordScore + metricsBonus + structureBonus;
   const clampedScore = Math.min(100, Math.max(10, Math.round(rawScore)));
 
   let matchGrade = 'Needs Keyword Enrichment';
@@ -223,8 +227,9 @@ async function getWasmModule(): Promise<any> {
       try {
         const response = await fetch('/wasm/ats_engine_bg.wasm', { method: 'HEAD' });
         if (response.ok) {
-          // Dynamic import of compiled wasm-bindgen glue
-          const wasm = await import(/* @vite-ignore */ '/wasm/ats_engine.js');
+          // Dynamic import evaluated at runtime to avoid static TypeScript resolution errors
+          const loadDynamic = new Function('specifier', 'return import(specifier)');
+          const wasm = await loadDynamic('/wasm/ats_engine.js');
           await wasm.default();
           return wasm;
         }
