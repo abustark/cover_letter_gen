@@ -24,6 +24,7 @@ const App: React.FC = () => {
 
   // Outputs & State
   const [coverLetter, setCoverLetter] = useState('');
+  const [loadedDraftCompanyName, setLoadedDraftCompanyName] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<GenerationMode>(GenerationMode.Standard);
@@ -56,9 +57,10 @@ const App: React.FC = () => {
 
   const handleSaveDraft = () => {
     if (!coverLetter) return;
+    const effectiveCompany = (loadedDraftCompanyName !== null ? loadedDraftCompanyName : companyName).trim();
     const newDraft: Draft = {
       id: crypto.randomUUID(),
-      companyName: companyName.trim() || 'Untitled Draft',
+      companyName: effectiveCompany || 'Untitled Draft',
       coverLetter,
       createdAt: new Date().toISOString(),
     };
@@ -85,12 +87,14 @@ const App: React.FC = () => {
 
   const handleLoadDraft = (draft: Draft) => {
     setCoverLetter(draft.coverLetter);
-    setCompanyName(draft.companyName === 'Untitled Draft' ? '' : draft.companyName);
+    setLoadedDraftCompanyName(draft.companyName === 'Untitled Draft' ? '' : draft.companyName);
+    // Preserves companyName in Input 02 without overwriting it
     document.getElementById('output-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   const handleCloseDraft = () => {
     setCoverLetter('');
+    setLoadedDraftCompanyName(null);
   };
 
   const handleGenerate = useCallback(async () => {
@@ -113,6 +117,7 @@ const App: React.FC = () => {
     setIsLoading(true);
     setError(null);
     setCoverLetter('');
+    setLoadedDraftCompanyName(null);
     setStorageNotice(null);
 
     try {
@@ -213,7 +218,7 @@ const App: React.FC = () => {
           onRegenerate={handleGenerate}
           onSave={handleSaveDraft}
           onClose={handleCloseDraft}
-          companyName={companyName}
+          companyName={loadedDraftCompanyName !== null ? loadedDraftCompanyName : companyName}
           resumeText={resume}
           jobText={jobInputType === JobDescriptionInputType.Text ? jobDescription : jobUrl}
         />
@@ -234,7 +239,7 @@ const App: React.FC = () => {
           <div className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
             <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse flex-shrink-0" />
             <span className="font-semibold text-stone-700 dark:text-stone-300">
-              CoverCraft Studio v2.2.8
+              CoverCraft Studio v2.2.9
             </span>
             <span className="text-gray-300 dark:text-gray-700 hidden sm:inline">·</span>
             <span>Server-Verified Authentication</span>
