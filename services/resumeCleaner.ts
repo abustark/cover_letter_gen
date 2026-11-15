@@ -95,22 +95,33 @@ export function cleanCrampedResumeText(raw: string): string {
 /**
  * Intelligently injects a STAR achievement phrasing into the resume text,
  * locating the Experience or Skills section, or appending cleanly.
+ * Ensures proper bullet character (•) and trailing period (.).
  */
 export function injectPhraseIntoResume(resumeText: string, phrase: string): string {
   if (!resumeText || !resumeText.trim()) {
-    return `- ${phrase}`;
+    const clean = phrase.trim().endsWith('.') ? phrase.trim() : `${phrase.trim()}.`;
+    return `• ${clean}`;
   }
 
-  const bullet = `- ${phrase}`;
+  // Ensure phrase ends with a period and uses bullet dot
+  const cleanPhrase = phrase.trim().endsWith('.') ? phrase.trim() : `${phrase.trim()}.`;
+  const bullet = `• ${cleanPhrase}`;
 
   // 1. Look for Experience section
   const expMatch = resumeText.match(
-    /(?:^|\n)(---?\s*(?:work\s+experience|professional\s+experience|employment\s+history|experience)\s*---?|[A-Z\s]{4,30}EXPERIENCE[^\n]*)/i
+    /(?:^|\n)(---?\s*(?:professional\s+experience|work\s+experience|employment\s+history|experience)\s*---?|[A-Z\s]{4,30}EXPERIENCE[^\n]*)/i
   );
 
   if (expMatch && typeof expMatch.index === 'number') {
     const afterHeaderIdx = expMatch.index + expMatch[0].length;
     const rest = resumeText.slice(afterHeaderIdx);
+
+    // Look for the first bullet point under the primary job in Experience
+    const firstBulletMatch = rest.match(/\n\s*[•\-*]\s+/);
+    if (firstBulletMatch && typeof firstBulletMatch.index === 'number') {
+      const insertIdx = afterHeaderIdx + firstBulletMatch.index;
+      return `${resumeText.slice(0, insertIdx)}\n${bullet}${resumeText.slice(insertIdx)}`;
+    }
 
     // Look for the next major section boundary (--- or double line with capitalized header)
     const nextSectionMatch = rest.match(/\n\n(?:---|\b[A-Z\s]{4,30}\b)/);

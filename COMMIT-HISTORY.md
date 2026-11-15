@@ -7,11 +7,20 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.3.5`** (current head is `2.3.4` — see below)
+> - **`main` → `2.3.6`** (current head is `2.3.5` — see below)
 
 ---
 
 ## Commit History
+
+### 2.3.5 - format ats pdf export with solid divider lines, centered headers, and clean bullet dot alignment
+
+- **Date**: 2026-11-15
+- **Why**: user shared their actual LaTeX resume screenshot to demonstrate missing formatting in the exported ATS PDF (missing divider rules, bold headings, dual-column alignments, bullet spacing) and noted that injected lines were formatted with hyphens instead of dots and placed in summary rather than experience.
+- **Changes**:
+  - `services/resumeCleaner.ts`: updated `injectPhraseIntoResume` to format bullet items with standardized dots (`• `), ensure trailing periods (`.`), and inject directly under the primary job role in `PROFESSIONAL EXPERIENCE`.
+  - `services/resumeExportService.ts`: overhauled `generateAtsResumePdfBlob` to typeset full Overleaf/LaTeX layout (centered 20pt bold candidate name, centered contact row, bold section titles with full-width horizontal divider rules, dual-column subheadings with left-aligned titles and right-aligned dates, bold category prefixes for technical skills, and hanging indent dot bullets); updated `injectIntoLatexSource` to support `\resumeItemListStart` and insert `\resumeItem{...}` under experience.
+  - Synchronized version metadata to `2.3.5` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.3.4 - sanitize latex resume text extraction to eliminate preamble macros and rgb definitions
 

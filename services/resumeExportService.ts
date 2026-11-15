@@ -24,10 +24,12 @@ function escapeRegex(str: string): string {
 }
 
 /**
- * Generates an ATS-compliant vector PDF blob from structured resume text
+ * Generates an ATS-compliant vector PDF blob styled exactly like the Overleaf / Jake's Resume
+ * layout: centered name/contact header, solid section dividers, two-column role/date subheadings,
+ * bold category skill prefixes, and clean dot bullets.
  */
 export async function generateAtsResumePdfBlob(options: AtsResumePdfOptions): Promise<Blob> {
-  const { resumeText, candidateName, targetRole } = options;
+  const { resumeText } = options;
   const { jsPDF } = await import('jspdf');
 
   const doc = new jsPDF({
@@ -35,112 +37,216 @@ export async function generateAtsResumePdfBlob(options: AtsResumePdfOptions): Pr
     format: 'a4',
   });
 
-  const margin = 54; // 0.75 in
+  const margin = 40; // 0.55 in - matches modern LaTeX resumes (Overleaf standard)
   const pageWidth = doc.internal.pageSize.getWidth();
   const pageHeight = doc.internal.pageSize.getHeight();
   const printableWidth = pageWidth - margin * 2;
   const bottomLimit = pageHeight - margin;
 
-  let y = margin;
+  let y = margin + 5;
 
   const checkPageBreak = (neededHeight: number) => {
     if (y + neededHeight > bottomLimit) {
       doc.addPage();
-      y = margin;
+      y = margin + 10;
     }
   };
 
-  // Header: Candidate Name or Title
-  if (candidateName && candidateName.trim()) {
-    doc.setFont('times', 'bold');
-    doc.setFontSize(18);
-    doc.setTextColor(20, 20, 20);
-    doc.text(candidateName.trim().toUpperCase(), margin, y);
-    y += 24;
-
-    if (targetRole && targetRole.trim()) {
-      doc.setFont('times', 'italic');
-      doc.setFontSize(11);
-      doc.setTextColor(80, 80, 80);
-      doc.text(targetRole.trim(), margin, y);
-      y += 18;
-    }
-
-    // Subtle divider
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.75);
-    doc.line(margin, y, margin + printableWidth, y);
-    y += 16;
+  const rawLines = resumeText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  if (rawLines.length === 0) {
+    return doc.output('blob');
   }
 
-  // Parse lines from resume
-  const rawLines = resumeText.split(/\r?\n/);
-  const sectionHeaderPattern = /^(?:---?\s*)?([A-Z\s]{3,30})(?:\s*---?)?$/;
+  let lineIdx = 0;
 
-  for (let i = 0; i < rawLines.length; i++) {
-    const rawLine = rawLines[i].trim();
+  // 1. Name & Contact Header Detection
+  const firstLine = rawLines[0];
+  const isFirstLineHeader = /^(?:---?\s*)?(?:SUMMARY|EXPERIENCE|EDUCATION|SKILLS|PROJECTS)/i.test(firstLine);
 
-    if (!rawLine) {
-      y += 8; // Small paragraph spacing
-      continue;
+  if (!isFirstLineHeader) {
+    // Render Candidate Name: Large Bold Centered Serif
+    doc.setFont('times', 'bold');
+    doc.setFontSize(20);
+    doc.setTextColor(17, 17, 17);
+    doc.text(firstLine, pageWidth / 2, y, { align: 'center' });
+    y += 17;
+    lineIdx = 1;
+
+    // Check if next line is Contact Information (email, phone, dots, pipes, or links)
+    if (lineIdx < rawLines.length) {
+      const secondLine = rawLines[lineIdx];
+      const isContact = /[@\+\|·•]|(?:github|linkedin)\.com/i.test(secondLine);
+      if (isContact) {
+        doc.setFont('times', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(40, 40, 40);
+        doc.text(secondLine, pageWidth / 2, y, { align: 'center' });
+        y += 18;
+        lineIdx = 2;
+      }
     }
+    y += 4;
+  }
 
-    const headerMatch = rawLine.match(sectionHeaderPattern);
-    const isSectionHeader =
-      Boolean(headerMatch) &&
-      [
-        'SUMMARY',
-        'PROFESSIONAL SUMMARY',
-        'EXPERIENCE',
-        'WORK EXPERIENCE',
-        'PROFESSIONAL EXPERIENCE',
-        'EDUCATION',
-        'SKILLS',
-        'TECHNICAL SKILLS',
-        'PROJECTS',
-        'CERTIFICATIONS',
-      ].includes(headerMatch![1].trim().toUpperCase());
+  const standardSections = [
+    'PROFESSIONAL SUMMARY',
+    'SUMMARY',
+    'TECHNICAL SKILLS',
+    'SKILLS',
+    'PROFESSIONAL EXPERIENCE',
+    'EXPERIENCE',
+    'WORK EXPERIENCE',
+    'PROJECTS',
+    'KEY PROJECTS',
+    'EDUCATION',
+    'CERTIFICATIONS',
+    'AWARDS',
+    'PUBLICATIONS',
+  ];
 
-    if (isSectionHeader) {
-      checkPageBreak(36);
-      y += 10;
-      doc.setFont('times', 'bold');
-      doc.setFontSize(12);
-      doc.setTextColor(30, 30, 30);
-      const headerTitle = headerMatch![1].trim().toUpperCase();
-      doc.text(headerTitle, margin, y);
-      y += 4;
+  for (; lineIdx < rawLines.length; lineIdx++) {
+    const line = rawLines[lineIdx];
 
-      // Section underline rule (ATS friendly)
-      doc.setDrawColor(180, 180, 180);
-      doc.setLineWidth(0.5);
-      doc.line(margin, y, margin + printableWidth, y);
-      y += 14;
-      continue;
-    }
+    // 2. Check for Section Header (e.g. "PROFESSIONAL SUMMARY", "--- TECHNICAL SKILLS ---", "PROJECTS | github.com/...")
+    let cleanHeaderTitle: string | null = null;
+    let rightHeaderText: string | null = null;
 
-    // Check if line is a bullet point
-    const isBullet = /^[-•*▪]\s+/.test(rawLine);
-    const cleanContent = isBullet ? rawLine.replace(/^[-•*▪]\s+/, '') : rawLine;
-
-    doc.setFont('times', isBullet ? 'normal' : 'normal');
-    doc.setFontSize(10.5);
-    doc.setTextColor(40, 40, 40);
-
-    const indent = isBullet ? 14 : 0;
-    const textWidth = printableWidth - indent;
-    const wrappedLines = doc.splitTextToSize(cleanContent, textWidth);
-
-    checkPageBreak(wrappedLines.length * 14 + 4);
-
-    if (isBullet) {
-      doc.text('•', margin, y);
-      doc.text(wrappedLines, margin + indent, y);
+    if (line.includes('|')) {
+      const parts = line.split('|').map((p) => p.trim());
+      const possibleSection = parts[0].replace(/^[-–—\s]+|[-–—\s]+$/g, '').toUpperCase();
+      if (standardSections.includes(possibleSection)) {
+        cleanHeaderTitle = possibleSection;
+        rightHeaderText = parts.slice(1).join(' | ');
+      }
     } else {
-      doc.text(wrappedLines, margin, y);
+      const possibleSection = line.replace(/^[-–—\s]+|[-–—\s]+$/g, '').toUpperCase();
+      if (standardSections.includes(possibleSection)) {
+        cleanHeaderTitle = possibleSection;
+      }
     }
 
-    y += wrappedLines.length * 14 + 3;
+    if (cleanHeaderTitle) {
+      checkPageBreak(38);
+      y += 8;
+
+      // Section Title (Bold Uppercase 11.5pt)
+      doc.setFont('times', 'bold');
+      doc.setFontSize(11.5);
+      doc.setTextColor(17, 17, 17);
+      doc.text(cleanHeaderTitle, margin, y);
+
+      // Right-side text if present (e.g. github.com/abustark)
+      if (rightHeaderText) {
+        doc.setFont('times', 'normal');
+        doc.setFontSize(9.5);
+        doc.setTextColor(70, 70, 70);
+        doc.text(rightHeaderText, pageWidth - margin, y, { align: 'right' });
+      }
+
+      // Crisp Full-Width Divider Rule
+      y += 3;
+      doc.setDrawColor(20, 20, 20);
+      doc.setLineWidth(0.75);
+      doc.line(margin, y, pageWidth - margin, y);
+      y += 12;
+      continue;
+    }
+
+    // 3. Check for Dual-Column Subheading (e.g. "ML Data Associate II | Aug 2023 – Present" or "Amazon | Chennai, India")
+    if (line.includes('|') && !line.startsWith('•') && !line.startsWith('-')) {
+      const parts = line.split('|').map((p) => p.trim());
+      if (parts.length >= 2) {
+        checkPageBreak(22);
+        const leftText = parts[0];
+        const rightText = parts.slice(1).join(' | ');
+
+        // Check if this looks like a Company/Location line (italic) or Title/Dates line (bold)
+        const isItalicSubheading =
+          /^(?:Amazon|The American College|Thiagarajar College|Google|Meta|Microsoft|Freelance)\b/i.test(leftText) ||
+          /(?:India|CA|USA|NY|Remote|Chennai|Madurai)\b/i.test(rightText);
+
+        doc.setFont('times', isItalicSubheading ? 'italic' : 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(20, 20, 20);
+        doc.text(leftText, margin, y);
+
+        doc.setFont('times', isItalicSubheading ? 'italic' : 'bold');
+        doc.text(rightText, pageWidth - margin, y, { align: 'right' });
+        y += 13.5;
+        continue;
+      }
+    }
+
+    // 4. Bullet Points (e.g. "• Analyzed and validated...", "• Data Analysis & Reporting: ...")
+    const isBullet = /^[•\-*▪]\s+/.test(line);
+    if (isBullet) {
+      const bulletContent = line.replace(/^[•\-*▪]\s+/, '').trim();
+
+      // Check if bullet has a bold category prefix (e.g. "Data Analysis & Reporting: ...", "Technologies: ...")
+      const categoryMatch = bulletContent.match(/^([^:]+:)\s*(.*)$/);
+
+      if (categoryMatch) {
+        const categoryPrefix = categoryMatch[1]; // e.g. "Data Analysis & Reporting:" or "Technologies:"
+        const categoryBody = categoryMatch[2];
+        const isTechPrefix = /^Technologies:/i.test(categoryPrefix);
+
+        doc.setFont('times', isTechPrefix ? 'italic' : 'bold');
+        doc.setFontSize(10);
+        doc.setTextColor(20, 20, 20);
+
+        const bulletSymbol = '•';
+        const prefixWidth = doc.getTextWidth(`•  ${categoryPrefix} `);
+
+        const textWidth = printableWidth - prefixWidth;
+        const bodyLines = doc.splitTextToSize(categoryBody, textWidth);
+
+        checkPageBreak(Math.max(1, bodyLines.length) * 13.5 + 4);
+
+        doc.text(bulletSymbol, margin, y);
+        doc.text(categoryPrefix, margin + 10, y);
+
+        doc.setFont('times', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(30, 30, 30);
+
+        if (bodyLines.length > 0) {
+          doc.text(bodyLines[0], margin + prefixWidth, y);
+
+          for (let bIdx = 1; bIdx < bodyLines.length; bIdx++) {
+            y += 13.5;
+            doc.text(bodyLines[bIdx], margin + 10, y);
+          }
+        }
+        y += 14;
+        continue;
+      } else {
+        // Standard achievement bullet
+        doc.setFont('times', 'normal');
+        doc.setFontSize(10);
+        doc.setTextColor(30, 30, 30);
+
+        const indent = 12;
+        const textWidth = printableWidth - indent;
+        const wrapped = doc.splitTextToSize(bulletContent, textWidth);
+
+        checkPageBreak(wrapped.length * 13.5 + 3);
+
+        doc.text('•', margin, y);
+        doc.text(wrapped, margin + indent, y);
+        y += wrapped.length * 13.5 + 2.5;
+        continue;
+      }
+    }
+
+    // 5. Standard Body Paragraphs (e.g. Summary text)
+    doc.setFont('times', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(30, 30, 30);
+
+    const wrapped = doc.splitTextToSize(line, printableWidth);
+    checkPageBreak(wrapped.length * 13.5 + 4);
+    doc.text(wrapped, margin, y);
+    y += wrapped.length * 13.5 + 4;
   }
 
   return doc.output('blob');
@@ -165,34 +271,71 @@ export async function downloadAtsResumePdf(
 }
 
 /**
- * Injects a new bullet into an existing LaTeX document
+ * Injects a new bullet into an existing LaTeX document under the current job role
  */
 export function injectIntoLatexSource(latexSource: string, phrase: string): string {
-  const latexItem = `  \\item ${phrase}`;
+  const cleanPhrase = phrase.trim().endsWith('.') ? phrase.trim() : `${phrase.trim()}.`;
 
-  // Find the first itemize environment in Experience or Work
-  const itemizeIdx = latexSource.indexOf('\\begin{itemize}');
-  if (itemizeIdx !== -1) {
-    const afterBegin = itemizeIdx + '\\begin{itemize}'.length;
-    return `${latexSource.slice(0, afterBegin)}\n${latexItem}${latexSource.slice(afterBegin)}`;
+  // Look for Experience section in LaTeX
+  const expMatch = latexSource.match(/\\(?:cv)?section\*?\{[^}]*(?:experience|employment)[^}]*\}/i);
+
+  if (expMatch && typeof expMatch.index === 'number') {
+    const expStart = expMatch.index;
+    const rest = latexSource.slice(expStart);
+
+    // 1. Check for \resumeItemListStart (e.g. Jake's Resume, Overleaf)
+    const listStartIdx = rest.indexOf('\\resumeItemListStart');
+    if (listStartIdx !== -1) {
+      const insertPos = expStart + listStartIdx + '\\resumeItemListStart'.length;
+      return `${latexSource.slice(0, insertPos)}\n        \\resumeItem{${cleanPhrase}}${latexSource.slice(insertPos)}`;
+    }
+
+    // 2. Check for \begin{itemize}
+    const itemizeIdx = rest.indexOf('\\begin{itemize}');
+    if (itemizeIdx !== -1) {
+      const insertPos = expStart + itemizeIdx + '\\begin{itemize}'.length;
+      return `${latexSource.slice(0, insertPos)}\n  \\item ${cleanPhrase}${latexSource.slice(insertPos)}`;
+    }
   }
 
-  // Fallback: append before \end{document}
+  // Fallback 1: Any \resumeItemListStart
+  const anyResumeList = latexSource.indexOf('\\resumeItemListStart');
+  if (anyResumeList !== -1) {
+    const insertPos = anyResumeList + '\\resumeItemListStart'.length;
+    return `${latexSource.slice(0, insertPos)}\n        \\resumeItem{${cleanPhrase}}${latexSource.slice(insertPos)}`;
+  }
+
+  // Fallback 2: Any \begin{itemize}
+  const anyItemize = latexSource.indexOf('\\begin{itemize}');
+  if (anyItemize !== -1) {
+    const insertPos = anyItemize + '\\begin{itemize}'.length;
+    return `${latexSource.slice(0, insertPos)}\n  \\item ${cleanPhrase}${latexSource.slice(insertPos)}`;
+  }
+
+  // Fallback 3: Append before \end{document}
   const endDocIdx = latexSource.indexOf('\\end{document}');
   if (endDocIdx !== -1) {
-    return `${latexSource.slice(0, endDocIdx)}\n% Injected ATS Alignment Item\n${latexItem}\n\n${latexSource.slice(endDocIdx)}`;
+    return `${latexSource.slice(0, endDocIdx)}\n\\resumeItem{${cleanPhrase}}\n\n${latexSource.slice(endDocIdx)}`;
   }
 
-  return `${latexSource}\n${latexItem}\n`;
+  return `${latexSource}\n\\resumeItem{${cleanPhrase}}\n`;
 }
 
 /**
  * Removes an injected phrase from LaTeX source
  */
 export function removePhraseFromLatexSource(latexSource: string, phrase: string): string {
-  const escaped = escapeRegex(phrase);
-  const pattern = new RegExp(`(?:\\r?\\n)?\\s*\\\\item\\s*${escaped}\\s*`, 'g');
-  return latexSource.replace(pattern, '\n');
+  const clean = phrase.trim().replace(/\.$/, '');
+  const escaped = escapeRegex(clean);
+  const patterns = [
+    new RegExp(`(?:\\r?\\n)?\\s*\\\\resumeItem\\{[^}]*${escaped}[^}]*\\}\\s*`, 'gi'),
+    new RegExp(`(?:\\r?\\n)?\\s*\\\\item\\s+[^\\n]*${escaped}[^\\n]*`, 'gi'),
+  ];
+  let updated = latexSource;
+  for (const p of patterns) {
+    updated = updated.replace(p, '\n');
+  }
+  return updated;
 }
 
 /**
