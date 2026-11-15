@@ -91,3 +91,54 @@ export function cleanCrampedResumeText(raw: string): string {
     .join('\n')
     .trim();
 }
+
+/**
+ * Intelligently injects a STAR achievement phrasing into the resume text,
+ * locating the Experience or Skills section, or appending cleanly.
+ */
+export function injectPhraseIntoResume(resumeText: string, phrase: string): string {
+  if (!resumeText || !resumeText.trim()) {
+    return `- ${phrase}`;
+  }
+
+  const bullet = `- ${phrase}`;
+
+  // 1. Look for Experience section
+  const expMatch = resumeText.match(
+    /(?:^|\n)(---?\s*(?:work\s+experience|professional\s+experience|employment\s+history|experience)\s*---?|[A-Z\s]{4,30}EXPERIENCE[^\n]*)/i
+  );
+
+  if (expMatch && typeof expMatch.index === 'number') {
+    const afterHeaderIdx = expMatch.index + expMatch[0].length;
+    const rest = resumeText.slice(afterHeaderIdx);
+
+    // Look for the next major section boundary (--- or double line with capitalized header)
+    const nextSectionMatch = rest.match(/\n\n(?:---|\b[A-Z\s]{4,30}\b)/);
+    if (nextSectionMatch && typeof nextSectionMatch.index === 'number') {
+      const insertIdx = afterHeaderIdx + nextSectionMatch.index;
+      return `${resumeText.slice(0, insertIdx)}\n${bullet}${resumeText.slice(insertIdx)}`;
+    } else {
+      return `${resumeText.trimEnd()}\n${bullet}\n`;
+    }
+  }
+
+  // 2. Look for Skills section if no Experience section
+  const skillsMatch = resumeText.match(
+    /(?:^|\n)(---?\s*(?:technical\s+skills|core\s+competencies|skills)\s*---?|[A-Z\s]{4,30}SKILLS[^\n]*)/i
+  );
+
+  if (skillsMatch && typeof skillsMatch.index === 'number') {
+    const afterHeaderIdx = skillsMatch.index + skillsMatch[0].length;
+    const rest = resumeText.slice(afterHeaderIdx);
+    const nextSectionMatch = rest.match(/\n\n(?:---|\b[A-Z\s]{4,30}\b)/);
+    if (nextSectionMatch && typeof nextSectionMatch.index === 'number') {
+      const insertIdx = afterHeaderIdx + nextSectionMatch.index;
+      return `${resumeText.slice(0, insertIdx)}\n${bullet}${resumeText.slice(insertIdx)}`;
+    } else {
+      return `${resumeText.trimEnd()}\n${bullet}\n`;
+    }
+  }
+
+  // 3. Fallback: cleanly append to resume
+  return `${resumeText.trimEnd()}\n\n${bullet}\n`;
+}

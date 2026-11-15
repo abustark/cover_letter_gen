@@ -5,13 +5,19 @@ import { SparklesIcon, CopyIcon, CheckIcon, ChevronDownIcon } from './icons';
 interface AtsScoreCardProps {
   resumeText: string;
   jobText: string;
+  onInjectPhrase?: (phrase: string) => void;
 }
 
-export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({ resumeText, jobText }) => {
+export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({
+  resumeText,
+  jobText,
+  onInjectPhrase,
+}) => {
   const [analysis, setAnalysis] = useState<AtsAnalysisResult | null>(null);
   const [expanded, setExpanded] = useState(false);
   const [selectedKeyword, setSelectedKeyword] = useState<string | null>(null);
   const [copiedKeyword, setCopiedKeyword] = useState<string | null>(null);
+  const [injectedKeyword, setInjectedKeyword] = useState<string | null>(null);
 
   const getSuggestedPhrasing = (kw: string) => {
     const isUpper = kw.toUpperCase() === kw || kw.includes('/') || kw.includes('.');
@@ -26,6 +32,17 @@ export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({ resumeText, jobText 
     navigator.clipboard.writeText(phrase);
     setCopiedKeyword(kw);
     setTimeout(() => setCopiedKeyword(null), 2000);
+  };
+
+  const handleInjectPhrase = (kw: string) => {
+    if (!onInjectPhrase) return;
+    const phrase = getSuggestedPhrasing(kw);
+    onInjectPhrase(phrase);
+    setInjectedKeyword(kw);
+    setTimeout(() => {
+      setInjectedKeyword(null);
+      setSelectedKeyword(null);
+    }, 1200);
   };
 
   useEffect(() => {
@@ -194,24 +211,46 @@ export const AtsScoreCard: React.FC<AtsScoreCardProps> = ({ resumeText, jobText 
                       "{getSuggestedPhrasing(selectedKeyword)}"
                     </p>
 
-                    <div className="flex items-center justify-end gap-2 pt-0.5">
+                    <div className="flex items-center justify-end gap-2 pt-0.5 flex-wrap">
                       <button
                         type="button"
                         onClick={() => handleCopyPhrase(selectedKeyword)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-amber-900 dark:text-amber-100 bg-amber-200/80 dark:bg-amber-800/60 hover:bg-amber-300 dark:hover:bg-amber-700/80 border border-amber-300/80 dark:border-amber-700/80 active:scale-95 transition-all"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-stone-700 dark:text-stone-300 hover:text-stone-900 dark:hover:text-stone-100 bg-white/80 dark:bg-stone-900/60 border border-stone-200/80 dark:border-stone-800 transition-colors shadow-2xs"
+                        title="Copy phrasing to clipboard"
                       >
                         {copiedKeyword === selectedKeyword ? (
                           <>
-                            <CheckIcon className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
-                            <span>Copied phrasing!</span>
+                            <CheckIcon className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                            <span>Copied</span>
                           </>
                         ) : (
                           <>
-                            <CopyIcon className="w-3 h-3 text-amber-800 dark:text-amber-300" />
-                            <span>Copy phrasing to paste</span>
+                            <CopyIcon className="w-3 h-3 text-stone-500" />
+                            <span>Copy</span>
                           </>
                         )}
                       </button>
+
+                      {onInjectPhrase && (
+                        <button
+                          type="button"
+                          onClick={() => handleInjectPhrase(selectedKeyword)}
+                          disabled={Boolean(injectedKeyword)}
+                          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-[11px] font-semibold text-stone-950 bg-amber-500 hover:bg-amber-400 active:scale-95 transition-all shadow-xs disabled:opacity-80 cursor-pointer"
+                        >
+                          {injectedKeyword === selectedKeyword ? (
+                            <>
+                              <CheckIcon className="w-3.5 h-3.5 text-stone-950" />
+                              <span>Injected into Resume!</span>
+                            </>
+                          ) : (
+                            <>
+                              <SparklesIcon className="w-3.5 h-3.5 text-stone-950" />
+                              <span>Auto-Inject into Resume</span>
+                            </>
+                          )}
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}

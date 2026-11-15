@@ -10,7 +10,7 @@ import {
 } from './icons';
 import { JobDescriptionInputType, Tone } from '../types';
 import { formatResumeText } from '../services/geminiService';
-import { cleanCrampedResumeText } from '../services/resumeCleaner';
+import { cleanCrampedResumeText, injectPhraseIntoResume } from '../services/resumeCleaner';
 import { Button, Segmented, Field } from './UI';
 import { GoogleButton } from './GoogleButton';
 import { useAuth } from '../services/auth';
@@ -349,6 +349,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
     if (file) processFile(file);
   };
 
+  const handleInjectPhrase = (phrase: string) => {
+    const updated = injectPhraseIntoResume(resume, phrase);
+    setResume(updated);
+  };
+
   const isGenerateDisabled =
     isLoading ||
     isFormatting ||
@@ -532,7 +537,11 @@ export const InputSection: React.FC<InputSectionProps> = ({
       </div>
 
       {/* ATS Intelligence & Keyword Gap (Rust/WASM) */}
-      <AtsScoreCard resumeText={resume} jobText={jobDescription} />
+      <AtsScoreCard
+        resumeText={resume}
+        jobText={jobDescription}
+        onInjectPhrase={handleInjectPhrase}
+      />
 
       {/* 3. Tone Selector Container */}
       <div className="double-bezel">
