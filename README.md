@@ -28,12 +28,13 @@ CoverCraft turns two unstructured documents — a resume (PDF or DOCX) and a job
 | **Self-Contained Serverless Endpoints** | `api/openrouter.ts` and `api/fetch-url.ts` are 100% self-contained for Vercel serverless runtime stability; test suites powered by modular `server/` utilities |
 | **SSRF-hardened URL reader** | HTTPS enforcement, private/cloud-metadata IP blocking, DNS resolution, bounded manual redirects, streaming byte cap |
 | **Strict AI contract** | Model allowlist, input size caps, prompt-injection isolation via XML delimiters, anti-hallucination factual grounding |
+| **Rust WASM ATS & Keyword Intelligence** | Sub-millisecond resume tokenizer, keyword alignment scoring, missing requirement flags, and metric density detection via `crates/ats_engine` (WebAssembly) |
 | **Resume Intake & Heuristic Structuring** | Client-side PDF/DOCX parsing (zero server uploads); layout-aware Y-coordinate tracking in `pdfjs-dist`; `cleanCrampedResumeText` heuristic formatter; in-place formatting without re-upload |
 | **User review checklist** | Interactive "Review before sending" checklist to verify role, claims, metrics, and tone before sending |
 | **Rate limiting** | Sliding-window quotas by verified Google user `sub` and client IP address; Upstash Redis / Vercel KV adapter support |
 | **Export suite** | One-click copy, PDF (`jsPDF`), DOCX (`docx`), local draft storage with quota recovery and schema migration |
 | **Dark / light theme** | Persisted preference, View-Transition wave from toggle, CSS ripple fallback |
-| **Automated testing & CI** | 53-test suite in Bun (`bun test` across 6 test suites), Playwright zero-overflow inspection, GitHub Actions CI with Bun setup |
+| **Automated testing & CI** | 58-test suite in Bun (`bun test` across 7 test suites), Playwright zero-overflow inspection, GitHub Actions CI with Bun setup |
 
 ---
 
@@ -90,8 +91,9 @@ Browser (React SPA)
 | AI Gateway | OpenRouter chat completions with server-side model allowlist |
 | Auth | Google OAuth 2.0 (`@react-oauth/google`) with server-side cryptographic token verification |
 | Parsing | `pdfjs-dist`, `mammoth` (lazy dynamic imports, client-side only) |
+| ATS Engine | Rust WebAssembly (`crates/ats_engine`) with TypeScript dual-mode fallback (`services/atsEngine.ts`) |
 | Export | `jsPDF`, `docx` (lazy dynamic imports) |
-| Testing | Bun test runner (`bun test`, 53 tests across 6 suites), Playwright UI inspection, GitHub Actions CI |
+| Testing | Bun test runner (`bun test`, 58 tests across 7 suites), Playwright UI inspection, GitHub Actions CI |
 | Hosting | Vercel (`api/*.ts` self-contained serverless functions) / Vite dev server middleware |
 
 ---

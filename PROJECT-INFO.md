@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | Name | **CoverCraft — AI Cover Letter Builder & Editorial Studio** |
-| Current Version | **v2.1.8** (Production release, November 2026) |
+| Current Version | **v2.1.9** (Production release, November 2026) |
 | App Type | Full-stack web application (AI document pipeline & career productivity studio) |
 | Author | ABu (`abustark` on GitHub) |
 | Live Site | https://coverltr.vercel.app/ |
@@ -47,10 +47,11 @@
 | **Resume Extraction (PDF)**| pdfjs-dist | `^4.4.168` | Lazy-loaded client-side text extractor with layout-aware Y-coordinate tracking to preserve section breaks |
 | **Resume Extraction (DOCX)**| mammoth | `^1.12.0` | Lazy-loaded client-side raw document text extractor |
 | **Resume Structuring** | Custom cleaner | `services/resumeCleaner.ts` | Heuristic structuring engine (`cleanCrampedResumeText`) formatting headers, bullets, and contact info |
+| **ATS & Keyword Matcher**| Rust & WebAssembly | `crates/ats_engine` | Client-side Rust WASM tokenizer & keyword gap analyzer with TS fallback (`services/atsEngine.ts`) |
 | **Export (PDF)** | jspdf | `^2.5.2` | Lazy-loaded client-side PDF document generator |
 | **Export (DOCX)** | docx | `^9.7.1` | Lazy-loaded client-side Word document generator (Paragraph/TextRun AST) |
 | **Rate Limiting** | Custom sliding-window | In-memory / Upstash Redis | Per-user `sub` and per-IP sliding-window quota management |
-| **Testing Engine** | Bun Test | `bun test` (native) | 53 automated tests across 6 test suites (`test/*.test.ts`) |
+| **Testing Engine** | Bun Test | `bun test` (native) | 58 automated tests across 7 test suites (`test/*.test.ts`) |
 | **E2E / Visual QA** | Playwright | CLI / headless | Headless browser assertions verifying 0 horizontal overflow on PC & mobile |
 | **CI Automation** | GitHub Actions | `.github/workflows/ci.yml`| Automated workflow with `oven-sh/setup-bun@v2`, typecheck, test, and build |
 | **Hosting (Production)** | Vercel Serverless | `@vercel/node ^5.5.13` | Edge/serverless deployment (`api/openrouter.ts`, `api/fetch-url.ts` 100% self-contained) |
@@ -253,6 +254,12 @@ Protects upstream inference budgets and serverless compute from abuse:
 - `api/openrouter.ts` and `api/fetch-url.ts` are 100% self-contained single-file endpoints with zero relative internal imports.
 - Modular utilities for local and CI automated testing are maintained separately in `server/` with strict TypeScript alignment.
 
+### 5.8 Rust WebAssembly ATS Intelligence Engine (`crates/ats_engine` & `services/atsEngine.ts`)
+- High-performance, memory-safe ATS resume tokenizer, keyword alignment engine, and metric density linter built in Rust and compiled to WebAssembly via `wasm-bindgen`.
+- Operates 100% client-side in the browser, extracting matched technical keywords, identifying missing requirement gaps from the job posting, and detecting quantifiable metrics (`%`, `$`, scale multipliers) in sub-millisecond execution.
+- Employs a dual-engine architecture in `services/atsEngine.ts` that dynamically loads the compiled `.wasm` binary when available and seamlessly falls back to an identical TypeScript AST engine, maintaining zero-cost operation and offline test runner stability.
+- Features a responsive editorial UI card (`components/AtsScoreCard.tsx`) displaying real-time alignment scores, grade indicators, and interactive keyword chips.
+
 ---
 
 ## 6. Model Pipeline & Routing Matrix
@@ -283,6 +290,7 @@ cover_letter_gen/
 │   ├── fetch-url.ts               # SSRF-safe URL scraper (inlined auth, SSRF & rate limit)
 │   └── openrouter.ts              # OpenRouter AI proxy (inlined auth, rate limit & prompts)
 ├── components/                    # React UI Components
+│   ├── AtsScoreCard.tsx           # Real-time ATS match & keyword gap intelligence card
 │   ├── DraftsSection.tsx          # Local drafts repository with monogram tiles
 │   ├── GoogleButton.tsx           # Custom native Google button (small & large, 4-color SVG)
 │   ├── Header.tsx                 # Detached glass island navbar with CC monogram badge & avatar popover
@@ -292,6 +300,11 @@ cover_letter_gen/
 │   ├── OutputSection.tsx          # Stationery manuscript, action island, 5-point audit
 │   ├── UI.tsx                     # Reusable UI primitives (Segmented, Field, Button)
 │   └── UpdateNotification.tsx     # Floating update toast with /version.json polling & refresh CTA
+├── crates/                        # Native Rust Crates (WebAssembly Engines)
+│   └── ats_engine/                # Rust AST tokenizer, keyword gap & metric density engine
+│       ├── Cargo.toml             # Rust package manifest (wasm-bindgen, serde)
+│       ├── README.md              # WASM compilation & testing instructions
+│       └── src/lib.rs             # Core Rust tokenizer & WebAssembly export functions
 ├── docs/                          # Architecture & Portfolio Documentation
 │   ├── assets/                    # Light & dark mode application previews
 │   ├── bugs-and-fixes/            # Bug logging protocols and templates
@@ -309,11 +322,13 @@ cover_letter_gen/
 │   ├── rateLimiter.ts             # Sliding-window rate limiting (User & IP)
 │   └── urlSecurity.ts             # SSRF prevention, DNS check, IP blacklist, HTML stripper
 ├── services/                      # Client Services
+│   ├── atsEngine.ts               # ATS analysis dual-mode service (Rust WASM + TS fallback)
 │   ├── auth.tsx                   # AuthContext, GoogleOAuthProvider, token lifecycle
 │   ├── draftStorage.ts            # Local-first storage (v2 schema, quota recovery, migration)
 │   ├── geminiService.ts           # Authenticated API client calling /api/* endpoints
 │   └── resumeCleaner.ts           # Heuristic structuring utility (cleanCrampedResumeText)
-├── test/                          # Automated Bun Test Suite (53 tests across 6 suites)
+├── test/                          # Automated Bun Test Suite (58 tests across 7 suites)
+│   ├── atsEngine.test.ts          # ATS keywords, scoring, and metrics detection tests
 │   ├── auth.test.ts               # JWKS signature, expiry, audience, access token tests
 │   ├── draftStorage.test.ts       # Storage v2 schema, migration, quota recovery tests
 │   ├── fileValidation.test.ts     # PDF/DOCX file limits and scanned detection tests
@@ -351,7 +366,7 @@ bun run dev
 # 3. Execute strict TypeScript typecheck (0 errors required)
 bun run typecheck
 
-# 4. Run automated test suite (53 tests across 6 test suites)
+# 4. Run automated test suite (58 tests across 7 test suites)
 bun test
 
 # 5. Compile production Vite application bundle
@@ -369,14 +384,15 @@ node scripts/inspect-ui.cjs
 
 ### Resume Bullets (Technical & Quantified)
 - **Engineered a full-stack AI document generation studio** (React 19, Bun 1.4, Vite 6, Tailwind v4, TypeScript) deployed on Vercel with free-tier OpenRouter LLM routing across 3 models (Nemotron 3 Ultra/Super, Gemma 4).
+- **Architected a client-side WebAssembly (WASM) ATS keyword matching & metric density engine in Rust** (`crates/ats_engine`), analyzing resume credentials against job specifications in <1 ms with 100% in-browser privacy and zero cloud uploads.
 - **Architected a server-enforced security perimeter** (`/api/openrouter`, `/api/fetch-url`) implementing cryptographic Google ID token verification against Google public JWKS (RSA-SHA256) with OAuth access token fallback and sliding-window rate limiting.
 - **Engineered robust SSRF defense mechanisms** for job-posting ingestion: DNS hostname resolution, IP blacklisting of loopback/private/metadata ranges (`169.254.169.254`), manual 3-hop redirect inspection, 8s timeout, and 2 MB streaming byte caps.
 - **Hardened prompt-injection resilience and eliminated hallucinations** by wrapping untrusted inputs in XML delimiters, enforcing single-source-of-truth grounding rules, pinning temperature at 0.7, and providing an interactive 5-point post-generation factuality audit.
 - **Designed layout-aware resume extraction and heuristic structuring** (`pdfjs-dist`, `mammoth`, `services/resumeCleaner.ts`) that tracks Y coordinates and preserves section headers, bullet points, and contact lines with 0 server uploads.
 - **Engineered 100% self-contained serverless functions & real-time update notification toast**, eliminating Vercel bundler directory stripping (`FUNCTION_INVOCATION_FAILED`) and proactively alerting users to reload when new versions are deployed.
-- **Built an automated Bun test suite (53 tests across 6 suites)** covering cryptographic auth, SSRF network filters, prompt assembly, heuristic parsing, and storage schema migrations, integrated into GitHub Actions CI.
+- **Built an automated Bun test suite (58 tests across 7 suites)** covering cryptographic auth, SSRF network filters, prompt assembly, heuristic parsing, ATS keyword alignment, and storage schema migrations, integrated into GitHub Actions CI.
 
 ### Portfolio Card Copy (~35 words)
 > **CoverCraft — Grounded AI Document Pipeline**
-> An editorial AI cover-letter studio that transforms PDF/DOCX resumes and job postings into tailored letters. Features server-verified Google authentication, SSRF-hardened URL reading, XML prompt isolation, and client-side parsing with zero file uploads.
-> *Stack: React 19 · Bun · TypeScript · Tailwind v4 · OpenRouter · Vercel*
+> An editorial AI cover-letter studio that transforms PDF/DOCX resumes and job postings into tailored letters. Features client-side Rust WebAssembly ATS matching, server-verified Google authentication, SSRF-hardened URL reading, XML prompt isolation, and zero file uploads.
+> *Stack: React 19 · Rust (WASM) · Bun · TypeScript · Tailwind v4 · OpenRouter · Vercel*

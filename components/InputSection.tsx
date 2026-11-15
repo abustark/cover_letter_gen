@@ -14,6 +14,7 @@ import { cleanCrampedResumeText } from '../services/resumeCleaner';
 import { Button, Segmented, Field } from './UI';
 import { GoogleButton } from './GoogleButton';
 import { useAuth } from '../services/auth';
+import { AtsScoreCard } from './AtsScoreCard';
 
 const loadPdfjs = () => import('pdfjs-dist');
 
@@ -529,6 +530,9 @@ export const InputSection: React.FC<InputSectionProps> = ({
           )}
         </div>
       </div>
+
+      {/* ATS Intelligence & Keyword Gap (Rust/WASM) */}
+      <AtsScoreCard resumeText={resume} jobText={jobDescription} />
 
       {/* 3. Tone Selector Container */}
       <div className="double-bezel">

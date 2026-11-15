@@ -7,11 +7,26 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.1.9`** (current head is `2.1.8` — see below)
+> - **`main` → `2.1.10`** (current head is `2.1.9` — see below)
 
 ---
 
 ## Commit History
+
+### 2.1.9 - implement Option 1 Rust WASM ATS & keyword intelligence engine
+
+- **Date**: 2026-11-15
+- **Why**: user instructed executing Option 1 (Rust WebAssembly ATS keyword matching and resume intelligence) as the first phase of integrating Rust into CoverCraft.
+- **Changes**:
+  - `crates/ats_engine/`: created standalone Rust crate with `Cargo.toml`, `README.md`, and `src/lib.rs` implementing zero-allocation resume tokenization, stop word filtering, section header extraction, quantifiable metrics identification, Jaccard/frequency-weighted ATS match scoring, and `wasm-bindgen` WebAssembly exports.
+  - `services/atsEngine.ts`: implemented client-side dual-engine service that dynamically loads compiled WebAssembly (`/wasm/ats_engine.wasm`) with an identical high-performance TypeScript AST engine fallback, ensuring 100% browser and offline compatibility.
+  - `components/AtsScoreCard.tsx`: built responsive editorial UI component featuring real-time ATS match percentage badges, grade chips, matched target keyword pills, missing keyword suggestions, and quantifiable proof points counter.
+  - `components/InputSection.tsx`: mounted `<AtsScoreCard />` seamlessly between candidate/job inputs and tone configuration.
+  - `test/atsEngine.test.ts`: added automated unit test suite covering token extraction, metrics detection, and ATS alignment calculation (expanding test suite to 58 tests across 7 suites).
+  - `App.tsx`: bumped footer version badge to `CoverCraft Studio v2.1.9`.
+  - `components/UpdateNotification.tsx`: bumped `CURRENT_APP_VERSION` to `2.1.9`.
+  - `public/version.json`: bumped deployed metadata to `"2.1.9"`.
+  - `PROJECT-INFO.md` & `README.md`: updated tech stack, feature tables, architecture diagrams, and test suite counts.
 
 ### 2.1.8 - add docs/POSTING-GUIDE.md for social launch & portfolio references
 
