@@ -7,11 +7,20 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.3.6`** (current head is `2.3.5` — see below)
+> - **`main` → `2.3.7`** (current head is `2.3.6` — see below)
 
 ---
 
 ## Commit History
+
+### 2.3.6 - fix google sign-in button hover contrast and invalid color classes in dark mode
+
+- **Date**: 2026-11-15
+- **Why**: user shared a screenshot showing that hovering over "Continue with Google" in dark mode turned the button background bright white while keeping the text white, rendering the label unreadable due to an invalid Tailwind color class (`stone-750`) falling back to light mode hover.
+- **Changes**:
+  - `components/GoogleButton.tsx`: replaced non-existent Tailwind class `dark:hover:bg-stone-750` with standard `dark:hover:bg-stone-700`, enhanced hover contrast with `hover:text-stone-950 dark:hover:text-white` and `dark:hover:border-stone-600`.
+  - `components/OutputSection.tsx`: cleaned up non-standard `dark:bg-amber-850` and `dark:hover:bg-amber-750` in the "Copy All Q&A" button to standard `dark:bg-amber-900/60 dark:hover:bg-amber-800/80 dark:hover:text-amber-50`.
+  - Synchronized version metadata to `2.3.6` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.3.5 - format ats pdf export with solid divider lines, centered headers, and clean bullet dot alignment
 

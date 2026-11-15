@@ -349,7 +349,7 @@ export const OutputSection: React.FC<OutputSectionProps> = ({
             <button
               type="button"
               onClick={handleCopyAllPrep}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-950 dark:text-amber-100 bg-amber-200/90 dark:bg-amber-850 hover:bg-amber-300 dark:hover:bg-amber-750 border border-amber-300 dark:border-amber-700 transition-colors shadow-2xs self-start sm:self-auto"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-950 dark:text-amber-100 bg-amber-200/90 dark:bg-amber-900/60 hover:bg-amber-300 dark:hover:bg-amber-800/80 dark:hover:text-amber-50 border border-amber-300 dark:border-amber-700 transition-colors shadow-2xs self-start sm:self-auto"
             >
               {copiedAllPrep ? (
                 <>
