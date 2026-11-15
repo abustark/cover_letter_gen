@@ -7,11 +7,20 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.3.1`** (current head is `2.3.0` — see below)
+> - **`main` → `2.3.2`** (current head is `2.3.1` — see below)
 
 ---
 
 ## Commit History
+
+### 2.3.1 - polish mobile responsive layout and alignment for rust ast engine and keyword inspector
+
+- **Date**: 2026-11-15
+- **Why**: user reported that on mobile screen sizes the "Rust AST Engine" badge, score box, and "Inspect Keywords / Collapse" button looked unfinished and out of place.
+- **Changes**:
+  - `components/icons.tsx`: added lightweight SVG `ChevronDownIcon` with rotation transform support.
+  - `components/AtsScoreCard.tsx`: redesigned the card header for mobile and desktop screens with an eyebrow status row featuring a pill-styled `⚡ Rust AST Engine` badge pinned to the right; paired the score badge and "Inspect Keywords / Collapse" button into a balanced, full-width responsive action island on mobile with matching `rounded-xl` radii and an animated chevron toggle; improved missing keywords responsive wrapping and alignment injector drawer styling.
+  - Synchronized version metadata to `2.3.1` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.3.0 - revert dynamic auto-format button to keep upload and auto-format always visible
 
