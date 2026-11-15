@@ -7,11 +7,19 @@ This document tracks every commit following the `2.0.x` versioning schema:
 - **One version number per agent response / request batch** — not per issue, not per commit: a single owner request (even if it fixes many issues) consumes exactly ONE version number, multiple commits inside one response all take that same number (fold follow-up fixes into it — never burn a second number), and only a genuinely new owner request (a new response turn) advances the number.
 
 > ### 📌 Next version — **keep this line current, every commit**
-> - **`main` → `2.2.10`** (current head is `2.2.9` — see below)
+> - **`main` → `2.3.0`** (current head is `2.2.10` — see below)
 
 ---
 
 ## Commit History
+
+### 2.2.10 - show auto-format button dynamically only when resume text exists
+
+- **Date**: 2026-11-15
+- **Why**: user noted that clicking "Auto-Format" when no text is present prompted for an upload file anyway; requested dynamically showing "Auto-Format" only once text is present, keeping "Upload Doc" as the primary file entry point.
+- **Changes**:
+  - `components/InputSection.tsx`: rendered "Upload Doc" as the primary import action when the resume textarea is empty; conditionally rendered the "Auto-Format" (or "AI Format" when signed in) button with warm accent styling and entrance animation only when `resume.trim()` contains text; simplified `handleFileClick` and `processFile` to directly load extracted and heuristically formatted text without redundant secondary prompts.
+  - Synchronized version metadata to `2.2.10` across `App.tsx`, `components/UpdateNotification.tsx`, `public/version.json`, and `PROJECT-INFO.md`.
 
 ### 2.2.9 - decouple loaded draft company name from input 02
 
