@@ -9,7 +9,7 @@
 | Field | Value |
 |---|---|
 | Name | **CoverCraft — AI Cover Letter Builder & Editorial Studio** |
-| Current Version | **v2.2.4** (Production release, November 2026) |
+| Current Version | **v2.2.5** (Production release, November 2026) |
 | App Type | Full-stack web application (AI document pipeline & career productivity studio) |
 | Author | ABu (`abustark` on GitHub) |
 | Live Site | https://coverltr.vercel.app/ |
@@ -328,12 +328,10 @@ cover_letter_gen/
 │       ├── Cargo.toml             # Rust package manifest (wasm-bindgen, serde)
 │       ├── README.md              # Vector PDF generation & pagination documentation
 │       └── src/lib.rs             # Core PDF 1.4 vector builder & WebAssembly exports
-├── docs/                          # Architecture & Portfolio Documentation
+├── docs/                          # Architecture & QA Documentation
 │   ├── assets/                    # Light & dark mode application previews
 │   ├── bugs-and-fixes/            # Bug logging protocols and templates
-│   ├── sandbox-browser/           # Playwright visual check kit & scripts
-│   ├── PORTFOLIO-FRAMING.md       # High-conviction positioning copy for portfolio/resume
-│   └── POSTING-GUIDE.md           # Platform posting hooks, Twitter demo scripts & launch copy
+│   └── sandbox-browser/           # Playwright visual check kit & scripts
 ├── public/
 │   ├── favicon.svg                # Vector dual-tone CC monogram browser tab favicon
 │   └── version.json               # Deployed app version metadata for client polling
@@ -450,7 +448,91 @@ cd crates/pdf_engine && wasm-pack build --target web --release
 - **Engineered 100% self-contained serverless functions & real-time update notification toast**, eliminating Vercel bundler directory stripping (`FUNCTION_INVOCATION_FAILED`) and proactively alerting users to reload when new versions are deployed.
 - **Built an automated Bun test suite (60 tests across 8 suites)** covering cryptographic auth, SSRF network filters, prompt assembly, heuristic parsing, ATS keyword alignment, PDF rendering, and storage schema migrations, integrated into GitHub Actions CI.
 
-### Portfolio Card Copy (~35 words)
-> **CoverCraft — Grounded AI Document Pipeline**
-> An editorial AI cover-letter studio that transforms PDF/DOCX resumes and job postings into tailored letters. Features client-side Rust WebAssembly ATS matching, vector PDF typesetting, server-verified Google authentication, SSRF-hardened URL reading, XML prompt isolation, and zero file uploads.
-> *Stack: React 19 · Rust (WASM) · Bun · TypeScript · Tailwind v4 · OpenRouter · Vercel*
+### 10.1 Portfolio Card Blocks (abufolio)
+
+**Standard Block:**
+```text
+Title: CoverCraft — Grounded AI Document Pipeline
+Subtitle: Full-Stack Web Application (React 19, Rust WASM, Bun 1.4, Vite 6, Tailwind v4, OpenRouter, Vercel)
+Description: An editorial AI cover-letter studio that transforms PDF/DOCX resumes and job postings into tailored letters. Features client-side Rust WebAssembly ATS matching, vector PDF typesetting, server-verified Google authentication, SSRF-hardened URL reading, XML prompt isolation, and zero file uploads.
+Tags: React 19 · Rust (WASM) · Bun · TypeScript · Tailwind v4 · OpenRouter · Vercel
+Links: Live Demo (https://coverltr.vercel.app/) · GitHub (https://github.com/abustark/cover_letter_gen)
+```
+
+**Short Variant (~28 words for compact views):**
+> Document-to-letter pipeline: client-side Rust WebAssembly ATS matching & vector PDF layout, server-side posting fetch to beat CORS, and a serverless proxy keeping zero secrets in the bundle.
+
+### 10.2 Feature → Mechanism Translation (Framing Reference)
+
+| Product Feature | Say This Instead (Engineering Mechanism) |
+|---|---|
+| Cover letter generator | document-to-letter pipeline with server-enforced XML prompt isolation |
+| Upload resume | client-side PDF/DOCX binary extraction (`pdfjs-dist`, `mammoth`), lazy-loaded in-memory |
+| ATS intelligence | client-side Rust WebAssembly AST tokenizer (`crates/ats_engine`) matching keywords and metric density in <1 ms |
+| PDF typesetting | client-side Rust WebAssembly vector PDF layout engine (`crates/pdf_engine`) with 0.75" letterpress margins |
+| Paste job URL | server-side fetch with SSRF defense (mirrored in native Rust `crates/fetch_url`), capped at 12k chars |
+| 4 modes / 4 tones | routing matrix — 16 prompt profiles, each mode mapped to one of three free models |
+| API key is safe | key boundary — production key lives only in Vercel function env, 0 secrets bundled |
+| Local drafts | local-first persistence — UUID keys, ISO timestamps, zero cloud database egress |
+| Google sign-in | server-verified OAuth boundary (RS256 JWKS signature + access token fallback) |
+
+---
+
+## 11. Launch Hooks & Social Posting Blueprints
+
+### 11.1 Ready-to-Publish LinkedIn Post Template
+```text
+Most LLM wrappers leak API keys or suffer from SSRF vulnerabilities and hallucinated credentials.
+
+I built CoverCraft to show what a privacy-first, defensible AI document pipeline looks like.
+
+Instead of another toy wrapper, CoverCraft is an editorial document studio designed with real security boundaries and native systems engineering:
+
+🦀 Rust & WebAssembly Intelligence: Client-side ATS resume tokenizer (crates/ats_engine) and typographic vector PDF layout engine (crates/pdf_engine) compiled to WASM for sub-millisecond execution with zero data egress.
+🛡️ Hardened SSRF Defense: When pasting job links, our scraper verifies DNS and enforces strict IP blacklists—blocking private networks, link-local addresses, and cloud metadata endpoints (169.254.169.254), mirrored in a native Tokio/Rustls systems engine (crates/fetch_url).
+🔒 Zero-Upload Privacy: Candidate resumes (PDF/DOCX) are parsed entirely in-browser using pdfjs-dist and mammoth. Original documents never touch any server or cloud database.
+🎯 Anti-Hallucination Prompts: Server-owned XML prompt boundaries enforce strict single-source-of-truth grounding against the candidate's actual credentials, backed by an interactive post-generation factuality audit.
+⚡ Modern Toolchain: Powered by React 19, Rust WASM, Bun 1.4, Vite 6, and Tailwind v4, backed by 60 automated unit tests in Bun and GitHub Actions CI.
+🎨 Editorial Aesthetics: High-prestige Playfair Display typography, custom CC monogram, and a tactile stationery interface—zero neon AI slop.
+
+Live site: https://coverltr.vercel.app/
+Source: https://github.com/abustark/cover_letter_gen
+
+I’d love to hear your thoughts on the architecture and security approach!
+
+#Rust #WebAssembly #React #TypeScript #Bun #SoftwareEngineering #AppliedAI #FullStack #SystemDesign
+```
+
+### 11.2 Twitter / X Video Demo Shot List & Tweet Template
+**Video Demo Shot List (30s):**
+1. **Intake (0:00–0:08):** Drag and drop sample PDF resume into `Input 01`; layout-aware Y-coordinate tracking preserves section headers.
+2. **Configuration (0:08–0:14):** Toggle light/dark mode wave transition; pick tone (`Confident` / `Creative`).
+3. **Generation & Audit (0:14–0:22):** Click generate; show streaming synthesis, editorial stationery paper sheet, and interactive 5-point factuality review checklist.
+4. **Export (0:22–0:30):** 1-click export downloading the publication-grade Rust WASM vector PDF.
+
+**Tweet Copy:**
+```text
+No neon AI slop — just high-end editorial typesetting and defensible systems engineering under the hood.
+
+Built CoverCraft: a privacy-first AI cover letter studio featuring Rust WebAssembly ATS analysis & vector PDF layout, SSRF defense, client-side document parsing, and 60 automated tests in Bun.
+
+Try it: https://coverltr.vercel.app/
+Code: https://github.com/abustark/cover_letter_gen
+```
+
+---
+
+## 12. Messaging Guidelines & Role-Fit Matrix
+
+### 12.1 Language & Terminology Rules
+- **Use:** pipeline, extraction, routing, boundary, constraint, proxy, server-side, client-side, pinned, validated, stripped, cryptographic JWKS, SSRF defense, WebAssembly, Rust systems engine.
+- **Ban:** AI-powered (as lead), seamless, cutting-edge, leverage, effortless, revolutionary, magic.
+- **Never Claim:** Database, cloud draft sync, user counts, or conversion metrics.
+
+### 12.2 Role-Fit Map (Honest Breakdown)
+| Target Role | Strength of this Project | Positioning Strategy |
+|---|---|---|
+| **Applied AI Developer** | **Strong** — model routing, prompt contracts, key isolation | Lead card position; primary showcase fit |
+| **Data & Systems Engineer** | **Strong** — extraction pipeline, Rust systems scraper, WASM modules | Focus on SSRF defense, data boundaries, and WASM performance |
+| **Data Analyst** | **Medium** | Pair with document parsing and heuristic cleaning |
+| **Database / SQL Developer** | None | Do not claim schema/query work — local-first by design |

@@ -195,9 +195,7 @@ bun run build
 
 ## Docs
 
-- [`PROJECT-INFO.md`](PROJECT-INFO.md) — stack, architecture, metrics, and security sheet
-- [`docs/PORTFOLIO-FRAMING.md`](docs/PORTFOLIO-FRAMING.md) — positioning copy for portfolio/resume use
-- [`docs/POSTING-GUIDE.md`](docs/POSTING-GUIDE.md) — social launch hooks, video scripts, and posting guides
+- [`PROJECT-INFO.md`](PROJECT-INFO.md) — complete source of truth (stack, architecture, security, social launch blueprints, and portfolio framing)
 - [`docs/bugs-and-fixes/`](docs/bugs-and-fixes/) — bug registry protocol and template
 - [`docs/sandbox-browser/`](docs/sandbox-browser/) — headless visual-check kit
 - [`AGENTS.md`](AGENTS.md) · [`COMMIT-HISTORY.md`](COMMIT-HISTORY.md)
